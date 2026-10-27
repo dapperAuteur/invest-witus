@@ -1,0 +1,34 @@
+# Index investing with a fixed monthly contribution, written as rules the app checks.
+# The Learn.WitUS lesson and the code read this same file. A rule's `lesson` is the URL of the
+# lesson that teaches it; leave it empty until that lesson is published. Never guess a URL.
+
+id = "index-dca"
+name = "Index investing with a fixed monthly contribution"
+version = 1
+summary = "Put the same amount into the same index fund at the start of every month, and don't sell because prices fell."
+lesson = ""
+
+[[rules]]
+id = "one-buy-each-month"
+text = "Buy once in every month of the plan."
+lesson = ""
+
+[[rules]]
+id = "buy-in-window"
+text = "Buy within the plan's buy window at the start of the month, not when the news makes you feel ready."
+lesson = ""
+
+[[rules]]
+id = "fixed-amount"
+text = "Buy the plan's amount every time: no more after a good month, no less after a bad one."
+lesson = ""
+
+[[rules]]
+id = "plan-symbols-only"
+text = "Buy only the fund or funds named in your plan."
+lesson = ""
+
+[[rules]]
+id = "no-selling"
+text = "This method has no sell rule. A sale is a change of plan and needs a written reason."
+lesson = ""
