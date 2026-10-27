@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# Secrets: names live in .env.example, values never in git
+.env
+.env.*
+!.env.example
+
+# Local working notes (plans convention): never committed
+plans/
+
+# Personal data: your real statements, journals and price downloads stay local
+data/private/
+
+.DS_Store
