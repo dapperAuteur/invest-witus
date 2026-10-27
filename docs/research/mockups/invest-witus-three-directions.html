@@ -1,0 +1,319 @@
+<!doctype html>
+<!-- Copied 2026-10-27 from the WitUS ecosystem's local planning notes, gemini/witus/plans/future/invest-witus-research-2026-10-27/mockups/invest-witus-three-directions.html (drawn 2026-10-27). Sample data only. Not advice. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invest.WitUS Directions</title>
+<style>
+:root {
+  --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede6; --ink: #1d1f22; --muted: #5d6168;
+  --line: #d9d6cc; --accent: #1f6f5c; --accent-ink: #ffffff; --warn: #9a5b00; --warn-bg: #fff4e0;
+  --bad: #a3322a; --bad-bg: #fde9e7; --good: #1f6f5c; --good-bg: #e3f2ec; --paper: #2d4a8a; --paper-bg: #e6ecf8;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --surface: #1d2024; --surface-2: #24282d; --ink: #e8e6e1; --muted: #a2a6ad;
+    --line: #353a41; --accent: #5cc3a6; --accent-ink: #0d1f1a; --warn: #f0b45c; --warn-bg: #3a2c14;
+    --bad: #f08a80; --bad-bg: #3b1d1a; --good: #5cc3a6; --good-bg: #16302a; --paper: #9db7f0; --paper-bg: #1c2740;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171a; --surface: #1d2024; --surface-2: #24282d; --ink: #e8e6e1; --muted: #a2a6ad;
+  --line: #353a41; --accent: #5cc3a6; --accent-ink: #0d1f1a; --warn: #f0b45c; --warn-bg: #3a2c14;
+  --bad: #f08a80; --bad-bg: #3b1d1a; --good: #5cc3a6; --good-bg: #16302a; --paper: #9db7f0; --paper-bg: #1c2740;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+a { color: var(--accent); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; }
+header.top h1 { margin: 0 0 4px; font-size: 22px; }
+header.top p { margin: 0 0 16px; color: var(--muted); max-width: 820px; }
+.note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line); padding: 4px 10px; margin: 0 0 16px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tabs button { font: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.panel { display: none; } .panel.on { display: block; }
+.desc { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+.desc h2 { margin: 0 0 4px; font-size: 18px; } .desc p { margin: 4px 0; } .desc .risk { color: var(--warn); }
+.frame { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.appbar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.brand { font-weight: 700; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.chip.paper { background: var(--paper-bg); color: var(--paper); border-color: transparent; font-weight: 600; }
+.chip.good { background: var(--good-bg); color: var(--good); border-color: transparent; }
+.chip.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.chip.bad { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.spacer { flex: 1; }
+.paperband { background: var(--paper-bg); color: var(--paper); padding: 8px 14px; font-size: 14px; font-weight: 600; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.muted { color: var(--muted); } .small { font-size: 13px; } .mono { font-family: var(--mono); font-size: 13px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; } td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.btn { font: inherit; font-size: 14px; border-radius: 8px; padding: 7px 12px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lesson { font-size: 12px; white-space: nowrap; }
+.grid-a { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; padding: 14px; }
+.grid-b { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; padding: 12px; }
+.span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+.span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+.grid-c { display: grid; grid-template-columns: 220px 1fr 330px; min-height: 560px; }
+.toc { border-right: 1px solid var(--line); padding: 12px; background: var(--surface-2); }
+.toc ol { margin: 0; padding-left: 18px; } .toc li { margin: 6px 0; font-size: 14px; }
+.toc li.done { color: var(--muted); } .toc li.now { font-weight: 700; }
+.reader { padding: 18px 22px; max-width: 680px; }
+.reader h2 { margin-top: 0; }
+.rulebox { border: 2px solid var(--accent); border-radius: 10px; padding: 10px 14px; margin: 16px 0; background: var(--good-bg); }
+.lab { border-left: 1px solid var(--line); padding: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; }
+.rules li { margin: 6px 0; }
+.next { border: 2px solid var(--accent); }
+.bar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.statusbar { display: flex; gap: 14px; flex-wrap: wrap; padding: 8px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); font-size: 13px; }
+.statusbar b { font-weight: 600; }
+.chart { width: 100%; height: 150px; }
+textarea { width: 100%; font: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); color: var(--ink); }
+.compare { margin-top: 22px; } .compare h2 { font-size: 18px; }
+footer { margin-top: 22px; font-size: 13px; color: var(--muted); }
+@media (max-width: 900px) {
+  .grid-a { grid-template-columns: 1fr; }
+  .grid-b > * { grid-column: span 12 !important; }
+  .grid-c { grid-template-columns: 1fr; } .toc, .lab { border: 0; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>Invest.WitUS: three design directions</h1>
+  <p>One method, one account, three ways to design the app around it. Every direction shows the same thing: the owner running 12 minus 1 momentum (rank by the last 12 months, skipping the most recent month; hold the top 10; review monthly) on an Alpaca <b>paper</b> account, with each rule linking to the lesson that teaches it.</p>
+  <p class="note">Mockups, not the product. All numbers and symbols are illustrative sample data, not prices or recommendations. Research behind each direction: <span class="mono">01-ux-benchmarks-and-three-directions.md</span> in this folder.</p>
+</header>
+
+<div class="tabs" role="tablist" aria-label="Design directions">
+  <button role="tab" aria-selected="true" aria-controls="pa" id="ta">A · The Plan and the Logbook</button>
+  <button role="tab" aria-selected="false" aria-controls="pb" id="tb">B · Method Console</button>
+  <button role="tab" aria-selected="false" aria-controls="pc" id="tc">C · The Lesson Lab</button>
+  <button role="tab" aria-selected="false" aria-controls="pd" id="td">Compare</button>
+</div>
+
+<!-- A -->
+<section class="panel on" id="pa" role="tabpanel" aria-labelledby="ta">
+  <div class="desc">
+    <h2>A · The Plan and the Logbook (calm)</h2>
+    <p>A written plan with a logbook beside it. One thing to do next. Every step off the plan becomes a dated, explained exception. Reminders follow the calendar, never price moves.</p>
+    <p class="small muted">Borrows: Betterment's on track / off track with fixes; M1's target allocation; Actual's rules from what you do; Edgewonk's rule-following rate; Vanguard's measure of success as staying on track.</p>
+    <p class="small risk">Risk: may be too quiet to bring people back; cramped for methods with many rules.</p>
+  </div>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Invest.WitUS</span><span class="chip">My plan</span><span class="chip">Logbook</span><span class="chip">Lessons</span><span class="spacer"></span><span class="small muted">Signed in with WitUS</span></div>
+    <div class="paperband">Paper account. Simulated money: nothing here is a real trade.</div>
+    <div class="grid-a">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card next">
+          <h3>Next: monthly review is due Friday, November 6</h3>
+          <p class="small">Your rules rank the list and suggest 2 changes: sell 1 holding that fell out of the top 10, buy 1 that entered. Read them, then confirm or skip.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary">Review the 2 changes</button><button class="btn">Skip this month (asks why)</button></div>
+        </div>
+        <div class="card">
+          <h3>You are on plan</h3>
+          <p class="small">10 of 10 holdings match your rules. Last review done on time. <a href="#">What "on plan" means</a></p>
+          <div class="small muted">Rules followed: 11 of 12 reviews (92%)</div>
+          <div class="bar" aria-hidden="true"><span style="width:92%"></span></div>
+        </div>
+        <div class="card">
+          <h3>My method: 12 minus 1 momentum</h3>
+          <ol class="rules small">
+            <li>Rank the list by return over 12 months, skipping the last month. <a class="lesson" href="#">Lesson 4.2</a></li>
+            <li>Hold the top 10, equal weight. <a class="lesson" href="#">Lesson 4.3</a></li>
+            <li>Review once a month, on the first Friday. <a class="lesson" href="#">Lesson 4.4</a></li>
+            <li>Sell only at a review, never in between. <a class="lesson" href="#">Lesson 4.5</a></li>
+          </ol>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <h3>Target and actual</h3>
+          <table><thead><tr><th>Holding</th><th class="num">Target</th><th class="num">Actual</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Stock A</td><td class="num">10%</td><td class="num">11.2%</td><td><span class="chip good">ok</span></td></tr>
+            <tr><td>Stock B</td><td class="num">10%</td><td class="num">9.4%</td><td><span class="chip good">ok</span></td></tr>
+            <tr><td>Stock C</td><td class="num">10%</td><td class="num">8.1%</td><td><span class="chip warn">drift</span></td></tr>
+            <tr><td colspan="4" class="small muted">7 more</td></tr>
+          </tbody></table>
+        </div>
+        <div class="card">
+          <h3>Logbook</h3>
+          <ul class="small" style="margin:0;padding-left:18px">
+            <li><b>Oct 2</b> Review done on time. 1 sell, 1 buy, as the rules said.</li>
+            <li><b>Sep 18</b> Exception: you wanted to sell Stock D after bad news. You held, per rule 4. Your note: "Waited for the review."</li>
+            <li><b>Sep 4</b> Review done on time. No changes.</li>
+          </ul>
+          <p style="margin:8px 0 0"><button class="btn">Write a log entry</button></p>
+        </div>
+        <div class="card small">
+          <h3>Results, quietly</h3>
+          Paper value since start: <b>+3.1%</b> <span class="muted">(illustrative)</span>. Same period, the method's backtest range: -4% to +9%.
+          <div class="muted">Performance sits below the plan on purpose.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B -->
+<section class="panel" id="pb" role="tabpanel" aria-labelledby="tb">
+  <div class="desc">
+    <h2>B · Method Console (dense)</h2>
+    <p>The owner supervises a running system. Status at the top, checks with evidence, a queue of orders the rules produced, paper results against the backtest's expected range. Live trading unlocks only through a promotion checklist, on separate keys.</p>
+    <p class="small muted">Borrows: Ghostfolio's X-ray rules; QuantConnect's backtest to paper to live; Public's order queue; TradingView alerts; Alpaca's separate paper and live hosts; USWDS and GOV.UK tables.</p>
+    <p class="small risk">Risk: dense live numbers invite tinkering (the FCA found engagement features raise trading); heaviest for beginners and for accessibility.</p>
+  </div>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Invest.WitUS Console</span><span class="chip paper">PAPER · paper-api</span><span class="spacer"></span><span class="small muted">Methods · Signals · Orders · Log · Settings</span></div>
+    <div class="statusbar">
+      <span><b>Equity</b> $103,120</span><span><b>Cash</b> $4,880</span><span><b>Method</b> 12-1 momentum, top 10</span>
+      <span><b>Next job</b> daily data pull, today ~9:17 UTC</span><span><b>Last run</b> <span class="chip good">ok</span> 09:21 UTC</span><span><b>Next review</b> Nov 6</span>
+    </div>
+    <div class="grid-b">
+      <div class="card span-7">
+        <h3>Rule checks</h3>
+        <table><thead><tr><th>Rule</th><th>Status</th><th>Evidence</th><th>Lesson</th></tr></thead><tbody>
+          <tr><td>Universe is the agreed list</td><td><span class="chip good">pass</span></td><td class="mono">50 of 50 symbols priced</td><td><a class="lesson" href="#">4.1</a></td></tr>
+          <tr><td>Rank uses 12 months, skips 1</td><td><span class="chip good">pass</span></td><td class="mono">window 2025-10-03 to 2026-09-30</td><td><a class="lesson" href="#">4.2</a></td></tr>
+          <tr><td>Hold top 10, equal weight</td><td><span class="chip warn">drift</span></td><td class="mono">max drift 1.9 pts (limit 2.5)</td><td><a class="lesson" href="#">4.3</a></td></tr>
+          <tr><td>No trades between reviews</td><td><span class="chip good">pass</span></td><td class="mono">0 off-cycle orders</td><td><a class="lesson" href="#">4.5</a></td></tr>
+        </tbody></table>
+      </div>
+      <div class="card span-5">
+        <h3>Order queue (from rules, waiting for you)</h3>
+        <table><thead><tr><th>Side</th><th>Symbol</th><th class="num">Qty</th><th>Why</th></tr></thead><tbody>
+          <tr><td>Sell</td><td>Stock H</td><td class="num">41</td><td class="small">left top 10 (rank 13)</td></tr>
+          <tr><td>Buy</td><td>Stock Q</td><td class="num">27</td><td class="small">entered top 10 (rank 7)</td></tr>
+        </tbody></table>
+        <p style="margin:8px 0 0;display:flex;gap:8px"><button class="btn primary">Approve both</button><button class="btn">Hold (log reason)</button></p>
+      </div>
+      <div class="card span-8">
+        <h3>Paper results against the backtest's expected range</h3>
+        <svg class="chart" viewBox="0 0 600 150" role="img" aria-label="Line chart: paper results stay inside the shaded backtest range over 10 months">
+          <path d="M0,95 C100,85 200,70 300,75 S500,55 600,50 L600,120 C500,118 400,125 300,118 S100,112 0,110 Z" fill="currentColor" opacity="0.12"/>
+          <path d="M0,102 L60,98 L120,96 L180,90 L240,94 L300,92 L360,86 L420,88 L480,84 L540,80 L600,82" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        </svg>
+        <div class="small muted">Shaded: the range the method's backtest expects. Line: this paper account. Inside the range means the system behaves as tested.</div>
+      </div>
+      <div class="card span-4">
+        <h3>Promotion to live</h3>
+        <ul class="small" style="margin:0;padding-left:18px">
+          <li>3 months on paper inside the range: <b>1 of 3</b></li>
+          <li>All rule checks passing: <b>3 of 4</b></li>
+          <li>Course method chapter finished: <b>yes</b></li>
+          <li>Separate live keys added: <b>no</b></li>
+        </ul>
+        <p class="small muted" style="margin-top:6px">Live stays locked until every item is done.</p>
+      </div>
+      <div class="card span-12">
+        <h3>Deviation log</h3>
+        <table><thead><tr><th>Date</th><th>What happened</th><th>Rule</th><th>Your reason</th></tr></thead><tbody>
+          <tr><td class="mono">2026-09-18</td><td>Manual sell of Stock D started, then cancelled</td><td>4.5</td><td>"Bad headline. Waited for the review."</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C -->
+<section class="panel" id="pc" role="tabpanel" aria-labelledby="tc">
+  <div class="desc">
+    <h2>C · The Lesson Lab (course-first)</h2>
+    <p>A textbook with a lab bench. The lesson is the home screen; each lesson ends with the one rule it gives you, and the lab applies that rule to your paper account. Rules switch on as you reach them. Breaking a rule reopens the chapter that taught it.</p>
+    <p class="small muted">Borrows: QuantConnect's Learning Center; Backtrader's step-by-step quickstart; Composer's readable rule blocks; Fidelity's learning pages with no trade buttons; Snowball's per-strategy numbers.</p>
+    <p class="small risk">Risk: needs course content for every method; slow for experienced users; chapter progress can drift into gamification.</p>
+  </div>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Invest.WitUS Lab</span><span class="chip">Ways to Invest · Section 4: Momentum</span><span class="spacer"></span><span class="chip paper">Paper lab</span></div>
+    <div class="grid-c">
+      <nav class="toc" aria-label="Chapters">
+        <div class="small muted" style="margin-bottom:6px">Momentum</div>
+        <ol>
+          <li class="done">4.1 What momentum claims</li>
+          <li class="now">4.2 Twelve months, skip one</li>
+          <li>4.3 How many to hold</li>
+          <li>4.4 When to review</li>
+          <li>4.5 Selling only at reviews</li>
+          <li>4.6 What eats the returns</li>
+          <li>4.7 Your first month</li>
+        </ol>
+        <p class="small muted" style="margin-top:12px">No points or streaks. A chapter is done when its rule is on.</p>
+      </nav>
+      <article class="reader">
+        <h2>4.2 Twelve months, skip one</h2>
+        <p>The method ranks each stock by its return over the past year, but leaves out the most recent month. Researchers who studied momentum found that the last month tends to reverse, so including it blurs the signal. In this lesson you see that in your own list.</p>
+        <p class="muted small">[Lesson text continues, with its sources: the academic papers and Gray and Vogel, <i>Quantitative Momentum</i>, cited, never copied.]</p>
+        <div class="rulebox">
+          <div class="small" style="font-weight:700">The rule this lesson gives you</div>
+          <p style="margin:6px 0 0">Rank by the return from 12 months ago to 1 month ago. Ignore the last month.</p>
+        </div>
+        <p class="small"><a href="#">Watch the freeCodeCamp segment that builds this</a> · <a href="#">Python tutorial chapter 3: the ranking function</a></p>
+      </article>
+      <aside class="lab" aria-label="Lab bench">
+        <div class="card">
+          <h3>Lab: apply rule 4.2</h3>
+          <table><thead><tr><th>Rank</th><th>Symbol</th><th class="num">12-1 return</th></tr></thead><tbody>
+            <tr><td>1</td><td>Stock Q</td><td class="num">+41%</td></tr>
+            <tr><td>2</td><td>Stock A</td><td class="num">+38%</td></tr>
+            <tr><td>3</td><td>Stock M</td><td class="num">+33%</td></tr>
+            <tr><td colspan="3" class="small muted">47 more, illustrative</td></tr>
+          </tbody></table>
+          <p class="small" style="margin:6px 0">With last month included, Stock M would rank 9th instead of 3rd.</p>
+          <button class="btn primary">Switch on rule 4.2</button>
+        </div>
+        <div class="card">
+          <h3>Lab notebook</h3>
+          <textarea rows="3" aria-label="Lab notebook entry">What surprised me about skipping the last month:</textarea>
+          <p class="small muted" style="margin:6px 0 0">Saved to your logbook and, if you choose, as course evidence.</p>
+        </div>
+        <div class="card small">Rules on: <b>1 of 5</b>. Orders stay staged, not placed, until rule 4.4 sets your review day.</div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- Compare -->
+<section class="panel" id="pd" role="tabpanel" aria-labelledby="td">
+  <div class="compare">
+    <h2>Side by side</h2>
+    <table>
+      <thead><tr><th></th><th>A · Plan and Logbook</th><th>B · Method Console</th><th>C · Lesson Lab</th></tr></thead>
+      <tbody>
+        <tr><th>Home screen</th><td>One next action and the plan</td><td>Status, checks, queue, chart</td><td>The current lesson and its lab</td></tr>
+        <tr><th>How it keeps you on the method</th><td>On-plan status, exceptions need a reason</td><td>Rule checks with evidence, deviation log, locked live</td><td>Rules turn on one lesson at a time; a broken rule reopens its chapter</td></tr>
+        <tr><th>Where lessons link in</th><td>Beside every rule</td><td>A column in every check</td><td>The lesson is the screen</td></tr>
+        <tr><th>Paper versus live</th><td>Band across the top</td><td>Host chip, separate keys, promotion checklist</td><td>Paper is the lab; live after the final chapter and the checklist</td></tr>
+        <tr><th>Best for</th><td>Long-term owners; calm use</td><td>You as the operator; experienced users</td><td>Students and first-time investors</td></tr>
+        <tr><th>Tutorial cost to build</th><td>Low: tables and forms</td><td>Highest: jobs, charts, queue</td><td>Medium: needs course content wired in</td></tr>
+        <tr><th>Main risk</th><td>Too quiet</td><td>Invites tinkering; dense</td><td>Depends on course content; slow</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted" style="margin-top:10px">They combine well: one possible answer is A as the everyday home, C as the onboarding for each new method, and B's checks and promotion checklist behind an "Operator" tab for you.</p>
+  </div>
+</section>
+
+<footer>Draft for BAM, 2026-10-27. Sample data only. Not investment advice.</footer>
+</div>
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  tabs.forEach(function(t){ t.addEventListener('click', function(){
+    tabs.forEach(function(x){ x.setAttribute('aria-selected', x===t ? 'true':'false');
+      document.getElementById(x.getAttribute('aria-controls')).classList.toggle('on', x===t); });
+  }); });
+})();
+</script>
+</body>
+</html>
