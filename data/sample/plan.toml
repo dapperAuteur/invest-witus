@@ -1,0 +1,7 @@
+# A sample plan for the index-dca method. Copy it to data/private/plan.toml (git ignores that
+# folder) and put in your own numbers.
+method = "index-dca"
+start = 2025-10-01          # a TOML date: no quotes
+amount = "100.00"           # in quotes, so it becomes an exact Decimal, not a float
+symbols = ["INDEX"]         # a placeholder; name the fund you chose
+buy_window_days = 7         # buy within the first 7 days of each month
