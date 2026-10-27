@@ -108,6 +108,15 @@ issuer base URL).
 
 ---
 
+### Decided 2026-10-27: routes and domain
+
+- Origin `https://invest.witus.online`. Login start `/auth/witus/login/`; callback `/auth/witus/callback/`;
+  sign-out `/auth/witus/logout/`. Registered in `gemini/witus/lib/identity/clients.ts` as slug `invest`
+  (branch `feat/register-invest-witus`); the IdP secret env there is `WITUS_OIDC_SECRET__INVEST`, minted by BAM
+  with `node scripts/gen-oidc-client.mjs invest` when chapter 07 is next.
+- `signInHref` in `lib/products.ts` is the login start route above. Chapter 07 must implement exactly these
+  paths; changing them means changing the registry first.
+
 ## 3. Signed events to CentenarianOS
 
 **Sources:** sender `gemini/contractor-os/lib/events/income-emitter.ts`; receivers

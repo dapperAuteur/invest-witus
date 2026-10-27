@@ -39,6 +39,7 @@ Status: **tagged** means the tag exists on GitHub; **proposed** means the chapte
 | 13 | Report a bug, ask a question | `v13` | proposed | The in-app reporter stored locally and mirrored to WitUS Inbox with a signed request; retries in the daily job | HMAC signing with `hmac` and `hashlib`, background work without a worker |
 | 14 | 12-1 momentum | `v14` | proposed | Method 2: rank the user's universe by 12-month return skipping the last month, first on a CSV, then on stored data; hold top N; monthly review; wash-sale warning | Sorting and windowing, maybe pandas, a second rule block on the same engine |
 | 15 | Events to CentenarianOS, links to Learn | `v15` | proposed | Signed events to a new CentenarianOS receiver for closed reviews and contributions; lesson links checked against `CHAPTERS.md` | Outbound webhooks, deterministic event ids |
+| 16 | The owner's dashboard: usage | `v16` | proposed | Owner-only `/admin/usage/`: sign-ins, active users, reviews on time or late or skipped, rule-following rate per method, the most-broken rule, cron health, hand-entered vendor costs; PostHog with the ecosystem's shared project (PRD 7.13) | Aggregation over every earlier table, owner gate, PostHog server-side events, an empty-state test |
 | later | A sibling API service | proposed | proposed | A small FastAPI or Litestar service (for example a read API for other ecosystem apps), so the course teaches a second framework without the first project carrying two | ASGI, a second framework compared with Django |
 
 ## Open items for the roadmap

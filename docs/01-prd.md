@@ -424,6 +424,26 @@ for operations.
 
 ---
 
+### 7.13 Owner's dashboard: usage (added 2026-10-27)
+
+BAM asked for an admin dashboard to track usage. Owner-only (the platform owner's WitUS user id from an env
+var, never a hardcoded address), under `/admin/usage/`, built on the app's own tables plus the ecosystem's
+PostHog project (witus plan 26: one shared project, `{app: "invest-witus"}` on init, autocapture off).
+
+- Counts over the last 7, 30 and 90 days: sign-ins, active users (a user who opened a method view), reviews
+  closed on time versus late versus skipped, contributions logged, journal entries, watch-list adds, reporter
+  submissions by category, waitlist sign-ups and the waitlist total.
+- Per method: users on it, rule-following rate across all users (never per named user on this page), and the
+  most-broken rule with its lesson link, so the course knows which lesson to improve.
+- Jobs: the last daily cron run, its duration, rows written, and the last price date, with a red state when the
+  cron has not run in 36 hours (Vercel Hobby cron runs once a day, plus or minus 59 minutes, no retries).
+- Costs: a row per vendor (Vercel, Neon, Tiingo, Alpaca) with the plan in use and the date BAM last checked the
+  bill, entered by hand; no API billing pulls in v1.
+- Acceptance: a non-owner gets 404 on `/admin/usage/`; every number has a date range in its label; nothing on
+  the page names a learner; the page renders with zero rows; a test covers the owner gate and the empty state.
+- Chapter: 16 in the roadmap (after the reporter and before momentum, because it reads every table the earlier
+  chapters create).
+
 ## 8. Non-goals (v1)
 
 - Recommending securities, funds, brokers or methods; stock screening for picks; signals pushed to anyone.
@@ -541,9 +561,10 @@ advice; the open items are for a securities lawyer.
 
 ## 14. Open questions
 
-1. **Domain.** Which domain points at the landing page (for example `invest.witus.online`) is BAM's call. Blocks
-   chapter 06 (deploy) only for the production domain, and the OIDC client registration (redirect URIs are exact
-   match).
+1. **Domain: decided 2026-10-27.** `invest.witus.online`, written Invest.WitUS.Online or Invest.WitUS. Registered
+   in `gemini/witus/lib/products.ts` (coming-soon, card disabled) and `lib/identity/clients.ts` (slug `invest`)
+   on branch `feat/register-invest-witus`. Not on Vercel yet: there is no deployable app until chapter 04; the
+   DNS record is added after chapter 06 creates the Vercel project (repo task 03).
 2. **Alpaca paper balance.** Can a new paper account start below $100k? Research 05: Alpaca's docs say "arbitrary
    amount" for the retired reset button; a staff reply (October 2025) says paper equity "cannot be changed"; no
    API was found. BAM to check the dashboard's "Open New Paper Account" dialog. The practice-budget design works
@@ -558,8 +579,10 @@ advice; the open items are for a securities lawyer.
    the course preview; the landing page is the domain's target).
 7. **CentenarianOS events.** Which events CentOS wants (proposed: review closed, contribution made or skipped),
    and whether any money amounts may cross.
-8. **OIDC callback path and local development.** The Django callback path to register, and how to sign in
-   locally given no localhost redirect is registered at the IdP (a dev-only admin login, or preview domains).
+8. **OIDC callback path: decided 2026-10-27.** Login starts at `/auth/witus/login/` and the callback is
+   `/auth/witus/callback/` (both registered with the client entry; redirect URIs are exact match, trailing slash
+   included). Still open: how to sign in during local development with no localhost redirect at the IdP (a
+   dev-only owner login behind `DEBUG`, or Vercel preview domains added as `extraRedirectUris`).
 9. **File storage.** Whether statement uploads and journal attachments are stored at all in phase 1, and where
    (private object storage, never git).
 10. **Spanish.** The shared UI/UX standard keeps English and Spanish strings for ecosystem apps; whether v1 ships

@@ -39,3 +39,14 @@ rewrite an old row, add a superseding one.
 | 30 | 2026-10-27 | Research | Journal: build it in Django as the logbook; take ideas, not code, from Edgewonk, LuxAlgo Trade Journal (MIT) and Trading Journal AI (MIT). TradeNote is GPL-3.0; no GPL, AGPL or non-commercial code. Any copied MIT code keeps its notice. | Research 05, section 3.5 |
 | 31 | 2026-10-27 | Claude | Tutorial chapters 00 to 03 written and tagged `v00` to `v03` (plain Python: setup, Decimal plan math, prices from CSV and the `plan` command, the rule block, plan, journal and the `review` command). | Tutorial branch |
 | 32 | 2026-10-27 | Claude | PRD, integration contracts, roadmap and research copies moved into `docs/` so planning can live in the repo. | This branch |
+
+## 2026-10-27 (evening)
+
+- **Domain:** `invest.witus.online` (Invest.WitUS.Online / Invest.WitUS). BAM.
+- **Owner's usage dashboard** added to the PRD (7.13) and the roadmap (chapter 16). BAM: "app should have admin
+  dashboard for me to track usage."
+- **OIDC routes:** `/auth/witus/login/`, `/auth/witus/callback/`, `/auth/witus/logout/`. Claude, recorded in the
+  registry entry.
+- **Not on Vercel yet:** nothing deployable exists until chapter 04 (the Django landing page); the Vercel
+  project and DNS record come with chapter 06.
+
