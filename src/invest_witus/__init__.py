@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from invest-witus!")
+"""Invest.WitUS: learn to invest by following one taught method, on paper first."""

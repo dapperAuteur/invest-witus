@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 dependencies = []
 
 [project.scripts]
-invest-witus = "invest_witus:main"
+invest-witus = "invest_witus.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
