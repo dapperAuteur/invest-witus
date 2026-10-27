@@ -1,6 +1,7 @@
 # Invest.WitUS: v1 PRD
 
-**Status:** planned; tutorial chapters 00 and 01 tagged, the Django app not started · **Owner:** BAM ·
+**Status:** planned; tutorial chapters 00 to 03 tagged `v00` to `v03` on the tutorial branch, the Django app not
+started · **Owner:** BAM ·
 **Last updated:** 2026-10-27
 
 > Tracked in `docs/` rather than `plans/` because `plans/` is gitignored ecosystem-wide and this document must
@@ -175,13 +176,16 @@ Phase 1 is BAM only. "Phase 2" items wait on the legal gate (section 13) unless 
 ### 7.1 Methods engine
 
 A method is a **rule block**: a versioned TOML file (introduced in tutorial chapter 03) naming the method, its
-parameters, and its rules. Each rule has an id, plain-words text, a check the engine can evaluate, and a lesson
-reference (a URL, or the literal "lesson coming"). The user's plan is separate: the method chosen plus the user's
+parameters, and its rules. Each rule has an id, plain-words text, a check the engine can evaluate, and a
+`lesson` field: the published lesson's URL, or empty until that lesson exists (shown as "lesson coming"). The
+user's plan is separate: the method chosen plus the user's
 own parameters (amount, day, universe, targets) and a one-sentence reason.
 
-- **Method 1: index investing with a fixed monthly contribution.** Rules (to be finalized in the chapter 03 rule
-  block with the lesson): contribute the planned amount on the planned day each month (first trading day by
-  default); buy the planned fund; do not sell or pause because of news; record any skip with a reason.
+- **Method 1: index investing with a fixed monthly contribution** (`index-dca`, version 1, in
+  `src/invest_witus/methods/index_dca.toml` at tag `v03`). Rules: buy once in every month of the plan; buy within
+  the plan's buy window at the start of the month; buy the plan's fixed amount every time; buy only the funds named
+  in the plan; no sell rule (a sale is a change of plan and needs a written reason). The plan file carries the
+  start date, amount, symbols (placeholder `INDEX` in samples) and buy-window days.
 - **Method 2: 12-1 momentum.** Rank the user's own universe by return from 12 months ago to 1 month ago (skipping
   the most recent month); hold the top N, equal weight; review monthly; trade only at a review. Built first on a
   CSV (chapter 14), then on stored data.
@@ -190,8 +194,9 @@ own parameters (amount, day, universe, targets) and a one-sentence reason.
   the ecosystem's local notes); none is added until its lesson states the rules.
 
 Acceptance:
-- The engine loads every rule block at startup and refuses one whose rule lacks a lesson field; a test asserts
-  every shipped rule has either a lesson URL or "lesson coming".
+- The engine loads every rule block at startup and refuses one whose rule lacks the `lesson` key; a test asserts
+  every shipped rule has the key and that every non-empty value is a URL listed as published (chapter 03 already
+  tests that the rules file matches the checks).
 - Lesson URLs are read from the rule block (or `docs/CHAPTERS.md` for tutorial links); none is typed into
   templates. A rule with "lesson coming" renders that text, not a link.
 - Each evaluation produces one rule check per rule: status (pass, warn, fail) shown as text and icon, never color
