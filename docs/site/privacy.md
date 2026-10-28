@@ -37,6 +37,8 @@ Vendors the app uses or is built to use, each named so you can read its own term
 
 No market data, prices or performance figures are shown on any public page, and no one's data is shown to anyone else. Prices inside the app are for the signed-in owner of the account they value.
 
+Added October 28, 2026: once a day the app asks Tiingo for the closing prices of the symbols the operator's accounts hold, using the operator's own Tiingo token, and keeps them in its own database. That request carries symbols and dates, nothing about a person. A copy of the app run from the tutorial reads prices from a file on that machine and asks no one.
+
 ## Cookies
 
 The public pages set one cookie, for the form protection Django uses (CSRF). Signing in adds a session cookie, which holds only a session id; the sign-in in progress and who is signed in live on the server. There are no advertising or analytics cookies.

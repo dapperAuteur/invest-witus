@@ -56,6 +56,26 @@ defaults listed in `.env.example`. People are keyed by the WitUS user id (`sub`)
 admin superuser links to their WitUS account on its first sign-in by verified email. A learner's copy is not
 registered with the provider; its checkpoint runs against a fake provider in `tests/test_ch07.py`.
 
+## Prices and the nightly pull
+
+Chapter 08 adds a `prices` app that keeps one closing price per symbol per day in the app's own table, so no
+page ever asks a vendor. The pull runs two ways: `manage.py pull_prices [--since YYYY-MM-DD] [--symbols A,B]`
+by hand, and `GET /api/cron/pull-prices/` once a day from Vercel's cron (`vercel.json`, `0 6 * * *` UTC), which
+must carry `Authorization: Bearer <CRON_SECRET>` and answers 503 while the secret is unset. Both are idempotent:
+a repeated run changes nothing, a vendor's correction replaces its row, and one symbol the vendor refuses is
+recorded while the others continue. With `TIINGO_API_KEY` set the closes come from Tiingo's end-of-day endpoint
+with the owner's own key (the free plan is for internal use only, so values are shown to the signed-in owner and
+to no one else); without it the pull reads `<SYMBOL>.csv` files in chapter 02's format from `data/private/prices/`:
+
+```sh
+mkdir -p data/private/prices && cp data/sample/illustrative-daily-prices.csv data/private/prices/INDEX.csv
+uv run --env-file .env python manage.py pull_prices --symbols INDEX --since 2026-09-22
+```
+
+The signed-in owner's accounts are listed at `/accounts/`, and each account's page values its latest statement
+at the latest stored close, with the close's date and source beside every line. The owner's Tiingo key and the
+cron secret are dashboard steps in [chapter 08](docs/chapters/08-prices-and-the-nightly-pull.md), section 08.10.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"

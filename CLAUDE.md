@@ -51,14 +51,14 @@ Python 3.14 via uv · pytest · ruff · pyright. From chapter 04 on: Django 5.2 
 Neon Postgres through `DATABASE_URL` (chapter 06: `invest_witus_site/database.py` parses it; SQLite is the laptop default),
 Vercel Python runtime (Python 3.14; `manage.py` and the root `wsgi.py` put `src/` on the path because Vercel installs
 dependencies, not the project; `vercel.json` holds the ecosystem's Ignored Build Step) with one daily cron from chapter 08
-(idempotent; Hobby cron has no retries), Vercel Web Analytics on the public pages (chapter 06a: on only with `VERCEL_ANALYTICS=1` on Vercel, the script path from
+(`GET /api/cron/pull-prices/` at `0 6 * * *` UTC, `CRON_SECRET` as a bearer, 503 when unset; idempotent because Hobby cron has no retries and may repeat a run), end-of-day closes from Tiingo through the owner's `TIINGO_API_KEY` (chapter 08: the `prices` app, `DailyClose` one row per symbol per day, a `PriceSource` Protocol with a CSV source for laptops, `manage.py pull_prices`; the free plan is "Internal Use Only", so values are shown to the signed-in owner only at `/accounts/`), Vercel Web Analytics on the public pages (chapter 06a: on only with `VERCEL_ANALYTICS=1` on Vercel, the script path from
 `VERCEL_ANALYTICS_SCRIPT_PATH` with a labeled fallback; the ecosystem's PostHog standard is a later chapter), Alpaca paper trading, Sign in with WitUS (chapter 07: the `accounts` app, an OIDC client in httpx + PyJWT that accepts EdDSA only, users keyed by `sub` in `WitusIdentity`, on only with `WITUS_OIDC_CLIENT_SECRET`; discovery lives under `/api/idp/` on accounts.witus.online), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
 `gemini/witus/plans/future/invest-witus-research-2026-10-27/04-python-web-and-api-framework-comparison.md`.
 
 ## Commands
 
 `uv sync` · `uv run pytest` · `uv run ruff check --fix . && uv run ruff format .` · `uv run pyright` ·
-`uv run invest-witus --help` · `uv run --env-file .env python manage.py migrate` · `uv run --env-file .env python manage.py createsuperuser` (the owner's `/admin/` login) · `uv run --env-file .env python manage.py runserver`
+`uv run invest-witus --help` · `uv run --env-file .env python manage.py migrate` · `uv run --env-file .env python manage.py createsuperuser` (the owner's `/admin/` login) · `uv run --env-file .env python manage.py runserver` · `uv run --env-file .env python manage.py pull_prices [--since YYYY-MM-DD] [--symbols A,B]` (chapter 08; CSV files from `data/private/prices/` without a Tiingo key)
 (copy `.env.example` to `.env` first; since chapter 06 every `manage.py` command on a laptop takes `--env-file .env`, because the settings refuse to start without `DJANGO_SECRET_KEY` when `DJANGO_DEBUG` is not 1) · production migrations: `vercel env run -e production -- uv run python manage.py migrate --database direct` (Neon's direct connection; never at build) · `GET /healthz/` for up, version, database · `uv run python scripts/render_chapter.py --check docs/chapters/templates/*.md`
 (chapter listings are generated from the real files; never edit a rendered chapter by hand). Activate the branch guard
 once per clone: `git config core.hooksPath .githooks`.
