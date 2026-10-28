@@ -15,7 +15,7 @@ Today the app holds two kinds of data:
 - **The waitlist.** Your name and email address, and the time you joined. We keep it to tell you when the app opens to learners. Nothing else is collected with it.
 - **The operator's own records.** Plans, holdings entered by hand from statements, a trading journal, and paper (simulated) trades, all belonging to the operator.
 
-When the app opens to other learners, education only and alongside the course, it will store for each person: the WitUS user id and email address from Sign in with WitUS; the plans they write; the holdings they enter; their journal; and their paper trades. Nothing is collected that the app does not use.
+When the app opens to other learners, education only and alongside the course, it will store for each person: the WitUS user id, email address and name from Sign in with WitUS (the operator's own sign-in stores the same three today); the plans they write; the holdings they enter; their journal; and their paper trades. Nothing is collected that the app does not use.
 
 ## Where it lives
 
@@ -39,7 +39,7 @@ No market data, prices or performance figures are shown on any public page, and 
 
 ## Cookies
 
-The public pages set one cookie, for the form protection Django uses (CSRF). Signing in, when it arrives, adds a session cookie. There are no advertising or analytics cookies.
+The public pages set one cookie, for the form protection Django uses (CSRF). Signing in adds a session cookie, which holds only a session id; the sign-in in progress and who is signed in live on the server. There are no advertising or analytics cookies.
 
 ## Analytics
 

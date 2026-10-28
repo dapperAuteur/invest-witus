@@ -72,26 +72,31 @@ before shipping chapter 13.
 **Provider facts (from the witus repo):**
 
 - The identity provider is better-auth's OIDC provider mounted at base path `/api/idp` on the accounts host. The
-  discovery document is at `{issuer}/.well-known/openid-configuration`; read every endpoint from discovery rather
-  than hardcoding paths.
+  discovery document is at `https://accounts.witus.online/api/idp/.well-known/openid-configuration` (read
+  2026-10-28; the spec's path under the issuer, `/.well-known/openid-configuration`, answers 404 there). Read
+  every endpoint from discovery rather than hardcoding paths; the document's `issuer` is
+  `https://accounts.witus.online` and it lists an `end_session_endpoint`.
 - **Id tokens are signed EdDSA (Ed25519).** Discovery also lists RS256 but no RSA key exists, so a client that
   defaults to RS256 fails at the callback. Configure the client to expect EdDSA.
 - Redirect URIs match **exactly**. No localhost redirect is registered for any app.
 - First-party clients skip the consent screen. Client id form: `witus-<slug>`.
 
-**Django implementation (research 04: Authlib's Django client):**
+**Django implementation (chapter 07, built 2026-10-28; decisions log rows 62 to 69):**
 
-- `authlib.integrations.django_client.OAuth`, registered with `server_metadata_url` from the issuer, scopes
-  `openid email profile`, and the id-token algorithm set to EdDSA (confirm Authlib's EdDSA support and the exact
-  client option name in Authlib's own docs when chapter 07 is written; not verified here).
-- Routes: a sign-in view that redirects to the authorize endpoint; a callback view that exchanges the code,
-  validates the id token, and upserts `User` by `sub`; a sign-out view that ends the Django session and (for
-  global sign-out) sends the browser to the provider's sign-out endpoint (read from discovery or the witus repo,
-  not assumed) with the registered post-logout URI.
-- Rows key off the WitUS user id (`sub`), never the email.
+- No auth framework. `src/invest_witus_site/accounts/oidc.py`: httpx for discovery (tried at the spec's path,
+  then `/api/idp/`, cached an hour), the token exchange (`client_secret_post`, PKCE S256) and userinfo; PyJWT
+  for the id token, `algorithms=["EdDSA"]` only, keys fetched from `jwks_uri` and cached by `kid`; `iss`,
+  `aud`, `exp` and `nonce` checked. Research 04's Authlib was not used: it takes its allowed algorithms from
+  the discovery document, which lists RS256 too.
+- Routes: `/auth/witus/login/` (name `sign-in`), `/auth/witus/callback/` (what the registry holds),
+  `/auth/witus/logout/` (POST; ends the Django session, then sends the browser to `end_session_endpoint` with
+  `client_id` and `post_logout_redirect_uri` = the site root, which the registry registers by default).
+- Rows key off the WitUS user id (`sub`), never the email: `accounts.WitusIdentity` (one-to-one to
+  `auth.User`); the owner's superuser links once by verified email; `Account.witus_user_id` is filled.
 
-**Env (app):** `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_CLIENT_SECRET`, `WITUS_OIDC_ISSUER` (*proposed* name for the
-issuer base URL).
+**Env (app):** `WITUS_OIDC_CLIENT_SECRET` (the switch: off when unset), `WITUS_OIDC_ISSUER` (default
+`https://accounts.witus.online`), `WITUS_OIDC_CLIENT_ID` (default `witus-invest`), `WITUS_OIDC_SCOPES` (default
+`openid email profile`). Names and defaults in `.env.example`.
 
 **Registration (BAM, in the witus repo):**
 
@@ -224,7 +229,7 @@ Each item becomes a task file in `plans/user-tasks/` when its chapter is next (o
 |---|---|---|---|
 | 1 | Decide the production domain and point it at the Vercel project | DNS and Vercel | Chapter 06 production deploy; item 3's redirect URIs |
 | 2 | Create the Vercel project and attach Neon; set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`; migrate and make the owner (`plans/user-tasks/04`); `NEON_PROJECT_ID` and `NEON_API_KEY` (`05`); `CRON_SECRET` waits for chapter 08 | Vercel, Neon, GitHub | The live site; chapter 07's origin; chapter 08 |
-| 3 | Register the OIDC client (section 2, steps 1 to 5) and set `WITUS_OIDC_*` on this app | witus repo and both Vercel projects | Chapter 07 |
+| 3 | Register the OIDC client (section 2, steps 1 to 5) and set `WITUS_OIDC_*` on this app. Steps 1 to 4's IdP half done 2026-10-28 (`invest` entry, `WITUS_OIDC_SECRET__INVEST` on witus-online); the rest is task 07 | witus repo and both Vercel projects | Chapter 07's first real sign-in |
 | 4 | Create Alpaca paper API keys; set `ALPACA_PAPER_*`; check whether "Open New Paper Account" asks for a starting amount | Alpaca dashboard, Vercel | Chapter 11 |
 | 5 | Create a Tiingo account and token; set `TIINGO_API_TOKEN`; read Tiingo's full Terms of Use | Tiingo, Vercel | Chapter 08 |
 | 6 | Register the Inbox source: `openssl rand -hex 32` per environment (or `python -c "import secrets; print(secrets.token_hex(32))"`), append `{"slug": "invest-witus", "hmac_secret": "..."}` to witus-inbox's `INGEST_SOURCES`, redeploy Inbox, set `INBOX_*` here | witus-inbox Vercel, this app's Vercel | Chapter 13 and the waitlist mirror (chapter 04) |

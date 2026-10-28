@@ -79,7 +79,11 @@
         <ul class="plain">
           <li><a href="{% url 'home' %}#roadmap">Roadmap</a></li>
           <li><a href="{% url 'faq' %}">FAQ</a></li>
-          <li><a href="{% url 'sign-in' %}">Sign in</a></li>
+          {% if user.is_authenticated %}
+            <li>{% include "accounts/_sign_out_form.html" %}</li>
+          {% else %}
+            <li><a href="{% url 'sign-in' %}">Sign in</a></li>
+          {% endif %}
         </ul>
       </div>
       <div>

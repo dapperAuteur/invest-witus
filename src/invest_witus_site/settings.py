@@ -4,7 +4,7 @@ Anything that differs between your laptop and a server comes from an environment
 safe default for the laptop. The names are listed in `.env.example`; values never go in git.
 Chapter 06 added the server's side: the database from `DATABASE_URL`, a secret key the server
 must set, the HTTPS cookie and proxy settings, the folder `collectstatic` fills, and logging a
-server can show.
+server can show. Chapter 07 added the four names of Sign in with WitUS, at the end.
 """
 
 import contextlib
@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "invest_witus_site.pages",
     "invest_witus_site.holdings",
+    "invest_witus_site.accounts",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -125,6 +126,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "invest_witus_site.pages.context_processors.site",
+                "invest_witus_site.accounts.context_processors.identity",
             ],
         },
     },
@@ -135,17 +137,30 @@ TEMPLATES = [
 # and the bridge is what puts `src/` on the import path there (chapter 06).
 WSGI_APPLICATION = "wsgi.application"
 
+
 # The database. With no DATABASE_URL: SQLite in the folder git ignores, as in chapter 04. On
 # Vercel the Neon integration sets DATABASE_URL (the pooled connection, for the app) and
 # DATABASE_URL_UNPOOLED (the direct one, for migrations). `database_from_url` reads either shape.
+# Vercel's connect dialog can put a prefix on every name the integration writes; the production
+# project was connected with the prefix STORAGE (read from its variable list, 2026-10-28), so the
+# prefixed names are accepted as well. An unprefixed name wins when both exist.
+def first_env(*names: str) -> str | None:
+    """The first of `names` that is set and not empty, or None."""
+    for name in names:
+        if value := os.environ.get(name):
+            return value
+    return None
+
+
 DATA_DIR = BASE_DIR / "data" / "private"
-DATABASE_URL = os.environ.get("DATABASE_URL") or "sqlite:///data/private/invest-witus.sqlite3"
-if not os.environ.get("DATABASE_URL"):
+POOLED_URL = first_env("DATABASE_URL", "STORAGE_DATABASE_URL")
+DATABASE_URL = POOLED_URL or "sqlite:///data/private/invest-witus.sqlite3"
+if not POOLED_URL:
     # A server's filesystem may be read-only; then /healthz/ reports the database as missing.
     with contextlib.suppress(OSError):
         DATA_DIR.mkdir(parents=True, exist_ok=True)
 DATABASES = {"default": database_from_url(DATABASE_URL, BASE_DIR)}
-if unpooled := os.environ.get("DATABASE_URL_UNPOOLED"):
+if unpooled := first_env("DATABASE_URL_UNPOOLED", "STORAGE_DATABASE_URL_UNPOOLED"):
     # Neon: schema changes take the direct connection, not the pooler. The owner runs
     # `manage.py migrate --database direct` and `createsuperuser --database direct` against it.
     DATABASES["direct"] = database_from_url(unpooled, BASE_DIR)
@@ -217,3 +232,29 @@ if not VERCEL_ANALYTICS_SCRIPT_PATH.startswith("/"):
         "VERCEL_ANALYTICS_SCRIPT_PATH must be a path on this site, starting with /, such as "
         "/<unique-path>/script.js from the Analytics page of the Vercel project."
     )
+
+# Sign in with WitUS (chapter 07): OpenID Connect against the ecosystem's identity provider. The
+# client is ON only when the secret is set; without it the sign-in route shows chapter 04's stub
+# page and the site deploys as before. The issuer is what the provider asserts in its discovery
+# document; the default is the ecosystem's accounts host as read on October 28, 2026, copied from
+# that document, and the client refuses a document whose issuer differs. The client id follows the
+# registry's `witus-<slug>` form. The secret is minted in the witus repo (task 07) and never
+# written anywhere but the two Vercel projects' Environment Variables pages.
+WITUS_OIDC_ISSUER = (os.environ.get("WITUS_OIDC_ISSUER") or "https://accounts.witus.online").rstrip(
+    "/"
+)
+WITUS_OIDC_CLIENT_ID = os.environ.get("WITUS_OIDC_CLIENT_ID") or "witus-invest"
+WITUS_OIDC_CLIENT_SECRET = os.environ.get("WITUS_OIDC_CLIENT_SECRET", "")
+WITUS_OIDC_SCOPES = os.environ.get("WITUS_OIDC_SCOPES") or "openid email profile"
+if not WITUS_OIDC_ISSUER.startswith("https://"):
+    raise ImproperlyConfigured(
+        "WITUS_OIDC_ISSUER must be the provider's https:// issuer, as its discovery document "
+        "states it, such as https://accounts.witus.online"
+    )
+if "openid" not in WITUS_OIDC_SCOPES.split():
+    raise ImproperlyConfigured(
+        "WITUS_OIDC_SCOPES must include openid, such as: openid email profile"
+    )
+
+# Where `login_required` sends a visitor who is not signed in: the WitUS sign-in route, by name.
+LOGIN_URL = "sign-in"

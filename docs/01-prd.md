@@ -417,7 +417,8 @@ figure; submitting the same email twice keeps one row and shows the same thank-y
 
 OIDC against the ecosystem identity provider, with Authlib's Django client (research 04). Id tokens are EdDSA
 (Ed25519); the client must accept EdDSA explicitly. Rows are keyed by the WitUS user id (`sub`). Details and
-registration steps in doc 02.
+registration steps in doc 02. *Built in chapter 07 (2026-10-28) without Authlib: httpx and PyJWT, EdDSA only;
+decisions log rows 62 to 69.*
 
 Acceptance: sign-in, callback, sign-out (including global sign-out return) work on the production domain; a user
 row is created on first sign-in and matched by `sub` after; no local passwords except the Django admin superuser
