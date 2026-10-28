@@ -51,7 +51,8 @@ Python 3.14 via uv · pytest · ruff · pyright. From chapter 04 on: Django 5.2 
 Neon Postgres through `DATABASE_URL` (chapter 06: `invest_witus_site/database.py` parses it; SQLite is the laptop default),
 Vercel Python runtime (Python 3.14; `manage.py` and the root `wsgi.py` put `src/` on the path because Vercel installs
 dependencies, not the project; `vercel.json` holds the ecosystem's Ignored Build Step) with one daily cron from chapter 08
-(idempotent; Hobby cron has no retries), Alpaca paper trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
+(idempotent; Hobby cron has no retries), Vercel Web Analytics on the public pages (chapter 06a: on only with `VERCEL_ANALYTICS=1` on Vercel, the script path from
+`VERCEL_ANALYTICS_SCRIPT_PATH` with a labeled fallback; the ecosystem's PostHog standard is a later chapter), Alpaca paper trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
 `gemini/witus/plans/future/invest-witus-research-2026-10-27/04-python-web-and-api-framework-comparison.md`.
 
 ## Commands
