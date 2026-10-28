@@ -1,0 +1,11 @@
+{% extends "pages/base.html" %}
+{% block title %}Contact: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <h1>Contact</h1>
+  {# The address is the ecosystem's contact from the shared footer recipe, not a guess. #}
+  <p>Email the operator at <a href="mailto:bam@awews.com">bam@awews.com</a>. That is the one route in this phase: to ask a question, to report a wrong number, to leave the waitlist, or to have your data deleted. Write from the address you signed up with.</p>
+  <p>An in-app form for bugs, feature requests and questions arrives in chapter 13 of the tutorial.</p>
+  <p>To report a company or a person who took your money, do not write to us; use the government desks listed under <a href="{% url 'faq' %}#report-a-bad-actor">Report a bad actor</a> in the FAQ.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+<form method="post" action="{% url 'waitlist' %}" class="waitlist-form" novalidate>
+  {% csrf_token %}
+  <div class="field">
+    <label for="{{ form.name.id_for_label }}">Name</label>
+    {{ form.name }}
+    {{ form.name.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.email.id_for_label }}">Email</label>
+    {{ form.email }}
+    {{ form.email.errors }}
+  </div>
+  {# The honeypot. Hidden from people by the stylesheet and from assistive tech by aria-hidden. #}
+  <div class="honeypot" aria-hidden="true">
+    <label for="{{ form.website.id_for_label }}">Leave this field empty</label>
+    {{ form.website }}
+  </div>
+  <p class="small">Invest.WitUS is a learning tool, not advice, and not open to other users yet. Access later is for education, alongside the course.</p>
+  <button type="submit">Join the waitlist</button>
+</form>

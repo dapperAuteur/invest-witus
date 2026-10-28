@@ -1,7 +1,6 @@
 # Invest.WitUS: v1 PRD
 
-**Status:** planned; tutorial chapters 00 to 03 tagged `v00` to `v03` on the tutorial branch, the Django app not
-started · **Owner:** BAM ·
+**Status:** building; tutorial chapters 00 to 04 tagged `v00` to `v04` (chapter 04 is the first Django page) · **Owner:** BAM ·
 **Last updated:** 2026-10-27
 
 > Tracked in `docs/` rather than `plans/` because `plans/` is gitignored ecosystem-wide and this document must
@@ -483,7 +482,7 @@ Django apps follow research 02's layout (`invest/core`, `accounts`, `methods`, `
 ## 10. Stack
 
 - **Language and tools:** Python 3.14 via uv; pytest (and pytest-django from the Django chapters); ruff; pyright.
-- **Web:** Django 6.1 with django-ninja for the small JSON surface (cron route, event and evidence endpoints);
+- **Web:** Django 5.2 LTS (decision 33; 6.1 was planned) with django-ninja for the small JSON surface (cron route, event and evidence endpoints);
   server-rendered templates with htmx and django-htmx; pydantic-settings for settings; httpx for outbound calls;
   Authlib for OIDC.
 - **Data:** Neon Postgres (`DATABASE_URL`), SQLite allowed only for local tests.

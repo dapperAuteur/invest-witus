@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Invest.WitUS{% endblock %}</title>
+  <meta name="description" content="Pick a taught investing method and stay with it, on paper first. A learning tool, not advice.">
+  {# Favicons: gemini/witus/public/brand/04-orbit-type/, copied into static/brand/witus/. #}
+  <link rel="icon" href="{% static 'brand/witus/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'brand/witus/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="icon" href="{% static 'brand/witus/favicon-16.png' %}" sizes="16x16" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'brand/witus/favicon-180.png' %}">
+  <link rel="stylesheet" href="{% static 'pages/site.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% include "pages/_header.html" %}
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "pages/_footer.html" %}
+</body>
+</html>
