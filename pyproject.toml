@@ -8,6 +8,7 @@ dependencies = [
     "django>=5.2,<6",
     "django-stubs-ext>=6.1",
     "markdown>=3.11",
+    "psycopg[binary]>=3.2",
 ]
 
 [project.scripts]
@@ -33,7 +34,8 @@ dev = [
 
 [tool.pytest]
 testpaths = ["tests"]
-DJANGO_SETTINGS_MODULE = "invest_witus_site.settings"
+# tests/settings.py: the real settings plus a test-only secret key (chapter 06).
+DJANGO_SETTINGS_MODULE = "tests.settings"
 markers = ["smoke: the checks that must pass on every deploy, such as the header Sign in link"]
 
 [tool.ruff]
@@ -44,5 +46,5 @@ line-length = 100
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
-include = ["src", "tests", "scripts", "manage.py"]
+include = ["src", "tests", "scripts", "manage.py", "wsgi.py"]
 typeCheckingMode = "strict"
