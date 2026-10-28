@@ -47,7 +47,7 @@ Vetting analysis: `gemini/witus/plans/38-invest-witus-analysis.md` (Test cheaply
 
 ## Stack
 
-Python 3.14 via uv · pytest · ruff · pyright. From the Django chapters on: Django 6.1 + django-ninja,
+Python 3.14 via uv · pytest · ruff · pyright. From chapter 04 on: Django 5.2 LTS (decision 33) + django-ninja,
 Neon Postgres, Vercel Python runtime with one daily cron (idempotent; Hobby cron has no retries), Alpaca paper
 trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
 `gemini/witus/plans/future/invest-witus-research-2026-10-27/04-python-web-and-api-framework-comparison.md`.
@@ -55,7 +55,10 @@ trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug 
 ## Commands
 
 `uv sync` · `uv run pytest` · `uv run ruff check --fix . && uv run ruff format .` · `uv run pyright` ·
-`uv run invest-witus --help`. Activate the branch guard once per clone: `git config core.hooksPath .githooks`.
+`uv run invest-witus --help` · `uv run python manage.py migrate` · `uv run --env-file .env python manage.py runserver`
+(copy `.env.example` to `.env` first) · `uv run python scripts/render_chapter.py --check docs/chapters/templates/*.md`
+(chapter listings are generated from the real files; never edit a rendered chapter by hand). Activate the branch guard
+once per clone: `git config core.hooksPath .githooks`.
 
 ## Ecosystem rule pointers
 
