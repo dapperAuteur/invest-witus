@@ -24,17 +24,29 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-# `startproject` lists six contrib apps. We add only what a chapter uses; the admin and
-# sessions arrive with chapters 05 and 07.
+# Chapter 04 installed only staticfiles and the pages app. The admin (chapter 05) needs the four
+# contrib apps it is built on: auth (users and permissions), contenttypes (the table of tables that
+# permissions point at), sessions (how a login is remembered) and messages (the "2 entries approved"
+# notes after an action). They arrive together because the admin does not start without them.
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
     "invest_witus_site.pages",
 ]
 
+# Order matters: a middleware sees the request top to bottom and the response bottom to top.
+# Sessions must load before authentication can read the session, and messages after that.
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -48,6 +60,8 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
                 "invest_witus_site.pages.context_processors.site",
             ],
         },
@@ -65,6 +79,15 @@ DATABASES = {
         "NAME": DATA_DIR / "invest-witus.sqlite3",
     }
 }
+
+# The only password in this app is the owner's admin login (chapter 05). Sign in with WitUS
+# (chapter 07) adds no passwords. `createsuperuser` refuses a password these validators reject.
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
