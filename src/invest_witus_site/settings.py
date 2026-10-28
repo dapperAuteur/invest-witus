@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "invest_witus_site.pages",
+    "invest_witus_site.holdings",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
