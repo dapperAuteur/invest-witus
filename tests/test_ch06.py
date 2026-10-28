@@ -112,7 +112,7 @@ def fresh_settings(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> Modu
     `env` and none of the usual ones, the way a server would see it. Django's own settings object
     is left alone, so the rest of the suite is unaffected; monkeypatch undoes everything after."""
     for name in list(os.environ):
-        if name.startswith(("DJANGO_", "VERCEL", "DATABASE_URL")):
+        if name.startswith(("DJANGO_", "VERCEL", "DATABASE_URL", "STORAGE_DATABASE_URL")):
             monkeypatch.delenv(name)
     for name, value in env.items():
         monkeypatch.setenv(name, value)
