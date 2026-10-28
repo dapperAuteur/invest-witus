@@ -1,0 +1,18 @@
+"""The stored closes, read in the admin: what the nightly pull wrote, by symbol and day."""
+
+from django.contrib import admin
+
+from invest_witus_site.prices.models import DailyClose
+
+
+@admin.register(DailyClose)
+class DailyCloseAdmin(admin.ModelAdmin[DailyClose]):
+    """Rows come from the pull. The owner can read them here, filter by source, and delete a
+    row to make the next run fetch it again."""
+
+    list_display = ("symbol", "date", "close", "source", "fetched_at")
+    list_filter = ("source",)
+    search_fields = ("symbol",)
+    date_hierarchy = "date"
+    ordering = ("symbol", "-date")
+    readonly_fields = ("fetched_at",)

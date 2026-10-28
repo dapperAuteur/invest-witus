@@ -16,3 +16,15 @@ def signed(value: Decimal | None) -> str:
     if value == 0:
         return str(value)
     return f"{value:+}"
+
+
+@register.filter
+def plain_number(value: Decimal | None) -> str:
+    """A Decimal without the column's trailing zeros, with at least two places: `2.500000`
+    becomes `2.50`, `101.230000` becomes `101.23`, `12.3456` stays, `1` becomes `1.00`."""
+    if value is None:
+        return ""
+    text = f"{value:f}"
+    whole, point, fraction = text.partition(".")
+    fraction = fraction.rstrip("0") if point else ""
+    return f"{whole}.{fraction.ljust(2, '0')}"

@@ -1,0 +1,53 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}{{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="account-heading">
+  <p class="eyebrow">Your account</p>
+  <h1 id="account-heading">{{ account.name }} <span class="muted">({{ account.broker }})</span></h1>
+  {% if snapshot %}
+  <p>Statement as of {{ snapshot.as_of|date:"Y-m-d" }}{% if snapshot.source %} ({{ snapshot.source }}){% endif %}. Each line is valued at the latest close the app has stored for its symbol, with that close's date and source beside it; a close older than five days is marked stale. Information, not advice.</p>
+  <table class="holdings">
+    <caption class="sr-only">Holdings on the latest statement, valued at the latest stored close</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">Shares</th>
+        <th scope="col" class="num">Close</th>
+        <th scope="col">As of</th>
+        <th scope="col">Source</th>
+        <th scope="col" class="num">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in valuation.lines %}
+      <tr>
+        <th scope="row">{{ line.symbol }}</th>
+        <td class="num">{{ line.shares|plain_number }}</td>
+        {% if line.quote %}
+        <td class="num">{{ line.quote.close|plain_number }}</td>
+        <td>{{ line.quote.as_of|date:"Y-m-d" }}{% if line.stale %} <span class="stale">stale</span>{% endif %}</td>
+        <td>{{ line.quote.source }}</td>
+        <td class="num">{{ line.value|plain_number }}</td>
+        {% else %}
+        <td class="muted" colspan="4">no price yet</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row" colspan="5">Total of the priced lines</th>
+        <td class="num">{{ valuation.total|plain_number }}</td>
+      </tr>
+    </tfoot>
+  </table>
+  {% if valuation.unpriced %}
+  <p class="muted">No price yet for {{ valuation.unpriced|join:", " }}: the nightly pull has not stored a close for {{ valuation.unpriced|length|pluralize:"it,them" }}. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
+  {% endif %}
+  {% else %}
+  <p>No statement yet.{% if user.is_staff %} <a href="{% url 'admin:holdings_snapshot_add' %}?account={{ account.pk }}">Enter the first one in the admin.</a>{% endif %}</p>
+  {% endif %}
+  <p><a href="{% url 'account-list' %}">All accounts</a></p>
+</section>
+{% endblock %}

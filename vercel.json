@@ -5,5 +5,11 @@
     "wsgi.py": {
       "excludeFiles": "{tests/**,docs/chapters/**,docs/research/**,data/**,scripts/**,plans/**,staticfiles/**,.github/**,.githooks/**}"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/pull-prices/",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

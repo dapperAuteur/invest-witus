@@ -4,7 +4,8 @@ Anything that differs between your laptop and a server comes from an environment
 safe default for the laptop. The names are listed in `.env.example`; values never go in git.
 Chapter 06 added the server's side: the database from `DATABASE_URL`, a secret key the server
 must set, the HTTPS cookie and proxy settings, the folder `collectstatic` fills, and logging a
-server can show. Chapter 07 added the four names of Sign in with WitUS, at the end.
+server can show. Chapter 07 added the four names of Sign in with WitUS; chapter 08 the price
+source and the cron secret, at the end.
 """
 
 import contextlib
@@ -99,6 +100,7 @@ INSTALLED_APPS = [
     "invest_witus_site.pages",
     "invest_witus_site.holdings",
     "invest_witus_site.accounts",
+    "invest_witus_site.prices",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -258,3 +260,16 @@ if "openid" not in WITUS_OIDC_SCOPES.split():
 
 # Where `login_required` sends a visitor who is not signed in: the WitUS sign-in route, by name.
 LOGIN_URL = "sign-in"
+
+# Prices (chapter 08). The nightly pull writes one close per symbol per day into the app's own
+# table. With TIINGO_API_KEY set, the closes come from Tiingo's end-of-day endpoint with the
+# owner's own key; the free plan's license is "Internal Use Only" (its pricing page, read October
+# 28, 2026), and the values are shown to the signed-in owner and to no one else. Without a key the
+# pull reads `<SYMBOL>.csv` files from PRICES_CSV_DIR, chapter 02's format, which is what a laptop
+# and a learner's copy use.
+TIINGO_API_KEY = os.environ.get("TIINGO_API_KEY", "")
+PRICES_CSV_DIR = Path(os.environ.get("PRICES_CSV_DIR") or DATA_DIR / "prices")
+# What Vercel sends as `Authorization: Bearer <value>` when it calls the cron route (its docs,
+# read October 28, 2026; at least 16 random characters). Empty means the route answers 503 and
+# runs nothing: a deploy that forgot the variable fails closed.
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
