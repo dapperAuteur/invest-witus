@@ -3,6 +3,7 @@ statement snapshots in exact decimals."""
 
 from datetime import date
 from decimal import Decimal
+from html.parser import HTMLParser
 
 import pytest
 from django.conf import settings
@@ -243,3 +244,94 @@ def test_entering_a_statement_in_the_admin(admin_client: Client, account: Accoun
         "INDEX",
         "OTHER",
     }
+
+
+# --- The statements page in the admin ---------------------------------------------------------
+
+
+class RowCollector(HTMLParser):
+    """Every table row as a tuple of its cells' text, so a test can ask for a whole row at once."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[tuple[str, ...]] = []
+        self._cells: list[str] | None = None
+        self._text: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "tr":
+            self._cells = []
+        elif tag in ("td", "th") and self._cells is not None:
+            self._text = []
+
+    def handle_data(self, data: str) -> None:
+        self._text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in ("td", "th") and self._cells is not None:
+            self._cells.append(" ".join("".join(self._text).split()))
+        elif tag == "tr" and self._cells is not None:
+            self.rows.append(tuple(self._cells))
+            self._cells = None
+
+
+def rows_in(html: str) -> list[tuple[str, ...]]:
+    collector = RowCollector()
+    collector.feed(html)
+    return collector.rows
+
+
+def statements_path(account: Account) -> str:
+    return f"/admin/holdings/account/{account.pk}/statements/"
+
+
+@pytest.mark.django_db
+def test_the_statements_page_needs_a_login(client: Client, account: Account) -> None:
+    response = client.get(statements_path(account))
+    assert response.status_code == 302
+    assert response["Location"] == f"{ADMIN_LOGIN}?next={statements_path(account)}"
+
+
+@pytest.mark.django_db
+def test_the_statements_page_before_any_statement(admin_client: Client, account: Account) -> None:
+    html = admin_client.get(statements_path(account)).content.decode()
+    assert "No statements yet." in html
+    assert f"/admin/holdings/snapshot/add/?account={account.pk}" in html
+    assert "Change between two statements" not in html, "nothing to compare yet"
+
+
+@pytest.mark.django_db
+def test_the_statements_page_lists_them_and_compares_the_two_newest(
+    admin_client: Client, account: Account
+) -> None:
+    statement(account, date(2026, 9, 30), ("INDEX", "10", "1000.00"), ("OTHER", "5", "500.00"))
+    statement(account, date(2026, 10, 31), ("INDEX", "11.5", "1150.00"), ("THIRD", "2", None))
+    html = admin_client.get(statements_path(account)).content.decode()
+    assert "From 2026-09-30 to 2026-10-31." in html
+    rows = rows_in(html)
+    assert ("INDEX", "10.000000", "11.500000", "+1.500000", "1000.00", "1150.00", "+150.00") in rows
+    assert ("OTHER", "5.000000", "0.000000", "-5.000000", "500.00", "0.00", "-500.00") in rows
+    assert ("THIRD", "0.000000", "2.000000", "+2.000000", "0.00", "not shown", "not shown") in rows
+    accounts = admin_client.get("/admin/holdings/account/").content.decode()
+    assert f'href="{statements_path(account)}">2 statements</a>' in accounts
+
+
+@pytest.mark.django_db
+def test_any_two_statements_can_be_chosen_in_either_order(
+    admin_client: Client, account: Account
+) -> None:
+    september = statement(account, date(2026, 9, 30), ("INDEX", "10", "1000.00"))
+    statement(account, date(2026, 10, 31), ("INDEX", "11", "1100.00"))
+    november = statement(account, date(2026, 11, 30), ("INDEX", "12", "1200.00"))
+    chosen = f"?earlier={november.pk}&later={september.pk}"
+    html = admin_client.get(statements_path(account) + chosen).content.decode()
+    assert "From 2026-09-30 to 2026-11-30." in html, "the earlier date is always 'from'"
+    assert (
+        "INDEX",
+        "10.000000",
+        "12.000000",
+        "+2.000000",
+        "1000.00",
+        "1200.00",
+        "+200.00",
+    ) in rows_in(html)

@@ -78,8 +78,8 @@ def compare(before: Iterable[Position], after: Iterable[Position]) -> list[Chang
         changes.append(
             Change(
                 symbol=symbol,
-                shares_before=to_shares(old.shares) if old else ZERO,
-                shares_after=to_shares(new.shares) if new else ZERO,
+                shares_before=to_shares(old.shares if old else ZERO),
+                shares_after=to_shares(new.shares if new else ZERO),
                 cost_before=_cost(old),
                 cost_after=_cost(new),
             )
@@ -89,7 +89,7 @@ def compare(before: Iterable[Position], after: Iterable[Position]) -> list[Chang
 
 def _cost(position: Position | None) -> Decimal | None:
     if position is None:
-        return ZERO
+        return to_money(ZERO)
     if position.cost_basis is None:
         return None
     return to_money(position.cost_basis)
