@@ -13,9 +13,19 @@ class WaitlistEntry(models.Model):
     write them ourselves (the way you would write `Field<string, string>` in TypeScript).
     """
 
+    class Status(models.TextChoices):
+        """Where a person stands. The public form only ever creates `waiting`; the owner
+        approves in the admin (chapter 05). An approved person is told when the app opens."""
+
+        WAITING = "waiting", "Waiting"
+        APPROVED = "approved", "Approved"
+
     name: models.CharField[str, str] = models.CharField(max_length=120)
     email: models.EmailField[str, str] = models.EmailField(max_length=254, unique=True)
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
+    status: models.CharField[str, str] = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.WAITING
+    )
 
     class Meta:
         ordering = ["created_at"]

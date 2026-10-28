@@ -7,6 +7,13 @@ safe default for the laptop. The names are listed in `.env.example`; values neve
 import os
 from pathlib import Path
 
+import django_stubs_ext
+
+# django-stubs describes Django's classes as generics (`ModelAdmin[WaitlistEntry]`) so pyright can
+# check them, but Django itself does not accept `[...]` on those classes at runtime. This one call
+# teaches them to, so the admin code can be written the way the type checker reads it.
+django_stubs_ext.monkeypatch()
+
 # The repository root. This file is src/invest_witus_site/settings.py, three levels down.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
