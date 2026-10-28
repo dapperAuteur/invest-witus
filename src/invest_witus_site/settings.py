@@ -135,17 +135,30 @@ TEMPLATES = [
 # and the bridge is what puts `src/` on the import path there (chapter 06).
 WSGI_APPLICATION = "wsgi.application"
 
+
 # The database. With no DATABASE_URL: SQLite in the folder git ignores, as in chapter 04. On
 # Vercel the Neon integration sets DATABASE_URL (the pooled connection, for the app) and
 # DATABASE_URL_UNPOOLED (the direct one, for migrations). `database_from_url` reads either shape.
+# Vercel's connect dialog can put a prefix on every name the integration writes; the production
+# project was connected with the prefix STORAGE (read from its variable list, 2026-10-28), so the
+# prefixed names are accepted as well. An unprefixed name wins when both exist.
+def first_env(*names: str) -> str | None:
+    """The first of `names` that is set and not empty, or None."""
+    for name in names:
+        if value := os.environ.get(name):
+            return value
+    return None
+
+
 DATA_DIR = BASE_DIR / "data" / "private"
-DATABASE_URL = os.environ.get("DATABASE_URL") or "sqlite:///data/private/invest-witus.sqlite3"
-if not os.environ.get("DATABASE_URL"):
+POOLED_URL = first_env("DATABASE_URL", "STORAGE_DATABASE_URL")
+DATABASE_URL = POOLED_URL or "sqlite:///data/private/invest-witus.sqlite3"
+if not POOLED_URL:
     # A server's filesystem may be read-only; then /healthz/ reports the database as missing.
     with contextlib.suppress(OSError):
         DATA_DIR.mkdir(parents=True, exist_ok=True)
 DATABASES = {"default": database_from_url(DATABASE_URL, BASE_DIR)}
-if unpooled := os.environ.get("DATABASE_URL_UNPOOLED"):
+if unpooled := first_env("DATABASE_URL_UNPOOLED", "STORAGE_DATABASE_URL_UNPOOLED"):
     # Neon: schema changes take the direct connection, not the pooler. The owner runs
     # `manage.py migrate --database direct` and `createsuperuser --database direct` against it.
     DATABASES["direct"] = database_from_url(unpooled, BASE_DIR)
