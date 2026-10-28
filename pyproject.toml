@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Learn to invest by following one taught method, on paper first."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "django>=5.2,<6",
+    "markdown>=3.11",
+]
 
 [project.scripts]
 invest-witus = "invest_witus.cli:main"
@@ -13,15 +16,24 @@ invest-witus = "invest_witus.cli:main"
 requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+# Two top-level packages in src/: the library from chapters 01 to 03 and the Django project.
+module-name = ["invest_witus", "invest_witus_site"]
+
 [dependency-groups]
 dev = [
+    "django-stubs>=6.1",
     "pyright>=1.1.414",
     "pytest>=9.2.0",
+    "pytest-django>=4.14",
     "ruff>=0.17.3",
+    "types-markdown>=3.10.2.20261007",
 ]
 
 [tool.pytest]
 testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = "invest_witus_site.settings"
+markers = ["smoke: the checks that must pass on every deploy, such as the header Sign in link"]
 
 [tool.ruff]
 line-length = 100
@@ -31,5 +43,5 @@ line-length = 100
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src", "tests", "scripts", "manage.py"]
 typeCheckingMode = "strict"

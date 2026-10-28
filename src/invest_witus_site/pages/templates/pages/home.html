@@ -1,0 +1,57 @@
+{% extends "pages/base.html" %}
+{% block title %}Invest.WitUS: pick a taught investing method and stay with it{% endblock %}
+{% block content %}
+<section class="container hero" aria-labelledby="hero-heading">
+  <p class="eyebrow">A learning tool, not advice</p>
+  <h1 id="hero-heading">{{ positioning }}</h1>
+  <p class="lead">Invest.WitUS is a Python app for people learning to invest with the Learn.WitUS and ElementaryMBA courses. You choose a method a course teaches, run it on a paper (simulated) account first, and the app checks what you did against that method's rules. Every rule links to the lesson that teaches it.</p>
+  <p class="actions"><a class="button" href="#waitlist">Join the waitlist</a> <a href="{% url 'faq' %}">Read the FAQ</a></p>
+</section>
+
+<section class="container" aria-labelledby="how-heading">
+  <h2 id="how-heading">How it works</h2>
+  <ol class="steps">
+    <li><strong>Pick a method you learned.</strong> The first is index investing with a fixed monthly contribution; 12-1 momentum comes next.</li>
+    <li><strong>Practice it on paper.</strong> Paper by default. No money moves unless you connect a live account yourself, later, behind a checklist.</li>
+    <li><strong>Review yourself against the rules.</strong> A monthly review shows where you left your plan and sends you back to the lesson. It predicts nothing.</li>
+  </ol>
+</section>
+
+<section class="container" aria-labelledby="courses-heading">
+  <h2 id="courses-heading">The courses</h2>
+  <p>The app is built alongside two courses. Neither lesson page is published yet, so there is no link to follow; this text changes when there is.</p>
+  <ul>
+    <li>The investing methods course, in ElementaryMBA with a preview in Learn.WitUS: <span class="muted">lesson coming</span></li>
+    <li>The Python tutorial that builds this app chapter by chapter, in Learn.WitUS: <span class="muted">lesson coming</span></li>
+  </ul>
+</section>
+
+<section class="container" aria-labelledby="report-heading">
+  <div class="callout">
+    <h2 id="report-heading">Report a bad actor</h2>
+    <p>If someone took your money, pressured you, or will not give it back, report it now. Reporting is free and you do not need a lawyer. This app takes no complaints about other companies; the government desks that do are listed in the FAQ.</p>
+    <p><a class="button" href="{% url 'faq' %}#report-a-bad-actor">Where to report</a></p>
+  </div>
+</section>
+
+<section class="container" id="waitlist" aria-labelledby="waitlist-heading">
+  <h2 id="waitlist-heading">Waitlist</h2>
+  <p>Leave your name and email and you will hear when the app opens.</p>
+  {% include "pages/_waitlist_form.html" %}
+</section>
+
+<section class="container" id="roadmap" aria-labelledby="roadmap-heading">
+  <h2 id="roadmap-heading">Roadmap</h2>
+  <ol>
+    <li><strong>Now:</strong> the operator's own accounts. Methods and their rules, a monthly review, holdings entered by hand from statements, a journal, paper trading.</li>
+    <li><strong>Next:</strong> other learners, education only, admitted from the waitlist with the course, after a securities lawyer has reviewed the terms and the privacy page.</li>
+  </ol>
+  <p class="muted">The tutorial's chapter list lives with the code. Each chapter becomes a Learn.WitUS lesson.</p>
+</section>
+
+<section class="container" aria-labelledby="credit-heading">
+  <h2 id="credit-heading">Credit</h2>
+  <p>The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca" (Carnes, 2026), which builds a momentum app in Django and invites learners to extend it. Invest.WitUS keeps the idea, a rules-based method run on a paper account, and builds its own stack and code.</p>
+  <p class="small muted">Carnes, B. (2026, September 29). <cite>Python algorithmic trading with SnapTrade, Massive, Alpaca</cite> [Video course announcement]. freeCodeCamp. <a href="https://www.freecodecamp.org/news/python-algorithmic-trading-with-snaptrade-massive-alpaca/">https://www.freecodecamp.org/news/python-algorithmic-trading-with-snaptrade-massive-alpaca/</a></p>
+</section>
+{% endblock %}
