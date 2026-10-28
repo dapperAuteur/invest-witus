@@ -10,5 +10,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Up, version, database: what a monitor asks after a deploy (chapter 06).
     path("healthz/", health.healthz, name="healthz"),
+    # Sign in with WitUS: login, callback and logout (chapter 07).
+    path("auth/witus/", include("invest_witus_site.accounts.urls")),
     path("", include("invest_witus_site.pages.urls")),
 ]

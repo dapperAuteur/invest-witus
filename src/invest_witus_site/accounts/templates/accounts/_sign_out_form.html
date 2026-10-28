@@ -1,0 +1,8 @@
+{# The "Sign out" control, shown in the header and the footer while someone is signed in. A POST, #}
+{# not a link: Django's own LogoutView dropped GET in 5.0, because a link can be followed by a #}
+{# prefetch or a cross-site image tag, and a sign-out should happen only when the person asked. #}
+{# The accessible name is exactly "Sign out"; never rename it (PRD 7.9). #}
+<form method="post" action="{% url 'sign-out' %}" class="sign-out">
+  {% csrf_token %}
+  <button type="submit">Sign out</button>
+</form>

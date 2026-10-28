@@ -12,6 +12,6 @@ urlpatterns = [
     path("privacy/", views.markdown_page, {"slug": "privacy"}, name="privacy"),
     path("terms/", views.markdown_page, {"slug": "terms"}, name="terms"),
     path("contact/", views.contact, name="contact"),
-    # The sign-in route the ecosystem registry points at (products.ts: signInHref). A stub now.
-    path("auth/witus/login/", views.sign_in_stub, name="sign-in"),
+    # The sign-in route (`/auth/witus/login/`, name "sign-in") lives in the accounts app since
+    # chapter 07; `sign_in_stub` below is what it renders while the client is off.
 ]

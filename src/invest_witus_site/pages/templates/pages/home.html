@@ -1,6 +1,12 @@
 {% extends "pages/base.html" %}
 {% block title %}Invest.WitUS: pick a taught investing method and stay with it{% endblock %}
 {% block content %}
+{% if user.is_authenticated %}
+<section class="container" aria-label="Your session">
+  {# Chapter 07: one line for the signed-in person; the admin link only for staff. #}
+  <p class="signed-in muted">Signed in as {{ display_name }}.{% if user.is_staff %} <a href="{% url 'admin:index' %}">Open the admin</a>.{% endif %}</p>
+</section>
+{% endif %}
 <section class="container hero" aria-labelledby="hero-heading">
   <p class="eyebrow">A learning tool, not advice</p>
   <h1 id="hero-heading">{{ positioning }}</h1>

@@ -1,0 +1,9 @@
+{% extends "pages/base.html" %}
+{% block title %}Sign in did not complete: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <h1>Sign in did not complete</h1>
+  <p>The sign-in with WitUS stopped before it finished (<code>{{ reason }}</code>). Nothing was changed. The owner's log has the detail.</p>
+  <p class="actions"><a class="button" href="{% url 'sign-in' %}">Try again</a> <a href="{% url 'home' %}">Back to the home page</a></p>
+</section>
+{% endblock %}
