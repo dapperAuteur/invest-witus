@@ -7,8 +7,10 @@ requires-python = ">=3.14"
 dependencies = [
     "django>=5.2,<6",
     "django-stubs-ext>=6.1",
+    "httpx>=0.28.1",
     "markdown>=3.11",
     "psycopg[binary]>=3.2",
+    "pyjwt[crypto]>=2.15.1",
 ]
 
 [project.scripts]

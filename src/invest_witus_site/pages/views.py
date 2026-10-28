@@ -54,5 +54,7 @@ def contact(request: HttpRequest) -> HttpResponse:
 
 
 def sign_in_stub(request: HttpRequest) -> HttpResponse:
-    """Sign in with WitUS arrives in chapter 07. Until then the link leads somewhere honest."""
+    """The page behind "Sign in" while the WitUS client is off (no `WITUS_OIDC_CLIENT_SECRET`).
+    Chapter 04 wrote it as the stub for chapter 07; chapter 07 keeps it for a copy of the app
+    that is not registered with the provider, which is every learner's copy."""
     return render(request, "pages/sign_in_stub.html")
