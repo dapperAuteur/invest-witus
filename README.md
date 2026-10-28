@@ -44,6 +44,18 @@ Vercel Web Analytics (chapter 06a) renders its two script tags only with `VERCEL
 the script path comes from `VERCEL_ANALYTICS_SCRIPT_PATH` (the project's own value; `.env.example` labels the
 fallback), and the dashboard steps are in [chapter 06a](docs/chapters/06a-vercel-web-analytics.md).
 
+## Sign in with WitUS
+
+Chapter 07 adds OpenID Connect sign-in against the ecosystem's identity provider, with no auth framework:
+`httpx` for discovery, the token exchange and userinfo, `PyJWT` for the EdDSA signature (the provider signs
+with one Ed25519 key; RS256 and `none` are refused). The client is off until `WITUS_OIDC_CLIENT_SECRET` is
+set, so a copy of the app with no secret serves the public site with a stub page behind "Sign in". The
+owner mints the secret in the witus repo and sets it on Vercel ([chapter 07](docs/chapters/07-sign-in-with-witus.md),
+section 07.8); the other three names (`WITUS_OIDC_ISSUER`, `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_SCOPES`) have
+defaults listed in `.env.example`. People are keyed by the WitUS user id (`sub`), never by email; the owner's
+admin superuser links to their WitUS account on its first sign-in by verified email. A learner's copy is not
+registered with the provider; its checkpoint runs against a fake provider in `tests/test_ch07.py`.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"
