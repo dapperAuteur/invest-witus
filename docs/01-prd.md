@@ -372,7 +372,7 @@ Acceptance:
   link if needed. A test tagged smoke asserts the link on the home page (shared UI/UX standard, 2026-10-16).
 - **Footer:** the ecosystem footer recipe's structure, in this app's own palette: optional logo and one-line
   summary; the Rise Wellness callout verbatim with its disclaimer; three columns (Ecosystem siblings from the
-  witus product list; This app: Roadmap, Sign in; Partners and Legal: Rise Wellness, Terms, Privacy, Contact);
+  witus product list; This app: Roadmap, FAQ, Sign in; Partners and Legal: Rise Wellness, Terms, Privacy, Contact);
   the copyright line copied verbatim from the recipe.
 - **Logo:** the WitUS brand assets copied from the witus repo's `public/brand/` (default variant `04-orbit-type`),
   drawn for dark backgrounds.
@@ -381,6 +381,13 @@ Acceptance:
   holdings entered, journal, waitlist name and email), where (Neon Postgres), who can see it (the owner only);
   broker keys server-side only; vendors named; no market data shown to others; how to delete your data; contact.
   Reviewed by a securities lawyer before any other user is admitted.
+- **FAQ:** `docs/site/faq.md`, rendered at `/faq/` and linked from the footer and the landing page. Three parts:
+  the questions a person should ask about any investing app, with this app's answers; the bodies that would
+  govern it if it were a professional tool (SEC, FINRA, the Indiana Securities Division, SIPC, FDIC, CFPB, FTC,
+  IRS; CFTC and NFA named as not applicable), with how to look a firm up and how to complain; and the laws and
+  rules that would govern the app, each with its primary link. Every link was fetched the day the page was
+  written; the page carries a "last checked" date. Information, never advice; no legal conclusions about this
+  app, only what each law covers and that a lawyer is asked before other users are admitted.
 
 Acceptance: every page carries "Not advice" and the paper notice where relevant; the smoke test fails if the
 "Sign in" link is missing or renamed; footer links resolve.
