@@ -1,6 +1,6 @@
 # Invest.WitUS: ecosystem integration contracts
 
-**Last updated:** 2026-10-27 · Companion to [`01-prd.md`](01-prd.md).
+**Last updated:** 2026-10-28 (chapter 06: section 7, 8 and 9 rows) · Companion to [`01-prd.md`](01-prd.md).
 
 Invest.WitUS is the first Python app in the WitUS ecosystem. Every other app is TypeScript, so nothing here is
 shared code: each contract below is the ecosystem's existing contract, written for Django. Sources are the
@@ -191,8 +191,8 @@ as the list. Fields collected: name and email only.
   `node scripts/propagate-claude-rules.mjs --write` from the witus repo; the managed block lands below this repo's
   hand-written identity section in `CLAUDE.md`.
 - **Branch guard.** `.githooks/pre-commit` (present); each clone runs `git config core.hooksPath .githooks` once.
-- **Neon preview cleanup.** Once Neon is attached, add the workflow from `gemini/witus/.github/templates/` with the
-  `NEON_PROJECT_ID` repository variable and the `NEON_API_KEY` secret.
+- **Neon preview cleanup.** The workflow from `gemini/witus/.github/templates/` is in `.github/workflows/` since
+  chapter 06; the `NEON_PROJECT_ID` repository variable and the `NEON_API_KEY` secret are task 05.
 - **Plans.** `./plans/NN-description.md` and `./plans/user-tasks/` (gitignored); this PRD and its companions stay
   in `docs/`.
 
@@ -204,7 +204,10 @@ as the list. Fields collected: name and email only.
 |---|---|---|
 | `DJANGO_SECRET_KEY` | Django signing | Vercel's Django example's name |
 | `DJANGO_DEBUG` | `"1"` locally only | Vercel's Django example's name |
-| `DATABASE_URL` | Neon Postgres | Set by the Neon integration |
+| `DATABASE_URL` | Neon Postgres, the pooled connection the app uses | Set by the Neon integration (chapter 06) |
+| `DATABASE_URL_UNPOOLED` | Neon's direct connection; the settings' `direct` alias for `migrate --database direct` | Set by the Neon integration (chapter 06) |
+| `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | `invest.witus.online` and `https://invest.witus.online`; Vercel's own host names are added from `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | This app's names (chapter 06) |
+| `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | `createsuperuser --noinput`, once, in the owner's shell | Django's names (chapter 06) |
 | `CRON_SECRET` | Bearer token Vercel cron sends to the daily route | Vercel's name |
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1 | *proposed* |
 | `ALPACA_LIVE_KEY_ID`, `ALPACA_LIVE_SECRET_KEY` | Alpaca live, only after the checklist | *proposed*; absent by default |
@@ -220,7 +223,7 @@ Each item becomes a task file in `plans/user-tasks/` when its chapter is next (o
 | # | Action | Where | Blocks |
 |---|---|---|---|
 | 1 | Decide the production domain and point it at the Vercel project | DNS and Vercel | Chapter 06 production deploy; item 3's redirect URIs |
-| 2 | Create the Vercel project and attach Neon; set `DJANGO_SECRET_KEY`, `CRON_SECRET` | Vercel | Chapter 06 |
+| 2 | Create the Vercel project and attach Neon; set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`; migrate and make the owner (`plans/user-tasks/04`); `NEON_PROJECT_ID` and `NEON_API_KEY` (`05`); `CRON_SECRET` waits for chapter 08 | Vercel, Neon, GitHub | The live site; chapter 07's origin; chapter 08 |
 | 3 | Register the OIDC client (section 2, steps 1 to 5) and set `WITUS_OIDC_*` on this app | witus repo and both Vercel projects | Chapter 07 |
 | 4 | Create Alpaca paper API keys; set `ALPACA_PAPER_*`; check whether "Open New Paper Account" asks for a starting amount | Alpaca dashboard, Vercel | Chapter 11 |
 | 5 | Create a Tiingo account and token; set `TIINGO_API_TOKEN`; read Tiingo's full Terms of Use | Tiingo, Vercel | Chapter 08 |

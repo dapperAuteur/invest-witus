@@ -23,10 +23,23 @@ uv run pytest      # run every chapter's checkpoint tests
 uv run invest-witus --help
 
 cp .env.example .env                                   # names only; DJANGO_DEBUG=1 for your laptop
-uv run python manage.py migrate                        # SQLite under data/private/ (gitignored)
+uv run --env-file .env python manage.py migrate        # SQLite under data/private/ (gitignored)
 uv run --env-file .env python manage.py createsuperuser  # the owner's admin login (chapter 05)
 uv run --env-file .env python manage.py runserver      # the public site at http://127.0.0.1:8000/, the admin at /admin/
 ```
+
+Every `manage.py` command takes `--env-file .env` since chapter 06: with `DJANGO_DEBUG` unset the settings
+refuse to start without a `DJANGO_SECRET_KEY`, which is what a server wants and a laptop gets from `.env`.
+`GET /healthz/` answers with the version and a database round trip.
+
+## Deploying
+
+The repository deploys to Vercel's Python runtime with Neon Postgres (chapter 06): `vercel.json` carries the
+entry file and the ecosystem's Ignored Build Step, `wsgi.py` at the root is what Vercel loads, `STATIC_ROOT`
+lets Vercel run `collectstatic` itself, and `.github/workflows/neon-preview-cleanup.yml` deletes preview
+databases. Environment variable names are in `.env.example`; the dashboard steps are in
+[chapter 06](docs/chapters/06-vercel-and-neon.md), sections 06.8 to 06.10. Migrations run from the owner's
+machine against Neon's direct connection: `vercel env run -e production -- uv run python manage.py migrate --database direct`.
 
 ## Credits
 
