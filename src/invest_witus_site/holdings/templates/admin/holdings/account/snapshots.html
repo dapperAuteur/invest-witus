@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load holdings_extras %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label='holdings' %}">Holdings</a>
+  &rsaquo; <a href="{% url 'admin:holdings_account_changelist' %}">Accounts</a>
+  &rsaquo; <a href="{% url 'admin:holdings_account_change' account.pk %}">{{ account }}</a>
+  &rsaquo; Statements
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h2>Statements, newest first</h2>
+  {% if snapshots %}
+  <ul>
+    {% for snapshot in snapshots %}
+    <li>
+      <a href="{% url 'admin:holdings_snapshot_change' snapshot.pk %}">{{ snapshot.as_of|date:"Y-m-d" }}</a>
+      {% if snapshot.source %}({{ snapshot.source }}){% endif %}
+      {{ snapshot.lines.count }} line{{ snapshot.lines.count|pluralize }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No statements yet.
+    <a href="{% url 'admin:holdings_snapshot_add' %}?account={{ account.pk }}">Enter the first one.</a></p>
+  {% endif %}
+
+  {% if snapshots|length > 1 %}
+  <h2>Change between two statements</h2>
+  <form method="get" class="aligned">
+    <div class="form-row">
+      <label for="earlier">From</label>
+      <select id="earlier" name="earlier">
+        {% for snapshot in snapshots %}
+        <option value="{{ snapshot.pk }}"{% if snapshot == pair.0 %} selected{% endif %}>{{ snapshot.as_of|date:"Y-m-d" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="later">To</label>
+      <select id="later" name="later">
+        {% for snapshot in snapshots %}
+        <option value="{{ snapshot.pk }}"{% if snapshot == pair.1 %} selected{% endif %}>{{ snapshot.as_of|date:"Y-m-d" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="submit-row"><input type="submit" value="Compare" class="default"></div>
+  </form>
+
+  <p>From {{ pair.0.as_of|date:"Y-m-d" }} to {{ pair.1.as_of|date:"Y-m-d" }}. Shares and cost basis
+    only; the app fetches no prices yet (chapter 08).</p>
+  <table>
+    <caption class="sr-only">Change per symbol between the two statements</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col">Shares before</th>
+        <th scope="col">Shares after</th>
+        <th scope="col">Shares change</th>
+        <th scope="col">Cost basis before</th>
+        <th scope="col">Cost basis after</th>
+        <th scope="col">Cost basis change</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for change in changes %}
+      <tr>
+        <th scope="row">{{ change.symbol }}</th>
+        <td>{{ change.shares_before }}</td>
+        <td>{{ change.shares_after }}</td>
+        <td>{{ change.shares_change|signed }}</td>
+        <td>{{ change.cost_before|default_if_none:"not shown" }}</td>
+        <td>{{ change.cost_after|default_if_none:"not shown" }}</td>
+        <td>{{ change.cost_change|signed }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}
