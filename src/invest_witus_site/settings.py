@@ -200,3 +200,20 @@ LOGGING = {
 # The FAQ, privacy and terms pages are Markdown files in the repo, so a wording change is a normal
 # commit with a diff anyone can read.
 SITE_PAGES_DIR = BASE_DIR / "docs" / "site"
+
+# Vercel Web Analytics (chapter 06a): two script tags in the base template, rendered only when
+# both hold: the app runs on Vercel, and the owner set VERCEL_ANALYTICS=1 on that environment. So
+# production and preview can differ, and `runserver` never emits the tags (debug on Vercel is
+# refused above, so a debug server never does either). The script's path belongs to the project:
+# once Analytics is enabled, the project's Analytics page shows it, and that value goes in
+# VERCEL_ANALYTICS_SCRIPT_PATH. FALLBACK, not a value read from any dashboard: the shared
+# `/_vercel/insights/` route the quickstart names, with the file name from its snippet.
+VERCEL_ANALYTICS_ENABLED = ON_VERCEL and os.environ.get("VERCEL_ANALYTICS") == "1"
+VERCEL_ANALYTICS_SCRIPT_PATH = (
+    os.environ.get("VERCEL_ANALYTICS_SCRIPT_PATH") or "/_vercel/insights/script.js"
+)
+if not VERCEL_ANALYTICS_SCRIPT_PATH.startswith("/"):
+    raise ImproperlyConfigured(
+        "VERCEL_ANALYTICS_SCRIPT_PATH must be a path on this site, starting with /, such as "
+        "/<unique-path>/script.js from the Analytics page of the Vercel project."
+    )

@@ -40,6 +40,9 @@ lets Vercel run `collectstatic` itself, and `.github/workflows/neon-preview-clea
 databases. Environment variable names are in `.env.example`; the dashboard steps are in
 [chapter 06](docs/chapters/06-vercel-and-neon.md), sections 06.8 to 06.10. Migrations run from the owner's
 machine against Neon's direct connection: `vercel env run -e production -- uv run python manage.py migrate --database direct`.
+Vercel Web Analytics (chapter 06a) renders its two script tags only with `VERCEL=1` and `VERCEL_ANALYTICS=1`;
+the script path comes from `VERCEL_ANALYTICS_SCRIPT_PATH` (the project's own value; `.env.example` labels the
+fallback), and the dashboard steps are in [chapter 06a](docs/chapters/06a-vercel-web-analytics.md).
 
 ## Credits
 

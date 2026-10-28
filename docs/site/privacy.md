@@ -1,6 +1,6 @@
 # Privacy
 
-Last updated: October 27, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
+Last updated: October 28, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
 
 Not advice. Invest.WitUS is a learning tool. It is not a broker, not an investment adviser, and it never recommends a security.
 
@@ -31,7 +31,7 @@ Paper trading keys are the default. Any broker key you give the app stays on the
 
 ## Vendors
 
-Vendors the app uses or is built to use, each named so you can read its own terms: Alpaca (paper trading and, if you choose it, live trading), Tiingo (end-of-day prices), Neon (the database), Vercel (hosting), Mailgun (email), and WitUS Inbox (where the waitlist and in-app reports are mirrored for the operator). Each vendor sees only what it needs: Alpaca sees the orders you place through it, Tiingo sees the symbols whose prices are asked for, Mailgun sees the address an email goes to.
+Vendors the app uses or is built to use, each named so you can read its own terms: Alpaca (paper trading and, if you choose it, live trading), Tiingo (end-of-day prices), Neon (the database), Vercel (hosting and page-view analytics), Mailgun (email), and WitUS Inbox (where the waitlist and in-app reports are mirrored for the operator). Each vendor sees only what it needs: Alpaca sees the orders you place through it, Tiingo sees the symbols whose prices are asked for, Mailgun sees the address an email goes to.
 
 ## Market data
 
@@ -40,6 +40,10 @@ No market data, prices or performance figures are shown on any public page, and 
 ## Cookies
 
 The public pages set one cookie, for the form protection Django uses (CSRF). Signing in, when it arrives, adds a session cookie. There are no advertising or analytics cookies.
+
+## Analytics
+
+Added October 28, 2026: the hosted site uses Vercel Web Analytics, which counts page views. Vercel's privacy page (read October 28, 2026) says the script sets no third-party cookies, tells visitors apart by a hash made from the request that is discarded after 24 hours, and ties no page view to an individual or an IP address. Each page view records the page, the referrer, the country, region and city, the browser, the operating system, and the device type. A copy you run on your own machine from the tutorial sends nothing.
 
 ## Deleting your data
 
