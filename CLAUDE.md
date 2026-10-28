@@ -48,15 +48,17 @@ Vetting analysis: `gemini/witus/plans/38-invest-witus-analysis.md` (Test cheaply
 ## Stack
 
 Python 3.14 via uv · pytest · ruff · pyright. From chapter 04 on: Django 5.2 LTS (decision 33) + django-ninja,
-Neon Postgres, Vercel Python runtime with one daily cron (idempotent; Hobby cron has no retries), Alpaca paper
-trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
+Neon Postgres through `DATABASE_URL` (chapter 06: `invest_witus_site/database.py` parses it; SQLite is the laptop default),
+Vercel Python runtime (Python 3.14; `manage.py` and the root `wsgi.py` put `src/` on the path because Vercel installs
+dependencies, not the project; `vercel.json` holds the ecosystem's Ignored Build Step) with one daily cron from chapter 08
+(idempotent; Hobby cron has no retries), Alpaca paper trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug reporting. Framework choice:
 `gemini/witus/plans/future/invest-witus-research-2026-10-27/04-python-web-and-api-framework-comparison.md`.
 
 ## Commands
 
 `uv sync` · `uv run pytest` · `uv run ruff check --fix . && uv run ruff format .` · `uv run pyright` ·
-`uv run invest-witus --help` · `uv run python manage.py migrate` · `uv run --env-file .env python manage.py createsuperuser` (the owner's `/admin/` login) · `uv run --env-file .env python manage.py runserver`
-(copy `.env.example` to `.env` first) · `uv run python scripts/render_chapter.py --check docs/chapters/templates/*.md`
+`uv run invest-witus --help` · `uv run --env-file .env python manage.py migrate` · `uv run --env-file .env python manage.py createsuperuser` (the owner's `/admin/` login) · `uv run --env-file .env python manage.py runserver`
+(copy `.env.example` to `.env` first; since chapter 06 every `manage.py` command on a laptop takes `--env-file .env`, because the settings refuse to start without `DJANGO_SECRET_KEY` when `DJANGO_DEBUG` is not 1) · production migrations: `vercel env run -e production -- uv run python manage.py migrate --database direct` (Neon's direct connection; never at build) · `GET /healthz/` for up, version, database · `uv run python scripts/render_chapter.py --check docs/chapters/templates/*.md`
 (chapter listings are generated from the real files; never edit a rendered chapter by hand). Activate the branch guard
 once per clone: `git config core.hooksPath .githooks`.
 

@@ -1,6 +1,6 @@
 # Invest.WitUS: tutorial roadmap (chapters and tags)
 
-**Last updated:** 2026-10-28 · Companion to [`01-prd.md`](01-prd.md). The live chapter table, with links to each
+**Last updated:** 2026-10-28 (chapter 06 built) · Companion to [`01-prd.md`](01-prd.md). The live chapter table, with links to each
 chapter's text and its Learn.WitUS lesson, is [`CHAPTERS.md`](CHAPTERS.md); this file is the plan for the chapters
 not yet written.
 
@@ -30,7 +30,7 @@ branch awaiting merge; **proposed** means the chapter is planned and may change.
 | 03 | Write the method down, and review yourself against it | `v03` | tagged | The method's rule block in TOML (`index_dca.toml`), the user's plan in TOML, a journal CSV, and `review`, which reports where the journal broke the method's rules, with a lesson link per rule ("lesson coming" until published) | `tomllib`, validation at the boundary, a rulebook that must match its checks |
 | 04 | The first Django page: the public landing page | `v04` | built | Django project in the same repo; the landing page the domain will point at; the waitlist form (name and email, idempotent); the ecosystem footer, WitUS logo, privacy, terms and FAQ pages (the FAQ text is `docs/site/faq.md`, rendered at `/faq/`); the header "Sign in" link and its smoke test | Django project and app, URLconf, views, templates, forms, static files, the Django test client |
 | 05 | Models and the admin | `v05` | built | The Django admin at `/admin/` as the owner's back office (auth, sessions, messages installed; one superuser); the waitlist listed with a waiting or approved status and an approve action; accounts, holdings (one row per account and symbol, kind set by the owner), dated statement snapshots and their lines in exact `Decimal` (shares to six places, money to the cent, floats refused); the change between any two statements per symbol on an admin page; no prices, no values, no CSV import, nothing public | Models, migrations, `DecimalField`, `TextChoices`, `UniqueConstraint`, `on_delete`, the admin (inlines, actions, a custom page), template filters, pytest-django's `admin_client`, `conftest.py` |
-| 06 | Deploy to Vercel and Neon | `v06` | proposed | The app live on a preview and on the production domain (BAM's choice), on Neon Postgres, with settings from env vars | Vercel Python runtime, `DATABASE_URL`, pydantic-settings, `collectstatic`, secrets handling |
+| 06 | Vercel and Neon: the app a server can run | `v06` | built | One settings file for the laptop (SQLite) and Vercel (Neon Postgres through `DATABASE_URL`, a `direct` alias from `DATABASE_URL_UNPOOLED` for migrations); the secret key required with debug off; Secure cookies, the proxy header and SSL redirect on Vercel only; host names from env plus Vercel's own; `STATIC_ROOT` for Vercel's automatic `collectstatic`; `/healthz/`; `manage.py` and a root `wsgi.py` that put `src/` on the path; `vercel.json` with the ecosystem's Ignored Build Step; the Neon preview cleanup workflow; the dashboard steps for the project, Neon, the migration, the non-interactive superuser and the domain (the deploy itself is the owner's: tasks 03 to 05) | Vercel Python runtime and how it finds Django, `DATABASE_URL` parsing with `urllib.parse`, `ImproperlyConfigured`, Secure cookies and `X-Forwarded-Proto`, `collectstatic`, `tomllib`, re-importing a module under `monkeypatch`, `subprocess` tests |
 | 07 | Sign in with WitUS | `v07` | proposed | OIDC sign-in, callback and sign-out against the ecosystem identity provider, EdDSA id tokens, users keyed by the WitUS user id; the landing page for everyone else | Authlib's Django client, sessions, middleware, `login_required` |
 | 08 | Prices: a daily pull, a cron, a portfolio value | `v08` | proposed | End-of-day closes stored in the app's own table; one daily cron route guarded by `CRON_SECRET`, idempotent, recording its last run; holdings valued with the price date shown | httpx, django-ninja for the cron route, idempotent jobs, `vercel.json` crons |
 | 09 | The watch list | `v09` | proposed | Watch lists per account with the latest stored close and its date; no buy button | Model relations, htmx partials (django-htmx) |
@@ -45,7 +45,12 @@ branch awaiting merge; **proposed** means the chapter is planned and may change.
 ## Open items for the roadmap
 
 - The production domain (chapter 06) and the OIDC registration (chapter 07) need BAM's actions first; see
-  [`02-ecosystem-integration.md`](02-ecosystem-integration.md), section 9.
+  [`02-ecosystem-integration.md`](02-ecosystem-integration.md), section 9. Chapter 06's code is built and the
+  deploy is the owner's: tasks 03 (domain), 04 (Vercel project, Neon, first deploy, superuser) and 05 (the
+  cleanup workflow's variable and secret) in `plans/user-tasks/`.
+- Decided in chapter 06: settings read `os.environ` directly with a forty-line `DATABASE_URL` parser; the
+  PRD's pydantic-settings was not needed (decisions log, row 53). Migrations run by hand against Neon's direct
+  connection, never at build (row 54).
 - Decided in chapter 05: `Account.kind` is one field (brokerage, retirement, paper) where PRD 7.3 sketches a kind (manual, Alpaca paper, Alpaca live) and a type (taxable, retirement); chapter 11 adds the broker environment when Alpaca arrives (decisions log, row 45). The WitUS user id lives on the account as a nullable field until chapter 07 fills it; no custom user model (row 43).
 - Decided in chapter 04: the CLI code stays a library in `src/invest_witus/` and the Django project lives beside it in
   `src/invest_witus_site/` (decisions log, row 34). Nothing from chapters 01 to 03 moved.

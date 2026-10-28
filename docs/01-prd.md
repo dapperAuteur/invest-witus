@@ -483,9 +483,11 @@ Django apps follow research 02's layout (`invest/core`, `accounts`, `methods`, `
 
 - **Language and tools:** Python 3.14 via uv; pytest (and pytest-django from the Django chapters); ruff; pyright.
 - **Web:** Django 5.2 LTS (decision 33; 6.1 was planned) with django-ninja for the small JSON surface (cron route, event and evidence endpoints);
-  server-rendered templates with htmx and django-htmx; pydantic-settings for settings; httpx for outbound calls;
+  server-rendered templates with htmx and django-htmx; settings read from the environment in `settings.py` with a
+  small `DATABASE_URL` parser (decision 53; pydantic-settings was planned); httpx for outbound calls;
   Authlib for OIDC.
-- **Data:** Neon Postgres (`DATABASE_URL`), SQLite allowed only for local tests.
+- **Data:** Neon Postgres (`DATABASE_URL`, pooled, for the app; `DATABASE_URL_UNPOOLED` as the `direct` alias for
+  migrations run by hand, decision 54), SQLite for the laptop and the tests.
 - **Hosting:** Vercel's Python runtime (Django detected from `manage.py`; one Vercel Function). **One daily cron**
   calling one route guarded by `CRON_SECRET`: Hobby cron runs once a day within the scheduled hour, in UTC, with
   no retries, so the job is idempotent and reconciles everything since its last successful run. Its steps: copy
