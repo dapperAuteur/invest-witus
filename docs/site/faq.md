@@ -2,6 +2,21 @@
 
 Invest.WitUS is a learning tool: you pick an investing method taught in a course, practice it on a paper (simulated) account, and the app holds you to that method's rules. This page answers the questions a careful person asks about any investing app, names the bodies that would govern a professional version of it, and lists the laws behind those answers, with links to the primary text.
 
+## Report a bad actor
+
+> **If someone took your money, pressured you, or will not give it back, report it now. Reporting is free, you do not need a lawyer, and these desks act on reports from ordinary people.** This app does not take complaints about other companies; the bodies below do.
+>
+> - **A broker, adviser, or anyone selling an investment:** the SEC's tips, complaints and referrals form (Securities and Exchange Commission, n.d.-d, n.d.-e): https://www.sec.gov/submit-tip-or-complaint
+> - **A brokerage firm or its people (lost money, an unauthorized trade, a broken promise):** FINRA's complaint form (Financial Industry Regulatory Authority, n.d.-c): https://www.finra.org/investors/need-help/file-a-complaint
+> - **Anyone selling or advising in Indiana:** the Indiana Securities Division's portal (Indiana Secretary of State, Securities Division, n.d.-a, n.d.-b): https://securities.sos.in.gov/general-information/file-a-complaint/
+> - **Another state:** find your state's securities regulator through NASAA (North American Securities Administrators Association, n.d.-b): https://www.nasaa.org/contact-your-regulator/
+> - **A bank account, loan, card, or payment app:** the CFPB (Consumer Financial Protection Bureau, n.d.-b): https://www.consumerfinance.gov/complaint/
+> - **Futures, commodities, or crypto derivatives:** the CFTC's Division of Enforcement takes reports of "violations or any other suspicious activities" (Commodity Futures Trading Commission, n.d.-b): https://www.cftc.gov/complaint
+> - **A scam, a deceptive sales pitch, or an unfair business practice:** the FTC's home page points "Report fraud" to ReportFraud.ftc.gov (Federal Trade Commission, n.d.-a): https://reportfraud.ftc.gov/
+> - **Any fraud that happened online (a fake app, a romance or "guaranteed returns" scheme, a hijacked account):** the FBI's Internet Crime Complaint Center, the "central hub for reporting cyber-enabled crime" (Federal Bureau of Investigation, n.d.): https://www.ic3.gov/
+>
+> Keep the names, dates, screenshots and statements. If you are not sure which desk, file with the SEC or your state regulator; they forward what is not theirs.
+
 ## A. Questions to ask about any investing app, and our answers
 
 ### Is this app a registered investment adviser or broker?
@@ -98,7 +113,7 @@ Our answer: the IRS says a gain or loss is long-term "if you hold the asset for 
 
 Why it matters: the right desk acts faster.
 
-Our answer: about the app, the Contact link. About a broker or adviser: FINRA, which says to "complain in writing" if you lost money or saw an unauthorized trade (Financial Industry Regulatory Authority, n.d.-c); the SEC's "Submit a Tip or Complaint" page (Securities and Exchange Commission, n.d.-d, n.d.-e); and the Indiana Securities Division, by portal or paper form (Indiana Secretary of State, Securities Division, n.d.-a, n.d.-b). About a bank account, loan, or payment product: the CFPB (Consumer Financial Protection Bureau, n.d.-b). Links are in section B.
+Our answer: about the app, the Contact link. About a broker or adviser: FINRA, which says to "complain in writing" if you lost money or saw an unauthorized trade (Financial Industry Regulatory Authority, n.d.-c); the SEC's "Submit a Tip or Complaint" page (Securities and Exchange Commission, n.d.-d, n.d.-e); and the Indiana Securities Division, by portal or paper form (Indiana Secretary of State, Securities Division, n.d.-a, n.d.-b). About a bank account, loan, or payment product: the CFPB (Consumer Financial Protection Bureau, n.d.-b). Every link is in "Report a bad actor" at the top of this page.
 
 ### Who should not use this app?
 
@@ -126,7 +141,7 @@ Invest.WitUS is registered with none of these bodies. Each would come into play 
 
 **Internal Revenue Service (IRS).** "The IRS mission is to provide America's taxpayers top quality service" and to enforce the tax law (Internal Revenue Service, n.d.-a). It applies to you on real gains and losses, never on paper. https://www.irs.gov/about-irs
 
-**CFTC and NFA.** The CFTC's mission is to "promote the integrity, resilience, and vibrancy of the U.S. derivatives markets through sound regulation" (Commodity Futures Trading Commission, n.d.); "NFA is the industrywide, self-regulatory organization for the U.S. derivatives industry" (National Futures Association, n.d.). They would apply only if the app touched futures, options on futures, or crypto derivatives; it does not. https://www.cftc.gov/About/AboutTheCommission and https://www.nfa.futures.org/about/index.html
+**CFTC and NFA.** The CFTC's mission is to "promote the integrity, resilience, and vibrancy of the U.S. derivatives markets through sound regulation" (Commodity Futures Trading Commission, n.d.-a); "NFA is the industrywide, self-regulatory organization for the U.S. derivatives industry" (National Futures Association, n.d.). They would apply only if the app touched futures, options on futures, or crypto derivatives; it does not. https://www.cftc.gov/About/AboutTheCommission and https://www.nfa.futures.org/about/index.html
 
 **Looking a firm or person up.** BrokerCheck: https://brokercheck.finra.org/. Investment Adviser Public Disclosure: https://adviserinfo.sec.gov/. Your state regulator, through NASAA: https://www.nasaa.org/contact-your-regulator/.
 
@@ -190,13 +205,21 @@ Children's Online Privacy Protection Act, 15 U.S.C. § 6501 (2024). https://www.
 
 Children's Online Privacy Protection Rule, 16 C.F.R. § 312.3 (2026). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-16.xml?part=312&section=312.3
 
-Commodity Futures Trading Commission. (n.d.). *The Commission*. https://www.cftc.gov/About/AboutTheCommission
+Commodity Futures Trading Commission. (n.d.-a). *The Commission*. https://www.cftc.gov/About/AboutTheCommission
+
+Commodity Futures Trading Commission. (n.d.-b). *Submit a tip or complaint*. https://www.cftc.gov/complaint
 
 Consumer Financial Protection Bureau. (n.d.-a). *The CFPB*. https://www.consumerfinance.gov/about-us/the-bureau/
 
 Consumer Financial Protection Bureau. (n.d.-b). *Submit a complaint*. https://www.consumerfinance.gov/complaint/
 
+Federal Bureau of Investigation. (n.d.). *Internet Crime Complaint Center (IC3)*. https://www.ic3.gov/
+
 Federal Deposit Insurance Corporation. (n.d.). *Deposit insurance*. https://www.fdic.gov/resources/deposit-insurance/
+
+Federal Trade Commission Act, 15 U.S.C. § 45 (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15-chap2-subchapI-sec45.htm
+
+Federal Trade Commission. (2024, December). *FTC Safeguards Rule: What your business needs to know*. https://www.ftc.gov/business-guidance/resources/ftc-safeguards-rule-what-your-business-needs-know
 
 Federal Trade Commission. (n.d.-a). *CAN-SPAM Act: A compliance guide for business*. https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business
 
@@ -208,9 +231,7 @@ Federal Trade Commission. (n.d.-d). *Gramm-Leach-Bliley Act*. https://www.ftc.go
 
 Federal Trade Commission. (n.d.-e). *Mission*. https://www.ftc.gov/about-ftc/mission
 
-Federal Trade Commission. (2024, December). *FTC Safeguards Rule: What your business needs to know*. https://www.ftc.gov/business-guidance/resources/ftc-safeguards-rule-what-your-business-needs-know
-
-Federal Trade Commission Act, 15 U.S.C. § 45 (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15-chap2-subchapI-sec45.htm
+Financial Industry Regulatory Authority. (2026, April 20). *FINRA adopts new intraday margin standards to replace the day trading margin requirements* (Regulatory Notice 26-10). https://www.finra.org/rules-guidance/notices/26-10
 
 Financial Industry Regulatory Authority. (n.d.-a). *About FINRA*. https://www.finra.org/about
 
@@ -225,8 +246,6 @@ Financial Industry Regulatory Authority. (n.d.-e). *FINRA Rule 2210. Communicati
 Financial Industry Regulatory Authority. (n.d.-f). *FINRA Rule 4210. Margin requirements*. https://www.finra.org/rules-guidance/rulebooks/finra-rules/4210
 
 Financial Industry Regulatory Authority. (n.d.-g). *Frequent intraday trading: Understanding the basics*. https://www.finra.org/investors/investing/investment-products/stocks/day-trading
-
-Financial Industry Regulatory Authority. (2026, April 20). *FINRA adopts new intraday margin standards to replace the day trading margin requirements* (Regulatory Notice 26-10). https://www.finra.org/rules-guidance/notices/26-10
 
 Gramm-Leach-Bliley Act, 15 U.S.C. § 6801 (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15-chap94-subchapI-sec6801.htm
 
@@ -244,11 +263,11 @@ Indiana Secretary of State, Securities Division. (n.d.-d). *Welcome to the India
 
 Internal Revenue Code, 26 U.S.C. § 1091 (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapO-partVII-sec1091.htm
 
+Internal Revenue Service. (2026). *Publication 550 (2025), Investment income and expenses*. https://www.irs.gov/publications/p550
+
 Internal Revenue Service. (n.d.-a). *About IRS*. https://www.irs.gov/about-irs
 
 Internal Revenue Service. (n.d.-b). *Topic no. 409, Capital gains and losses*. https://www.irs.gov/taxtopics/tc409
-
-Internal Revenue Service. (2026). *Publication 550 (2025), Investment income and expenses*. https://www.irs.gov/publications/p550
 
 Investment Adviser Marketing, 17 C.F.R. § 275.206(4)-1 (2026). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-17.xml?part=275&section=275.206(4)-1
 
@@ -266,13 +285,17 @@ North American Securities Administrators Association. (n.d.-b). *Contact your re
 
 Regulation Best Interest, 17 C.F.R. § 240.15l-1 (2026). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-17.xml?part=240&section=240.15l-1
 
-Regulation S-P: Purpose and scope, 17 C.F.R. § 248.1 (2026a). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-17.xml?part=248&section=248.1
-
 Regulation S-P: Procedures to safeguard customer information, 17 C.F.R. § 248.30 (2026b). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-17.xml?part=248&section=248.30
+
+Regulation S-P: Purpose and scope, 17 C.F.R. § 248.1 (2026a). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-17.xml?part=248&section=248.1
 
 Regulation T: Authority, purpose, and scope, 12 C.F.R. § 220.1 (2026). https://www.ecfr.gov/api/versioner/v1/full/2026-10-23/title-12.xml?part=220&section=220.1
 
 Securities Act of 1933, 15 U.S.C. § 77e (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15-chap2A-subchapI-sec77e.htm
+
+Securities and Exchange Commission. (2005, April 20). *Day trading: Your dollars at risk*. https://www.sec.gov/investor/pubs/daytips.htm
+
+Securities and Exchange Commission. (2026). Self-regulatory organizations; Financial Industry Regulatory Authority, Inc.; Notice of filing of Amendment No. 1 and order granting accelerated approval of a proposed rule change, as modified by Amendment No. 1, to amend FINRA Rule 4210 (margin requirements) to replace the day trading margin provisions with intraday margin standards (Release No. 34-105226). *Federal Register, 91*(74), 20731-20739. https://www.govinfo.gov/content/pkg/FR-2026-04-17/html/2026-07485.htm
 
 Securities and Exchange Commission. (n.d.-a). *Investment Adviser Public Disclosure*. https://adviserinfo.sec.gov/
 
@@ -283,10 +306,6 @@ Securities and Exchange Commission. (n.d.-c). *Statutes and regulations*. https:
 Securities and Exchange Commission. (n.d.-d). *Submit a tip or complaint*. https://www.sec.gov/submit-tip-or-complaint
 
 Securities and Exchange Commission. (n.d.-e). *Welcome to SEC tips, complaints, and referrals*. https://www.sec.gov/submit-tip-or-complaint/tcr-disclaimer
-
-Securities and Exchange Commission. (2005, April 20). *Day trading: Your dollars at risk*. https://www.sec.gov/investor/pubs/daytips.htm
-
-Securities and Exchange Commission. (2026). Self-regulatory organizations; Financial Industry Regulatory Authority, Inc.; Notice of filing of Amendment No. 1 and order granting accelerated approval of a proposed rule change, as modified by Amendment No. 1, to amend FINRA Rule 4210 (margin requirements) to replace the day trading margin provisions with intraday margin standards (Release No. 34-105226). *Federal Register, 91*(74), 20731-20739. https://www.govinfo.gov/content/pkg/FR-2026-04-17/html/2026-07485.htm
 
 Securities Exchange Act of 1934, 15 U.S.C. § 78o (2024). https://www.govinfo.gov/content/pkg/USCODE-2024-title15/html/USCODE-2024-title15-chap2B-sec78o.htm
 

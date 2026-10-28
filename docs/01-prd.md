@@ -400,6 +400,10 @@ The public home the domain will point to (domain is BAM's call, open question 1)
   keeps you to its rules and shows you the lesson behind each one."; that it is a learning tool built with the
   Learn.WitUS courses; the waitlist; links to the Learn.WitUS course pages ("lesson coming" until the URLs exist);
   the credit to freeCodeCamp's course.
+- **Report a bad actor:** a visible callout on the landing page (and in the footer's Legal group) that links to
+  `/faq/#report-a-bad-actor`, the FAQ's highlighted section listing the government desks that take reports
+  (SEC, FINRA, the Indiana Securities Division, NASAA's regulator finder, CFPB, CFTC, the FBI's IC3, the FTC's
+  ReportFraud). The app takes no complaints about other companies; it points people to the bodies that do.
 - **Never on public pages:** market data, prices, charts of real quotes, performance claims, returns, testimonials,
   "risk-free", "automated trading", or anything that reads as which securities to buy.
 - **Waitlist form:** name and email only, with the approved line "Invest.WitUS is a learning tool, not advice,
