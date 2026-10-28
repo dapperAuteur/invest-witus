@@ -24,7 +24,8 @@ uv run invest-witus --help
 
 cp .env.example .env                                   # names only; DJANGO_DEBUG=1 for your laptop
 uv run python manage.py migrate                        # SQLite under data/private/ (gitignored)
-uv run --env-file .env python manage.py runserver      # the public site at http://127.0.0.1:8000/
+uv run --env-file .env python manage.py createsuperuser  # the owner's admin login (chapter 05)
+uv run --env-file .env python manage.py runserver      # the public site at http://127.0.0.1:8000/, the admin at /admin/
 ```
 
 ## Credits

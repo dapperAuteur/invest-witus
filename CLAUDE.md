@@ -55,7 +55,7 @@ trading, Sign in with WitUS (OIDC), ecosystem footer/legal pages and in-app bug 
 ## Commands
 
 `uv sync` · `uv run pytest` · `uv run ruff check --fix . && uv run ruff format .` · `uv run pyright` ·
-`uv run invest-witus --help` · `uv run python manage.py migrate` · `uv run --env-file .env python manage.py runserver`
+`uv run invest-witus --help` · `uv run python manage.py migrate` · `uv run --env-file .env python manage.py createsuperuser` (the owner's `/admin/` login) · `uv run --env-file .env python manage.py runserver`
 (copy `.env.example` to `.env` first) · `uv run python scripts/render_chapter.py --check docs/chapters/templates/*.md`
 (chapter listings are generated from the real files; never edit a rendered chapter by hand). Activate the branch guard
 once per clone: `git config core.hooksPath .githooks`.
