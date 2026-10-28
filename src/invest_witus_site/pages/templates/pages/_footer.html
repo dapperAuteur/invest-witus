@@ -1,0 +1,104 @@
+{% load static %}
+{# The ecosystem footer, after gemini/witus/public/brand/footer-recipe.md: the same structure as every #}
+{# WitUS app in this app's own palette. The Rise Wellness callout and its disclaimer are verbatim (only #}
+{# the app name changed) and so is the copyright line. The dashes in them are written as HTML entities #}
+{# so the source file stays dash-free; the page shows them. #}
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-brand">
+      {# Logo: gemini/witus/public/brand/04-orbit-type/wordmark.svg, copied into static/brand/witus/. #}
+      <img src="{% static 'brand/witus/wordmark.svg' %}" alt="WitUS" width="110" height="28">
+      <p class="footer-name">Invest.WitUS</p>
+      <p class="muted">Pick a taught investing method and stay with it, on paper first.</p>
+      <p class="notice">Not advice. Invest.WitUS is a learning tool: it recommends nothing, holds no money, and shows no market data on public pages.</p>
+    </div>
+
+    <section aria-labelledby="rise-wellness-heading" class="rise">
+      <header class="rise-header">
+        <p class="eyebrow">Mental health support</p>
+        <h2 id="rise-wellness-heading">Rise Wellness of Indiana</h2>
+        <p class="muted small">Independent mental health provider &middot; Not affiliated with Invest.WitUS</p>
+      </header>
+      <p>Rise Wellness of Indiana provides compassionate, personalized, holistic mental health care: evidence-based medicine, trauma-informed care, and a whole-person approach to help you heal, grow, and thrive in mind, body, and spirit.</p>
+      <div class="rise-grid">
+        <div>
+          <p class="eyebrow muted">Services</p>
+          <ul class="plain small">
+            <li>ADHD testing &amp; management (in-person and from home)</li>
+            <li>Anxiety &amp; depression</li>
+            <li>Maternal mental health</li>
+            <li>Medication management</li>
+            <li>GeneSight&reg; genetic testing</li>
+            <li>Behavioral therapy &amp; coaching</li>
+            <li>Routine lab testing</li>
+          </ul>
+        </div>
+        <div>
+          <p class="eyebrow muted">Visit or call</p>
+          <address class="small">320 North Meridian Street<br>Indianapolis, IN 46204<br>Mon&ndash;Sat by appointment &middot; Sun closed</address>
+          <p class="small rise-links">
+            <a href="tel:+13179650299">317-965-0299</a>
+            <span aria-hidden="true">&middot;</span>
+            <a href="https://risewellnessofindiana.com" target="_blank" rel="noopener noreferrer">risewellnessofindiana.com<span class="sr-only"> (opens in new tab)</span></a>
+            <span aria-hidden="true">&middot;</span>
+            <a href="https://www.centenarianos.com/safety#rise-wellness" target="_blank" rel="noopener noreferrer">Full safety page<span class="sr-only"> on centenarianos.com (opens in new tab)</span></a>
+          </p>
+        </div>
+      </div>
+      <blockquote class="rise-quote small">
+        &ldquo;At Rise Wellness, we believe everyone has the capacity to rise above challenges and live a fulfilling, healthy life. Our care is guided by the belief that healing is personal, holistic, and rooted in compassion.&rdquo;
+        <span class="attribution muted">Rise Wellness of Indiana</span>
+      </blockquote>
+      {# The non-negotiable disclaimer. Only the app name token changed; never paraphrase, trim or reorder it. #}
+      <p class="disclaimer muted">Rise Wellness of Indiana is an independent organization. They are not affiliated with, employed by, or endorsed by Invest.WitUS, CentenarianOS, B4C LLC, AwesomeWebStore.com, or Anthony McDonald. We are grateful for their collaboration on mental health safety resources for our community.</p>
+    </section>
+
+    <div class="footer-grid">
+      <div>
+        <p class="footer-heading">Ecosystem</p>
+        <ul class="plain">
+          {% for product in ecosystem_products %}
+            <li>
+              {% if product.status == "coming-soon" %}
+                <span class="muted">{{ product.name }} (coming soon)</span>
+              {% else %}
+                <a href="{{ product.href }}" target="_blank" rel="noopener noreferrer">{{ product.name }}<span class="sr-only"> (opens in new tab)</span></a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="footer-heading">Infrastructure</p>
+        <ul class="plain">
+          {% for product in infrastructure_products %}
+            <li><a href="{{ product.href }}" target="_blank" rel="noopener noreferrer">{{ product.name }}<span class="sr-only"> (opens in new tab)</span></a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <p class="footer-heading">Invest.WitUS</p>
+        <ul class="plain">
+          <li><a href="{% url 'home' %}#roadmap">Roadmap</a></li>
+          <li><a href="{% url 'faq' %}">FAQ</a></li>
+          <li><a href="{% url 'sign-in' %}">Sign in</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-heading">Partners &amp; Legal</p>
+        <ul class="plain">
+          <li>
+            <a href="https://www.centenarianos.com/safety#rise-wellness" target="_blank" rel="noopener noreferrer">Rise Wellness<span class="sr-only"> (mental-health partner, opens in new tab)</span></a>
+            <p class="muted small">Mental-health partner</p>
+          </li>
+          <li><a href="{% url 'terms' %}">Terms</a></li>
+          <li><a href="{% url 'privacy' %}">Privacy</a></li>
+          <li><a href="{% url 'faq' %}#report-a-bad-actor">Report a bad actor</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="copyright muted small">
+      <p>&copy; {{ year }} B4C LLC &mdash; A <a href="https://awesomewebstore.com" target="_blank" rel="noopener noreferrer">AwesomeWebStore.com<span class="sr-only"> (opens in new tab)</span></a> brand</p>
+    </div>
+  </div>
+</footer>

@@ -24,4 +24,10 @@ plans/
 # Personal data: your real statements, journals and price downloads stay local
 data/private/
 
+# What `collectstatic` writes (chapter 06); Vercel builds its own copy
+staticfiles/
+
+# The Vercel CLI's link to the project (`vercel link`), per machine
+.vercel/
+
 .DS_Store
