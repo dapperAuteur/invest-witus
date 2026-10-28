@@ -19,5 +19,15 @@
     {% block content %}{% endblock %}
   </main>
   {% include "pages/_footer.html" %}
+  {% if vercel_analytics_enabled %}
+  {# Vercel Web Analytics (chapter 06a): the snippet from Vercel's quickstart for plain HTML sites, read #}
+  {# October 28, 2026. The first tag queues calls until the deferred script loads. The path is the setting #}
+  {# VERCEL_ANALYTICS_SCRIPT_PATH; with it unset, the FALLBACK is the shared /_vercel/insights/ route the #}
+  {# quickstart names, not a value read from the dashboard. Rendered only with VERCEL=1 and VERCEL_ANALYTICS=1. #}
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="{{ vercel_analytics_script_path }}"></script>
+  {% endif %}
 </body>
 </html>
