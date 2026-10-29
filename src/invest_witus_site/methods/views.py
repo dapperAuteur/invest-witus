@@ -182,6 +182,8 @@ def change_plan(request: HttpRequest, pk: int) -> HttpResponse:
                 f"Ended {plan.method().name} on {account.name}. Its months and reviews stay; "
                 "start a new method when you are ready.",
             )
+            # With no plan, the method page is the Lesson Lab, where a new one starts.
+            request.session[SESSION_KEY] = "c"
         return redirect("method-page", pk=account.pk)
     context = {"account": account, "plan": plan, "form": form, "versions": plan.versions()}
     return render(request, "methods/plan_change.html", context)
@@ -191,7 +193,12 @@ def change_plan(request: HttpRequest, pk: int) -> HttpResponse:
 
 
 def review_or_404(account: Account, month: str) -> MonthlyReview:
-    """The account's review for the month: the newest plan's, if two plans share the month."""
+    """The account's review for the month: the newest plan's, if two plans share the month. The
+    running plan's due reviews are opened first, so a link to a month works before the method
+    page has been drawn that day."""
+    plan = MethodPlan.active_for(account)
+    if plan is not None:
+        open_due_reviews(plan, timezone.localdate())
     review = (
         MonthlyReview.objects.filter(plan__account=account, month=month)
         .select_related("plan")
@@ -262,6 +269,9 @@ def close_month(request: HttpRequest, pk: int, month: str) -> HttpResponse:
     is empty or the month has a missed buy that no skip explains."""
     account = get_object_or_404(Account, pk=pk, owner=request.user)
     review = review_or_404(account, month)
+    if review.closed:
+        messages.error(request, f"{review.month} is already closed.")
+        return redirect("method-review", pk=account.pk, month=review.month)
     form = CloseReviewForm(request.POST)
     if not form.is_valid():
         return render_review_page(request, account, review, close_form=form)

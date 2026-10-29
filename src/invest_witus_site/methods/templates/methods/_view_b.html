@@ -83,7 +83,7 @@
     <tr>
       <th scope="row">{{ finding.day|date:"Y-m-d" }}</th>
       <td>{{ finding.rule.text }}</td>
-      <td>{{ finding.message }}</td>
+      <td>{{ finding.message }}{% if finding.explained %} <span class="explained">Explained by a skip: {{ finding.explanation }}</span>{% endif %}</td>
       <td>{% if finding.rule.lesson_url %}<a href="{{ finding.rule.lesson_url }}">{{ finding.rule.id }}</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</td>
     </tr>
     {% endfor %}
