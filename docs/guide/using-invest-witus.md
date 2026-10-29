@@ -184,8 +184,10 @@ date; a second statement on the same date is refused.
 3. Under **Change between two statements**, the two newest are chosen. Pick any pair with **From** and **To**
    and press **Compare**. Picked backwards, the page sorts them: the earlier date is always From.
 
-**What you should see.** A line "From <date> to <date>. Shares and cost basis only; the app fetches no prices
-yet (chapter 08)." (The sentence is older than the prices chapter; the page is right that it shows no prices.)
+**What you should see.** A line "From <date> to <date>. Shares and cost basis only, as the statements print
+them; this comparison does not use stored prices, which are on the account page and each watched symbol's history
+page." (Until 2026-10-29 it said the app "fetches no prices yet (chapter 08)", which was older than the prices
+chapter.)
 Then a table with one row per symbol on either statement, in symbol order: **Symbol**, **Shares before**,
 **Shares after**, **Shares change**, **Cost basis before**, **Cost basis after**, **Cost basis change**.
 Changes carry a sign (`+1.500000`, `-400.00`). A symbol missing from one statement counts as zero shares and
