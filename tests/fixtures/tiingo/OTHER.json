@@ -1,0 +1,4 @@
+[
+  {"date": "2026-10-21T00:00:00.000Z", "open": 20.40, "high": 20.60, "low": 20.35, "close": 20.5, "volume": 300, "adjOpen": 20.40, "adjHigh": 20.60, "adjLow": 20.35, "adjClose": 20.5, "adjVolume": 300, "divCash": 0.0, "splitFactor": 1.0},
+  {"date": "2026-10-22T00:00:00.000Z", "open": 20.55, "high": 20.80, "low": 20.50, "close": 20.75, "volume": 310, "adjOpen": 20.55, "adjHigh": 20.80, "adjLow": 20.50, "adjClose": 20.75, "adjVolume": 310, "divCash": 0.0, "splitFactor": 1.0}
+]

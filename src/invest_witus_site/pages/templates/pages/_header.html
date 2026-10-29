@@ -11,6 +11,8 @@
       <a href="{% url 'home' %}#waitlist">Waitlist</a>
       {% if user.is_authenticated %}
         {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form. #}
+        {# Chapter 08: the link to their accounts, valued, on this branch only; no public page links it. #}
+        <a href="{% url 'account-list' %}">Accounts</a>
         <span class="who muted">{{ display_name }}</span>
         {% include "accounts/_sign_out_form.html" %}
       {% else %}

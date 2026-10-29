@@ -213,10 +213,10 @@ as the list. Fields collected: name and email only.
 | `DATABASE_URL_UNPOOLED` | Neon's direct connection; the settings' `direct` alias for `migrate --database direct` | Set by the Neon integration (chapter 06) |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | `invest.witus.online` and `https://invest.witus.online`; Vercel's own host names are added from `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | This app's names (chapter 06) |
 | `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | `createsuperuser --noinput`, once, in the owner's shell | Django's names (chapter 06) |
-| `CRON_SECRET` | Bearer token Vercel cron sends to the daily route | Vercel's name |
+| `CRON_SECRET` | Bearer token Vercel cron sends to `/api/cron/pull-prices/` once a day (chapter 08); unset, the route answers 503 | Vercel's name |
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1 | *proposed* |
 | `ALPACA_LIVE_KEY_ID`, `ALPACA_LIVE_SECRET_KEY` | Alpaca live, only after the checklist | *proposed*; absent by default |
-| `TIINGO_API_TOKEN` | End-of-day prices, phase 1 (owner's own key) | *proposed* |
+| `TIINGO_API_KEY` | End-of-day prices, phase 1 (owner's own key); unset, the pull reads `PRICES_CSV_DIR` | This app's name (chapter 08; this table said `TIINGO_API_TOKEN` until then) |
 | `OWNER_WITUS_SUB` | The phase 1 owner's WitUS user id; everyone else sees the landing page | *proposed* |
 
 ---
@@ -228,10 +228,10 @@ Each item becomes a task file in `plans/user-tasks/` when its chapter is next (o
 | # | Action | Where | Blocks |
 |---|---|---|---|
 | 1 | Decide the production domain and point it at the Vercel project | DNS and Vercel | Chapter 06 production deploy; item 3's redirect URIs |
-| 2 | Create the Vercel project and attach Neon; set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`; migrate and make the owner (`plans/user-tasks/04`); `NEON_PROJECT_ID` and `NEON_API_KEY` (`05`); `CRON_SECRET` waits for chapter 08 | Vercel, Neon, GitHub | The live site; chapter 07's origin; chapter 08 |
+| 2 | Create the Vercel project and attach Neon; set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`; migrate and make the owner (`plans/user-tasks/04`); `NEON_PROJECT_ID` and `NEON_API_KEY` (`05`); `CRON_SECRET` is task 09 | Vercel, Neon, GitHub | The live site; chapter 07's origin; chapter 08 |
 | 3 | Register the OIDC client (section 2, steps 1 to 5) and set `WITUS_OIDC_*` on this app. Steps 1 to 4's IdP half done 2026-10-28 (`invest` entry, `WITUS_OIDC_SECRET__INVEST` on witus-online); the rest is task 07 | witus repo and both Vercel projects | Chapter 07's first real sign-in |
 | 4 | Create Alpaca paper API keys; set `ALPACA_PAPER_*`; check whether "Open New Paper Account" asks for a starting amount | Alpaca dashboard, Vercel | Chapter 11 |
-| 5 | Create a Tiingo account and token; set `TIINGO_API_TOKEN`; read Tiingo's full Terms of Use | Tiingo, Vercel | Chapter 08 |
+| 5 | Create a Tiingo account and token; set `TIINGO_API_KEY` and `CRON_SECRET` (done 2026-10-28); read Tiingo's full Terms of Use; merge, migrate and run the cron once (task 09) | Tiingo, Vercel | Real closes on production and the owner's valued pages (chapter 08) |
 | 6 | Register the Inbox source: `openssl rand -hex 32` per environment (or `python -c "import secrets; print(secrets.token_hex(32))"`), append `{"slug": "invest-witus", "hmac_secret": "..."}` to witus-inbox's `INGEST_SOURCES`, redeploy Inbox, set `INBOX_*` here | witus-inbox Vercel, this app's Vercel | Chapter 13 and the waitlist mirror (chapter 04) |
 | 7 | Approve and build the new CentenarianOS receiver route; mint its secret; set `CENTOS_EVENTS_*` here | centenarian-os repo and Vercel | Chapter 15 |
 | 8 | Add `invest-witus` to `ecosystem-repos.json` and run the propagate script | witus repo | Shared rules in this repo's `CLAUDE.md` |

@@ -280,6 +280,13 @@ from that file):
   from Alpaca and Tiingo before launch.
 - An on-page refresh re-reads Alpaca positions; it never calls the end-of-day provider per page view.
 
+*Built in chapter 08 (2026-10-28): the `prices` app stores one close per symbol per day (`DailyClose`, unique on
+symbol and date, with the source as a column; no `Security` table yet), pulled nightly from Tiingo's end-of-day
+endpoint with the owner's own key, or from CSV files on a laptop; the cron is `/api/cron/pull-prices/` at 06:00 UTC
+behind `CRON_SECRET`; the owner's pages at `/accounts/` value the latest statement at the latest close with its
+date, cash at face, stale after five days. Alpaca positions and the on-page refresh wait for chapter 11. Decisions
+log rows 70 to 78.*
+
 Acceptance:
 - Closes are stored in the app's own table, so charts and values never re-fetch history.
 - Every displayed price carries its date and source.

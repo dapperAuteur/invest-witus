@@ -123,3 +123,10 @@ button[type="submit"] { min-height: 2.75rem; padding: 0 1.25rem; background: var
 .rise-quote { margin: 1rem 0 0; padding-left: 0.75rem; border-left: 2px solid var(--accent); font-style: italic; }
 .rise-quote .attribution { display: block; font-style: normal; margin-top: 0.25rem; }
 .disclaimer { font-size: 0.75rem; margin: 1rem 0 0; }
+
+/* The owner's account page (chapter 08): one table, numbers right-aligned in tabular figures. */
+.holdings { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.holdings th, .holdings td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.holdings .num { text-align: right; font-variant-numeric: tabular-nums; }
+.holdings tfoot th, .holdings tfoot td { border-bottom: 0; font-weight: 700; }
+.stale { color: var(--danger); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
