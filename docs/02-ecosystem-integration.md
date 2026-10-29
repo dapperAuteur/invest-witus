@@ -214,7 +214,7 @@ as the list. Fields collected: name and email only.
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | `invest.witus.online` and `https://invest.witus.online`; Vercel's own host names are added from `VERCEL_URL`, `VERCEL_BRANCH_URL`, `VERCEL_PROJECT_PRODUCTION_URL` | This app's names (chapter 06) |
 | `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | `createsuperuser --noinput`, once, in the owner's shell | Django's names (chapter 06) |
 | `CRON_SECRET` | Bearer token Vercel cron sends to `/api/cron/pull-prices/` once a day (chapter 08); unset, the route answers 503 | Vercel's name |
-| `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1 | *proposed* |
+| `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1 | used since chapter 11 (2026-10-29) |
 | `ALPACA_LIVE_KEY_ID`, `ALPACA_LIVE_SECRET_KEY` | Alpaca live, only after the checklist | *proposed*; absent by default |
 | `TIINGO_API_KEY` | End-of-day prices, phase 1 (owner's own key); unset, the pull reads `PRICES_CSV_DIR` | This app's name (chapter 08; this table said `TIINGO_API_TOKEN` until then) |
 | `OWNER_WITUS_SUB` | The phase 1 owner's WitUS user id; everyone else sees the landing page | *proposed* |

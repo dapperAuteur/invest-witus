@@ -400,6 +400,22 @@ waitlist, or deleting your data.
 **What can go wrong.** The links on the FAQ go to government sites that change their pages. If one is dead,
 the desk's home page is the fallback; tell the operator so the FAQ can be corrected.
 
+## Alpaca paper (chapter 11)
+
+Written for the app at `v11`. One account can be linked to your Alpaca paper account: in the admin, open the
+account, set **Kind** to Paper (practice) and **Alpaca** to Alpaca paper. Give its plan a **Practice budget**, the
+practice money the plan may spend (Alpaca's paper balance cannot be set, so the app keeps this number).
+
+- **The method page** shows "This month's buys" above the view switch: the plan's amount for each symbol, the
+  budget spent and left, and **Confirm** inside the buy window. One click places one market order per symbol for
+  the dollar amount on Alpaca paper and writes it into the journal. A second click sends nothing. With the market
+  closed the button reads "Confirm: queue for the open". If Confirm is missing, the box says why in one sentence.
+- **The paper page** (`/accounts/<id>/paper/`, linked from the account page) shows Alpaca's cash, buying power,
+  equity and positions beside the budget, every order the app placed with its status, and **Check orders now**,
+  which copies fills into the journal. The nightly job does the same.
+- Paper only: the band at the top says "Paper money. Live trading needs the checklist in a later chapter and
+  separate keys."
+
 ## What the app will not do
 
 - **Advise.** It recommends no security and never says which to buy. Every rule it checks (later chapters)
@@ -409,7 +425,7 @@ the desk's home page is the fallback; tell the operator so the FAQ can be correc
   appears on any of them. Values are shown to the signed-in owner only.
 - **Show live quotes.** Prices are end-of-day closes, pulled once a night and stored with their date. A page
   never asks a vendor.
-- **Hold or move money.** Paper by default. Alpaca paper trading is chapter 11, live trading later still,
+- **Hold or move money.** Paper only: Alpaca paper orders on your click (chapter 11). Live trading comes later,
   behind a checklist and separate keys.
 - **Admit other users yet.** The waitlist is a list; approving an entry changes its status and sends nothing.
   Other learners come after the legal gate, with the course, for education only.

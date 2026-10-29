@@ -11,6 +11,7 @@ from the dashboards named; this file never holds one.
 | `STORAGE_DATABASE_URL`, `STORAGE_DATABASE_URL_UNPOOLED` and the other `STORAGE_*` names | written by the Neon integration on the same page (the connect dialog's prefix was `STORAGE`) | the site (pooled) and migrations (unpooled) |
 | `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_CLIENT_SECRET` | same page; the matching `WITUS_OIDC_SECRET__INVEST` sits on the witus-online project | Sign in with WitUS |
 | `TIINGO_API_KEY`, `CRON_SECRET` | same page | the nightly pull and its cron route |
+| `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | same page; made in Alpaca's paper dashboard, API Keys, Generate New Key | Confirm, the paper page and the order sync (chapter 11) |
 | the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
 
 Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
@@ -82,6 +83,18 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
 - By hand on the laptop against the local database: `uv run --env-file .env python manage.py pull_prices`
   (`--since YYYY-MM-DD`, `--symbols A,B`); with no `TIINGO_API_KEY` in `.env` it reads CSV files from
   `PRICES_CSV_DIR`.
+
+## Paper orders (chapter 11)
+
+Nothing new runs by hand after a deploy: chapter 11's three migrations are applied by the workflow above.
+
+- The nightly cron reads open paper orders back after the price pull, once both Alpaca keys are set; its JSON
+  gains an `orders` object (`checked`, `changed`, `filled`, `ended_part_filled`, `ended_unfilled`, `still_open`,
+  `failed`).
+- By hand on production: the paper page's **Check orders now** (signed in as the owner), or the cron by hand as
+  above.
+- By hand on the laptop: `uv run --env-file .env python manage.py sync_paper_orders`. With no keys in `.env` it
+  prints `Alpaca paper keys are not set; nothing to sync.` and calls nothing.
 
 ## The laptop copy
 
