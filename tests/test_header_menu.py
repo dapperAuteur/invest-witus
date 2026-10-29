@@ -72,7 +72,7 @@ def practice(owner: User, empty: Account) -> Account:
     return account
 
 
-# --- The Logbook link ------------------------------------------------------------------------------
+# --- The Logbook link -----------------------------------------------------------------------------
 
 
 @pytest.mark.django_db
@@ -119,7 +119,7 @@ def test_the_accounts_list_links_every_accounts_logbook(
     assert logbook_link(empty) in links and logbook_link(practice) in links
 
 
-# --- The menu on small screens ---------------------------------------------------------------------
+# --- The menu on small screens --------------------------------------------------------------------
 
 
 @pytest.mark.django_db
@@ -162,7 +162,7 @@ def test_signed_out_there_is_no_button_and_no_script(client: Client, path: str) 
     assert "menu-toggle" not in html and "<script" not in html
 
 
-# --- The smoke test: the sign-in control stays visible with its exact name -------------------------
+# --- The smoke test: the sign-in control stays visible with its exact name ------------------------
 
 
 @pytest.mark.smoke
