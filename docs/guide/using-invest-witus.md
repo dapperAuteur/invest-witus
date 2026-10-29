@@ -416,6 +416,42 @@ practice money the plan may spend (Alpaca's paper balance cannot be set, so the 
 - Paper only: the band at the top says "Paper money. Live trading needs the checklist in a later chapter and
   separate keys."
 
+## The journal and the monthly close (chapter 12)
+
+Written for the app at `v12`. Everything here is on the method page (`/accounts/<id>/method/`) and the logbook
+(`/accounts/<id>/logbook/`), for the account's owner only.
+
+- **Log a hold or a skip.** The log form under every view has a **Kind**: Trade (a buy or a sell), Hold or Skip.
+  A trade needs **Action**, **Symbol** and **Amount**, as before. A hold or a skip needs only the day and **Why**;
+  leave Action, Amount and Shares empty. Any entry can also carry **State** (Calm, Focused, Confident, Unsure,
+  Stressed or Rushed) and **Tags**, up to five words of your own separated by spaces or commas.
+- **A skip explains a month with no buy.** The review still lists "No buy in 2026-03" under "Buy once in every
+  month of the plan", with "Explained by a skip:" and your reason beside it. The month reads **skipped** in view
+  B's Months table, and the rule reads **explained** when every finding it has is explained. A skip does not
+  excuse a late buy, a wrong amount or a sale.
+- **Close last month.** When a month's buy window has closed, view A shows **Close last month** with a link,
+  **Review 2026-03**. The review page shows the month's findings and entries and asks three questions: **What I
+  did**, **What the rules said** (started for you from the findings) and **What I'll do next month**. Press
+  **Close 2026-03**. A month with no buy and no skip cannot be closed: log a skip that says why first. View B
+  lists every month's review, open or closed.
+- **A closed month is read-only.** Its entries cannot be added, edited or deleted, from the page or the admin.
+  To change one, open the month's review and press **Reopen** with a reason. The **History** at the bottom of the
+  review page lists every close, with what you wrote, and every reopen, with why, with the time and your name.
+- **Change or end the plan.** Under the view switch, **Change or end this plan**. Pick **Change the numbers**
+  (amount, window, symbols) and **Starting** next month, or this month while its window is still open and
+  nothing is logged in it; or pick **End the plan**. **Why** is required. A change is a new version: the months
+  before it stay judged by the old numbers, and view A lists the versions with their dates and reasons. Ending
+  the plan keeps its months and reviews and takes you to the Lesson Lab to start another.
+- **Place again** (paper accounts). If this month's order ended with nothing filled (canceled or expired), the
+  box says so and the button reads **Place again**, inside the window only. It sends one new order with a new id
+  ending in `-r2`; a second click sends nothing.
+- **The logbook.** **Open the logbook** under the view switch: every entry with its kind, state, tags, reason,
+  note and source, filtered by **Month**, **Kind** and **Tag**. **Edit** appears on lines you wrote by hand in an
+  open month; a line a paper order wrote is kept in step with Alpaca and is not edited. **Download these as CSV**
+  saves the filtered list as `logbook-account-<id>.csv`, with the columns `date, kind, symbol, amount, shares,
+  state, tags, reason, note, source, month_closed`. A reason or note that starts with `=`, `+`, `-` or `@` is
+  saved with an apostrophe in front, so a spreadsheet shows it as text.
+
 ## What the app will not do
 
 - **Advise.** It recommends no security and never says which to buy. Every rule it checks (later chapters)
@@ -435,9 +471,8 @@ practice money the plan may spend (Alpaca's paper balance cannot be set, so the 
 - **Keep your money data in git.** Real statements live in the database; the tutorial's samples use
   placeholder symbols; `data/private/` is ignored by git.
 
-Still to come, each its own chapter: the watch list (09, built on its branch, not merged), the method engine and the three views (10), Alpaca
-paper trading and the monthly review (11), the journal (12), the in-app bug reporter (13), 12-1 momentum (14),
-signed events to CentenarianOS (15).
+Still to come, each its own chapter: the in-app bug reporter (13), 12-1 momentum (14), signed events to
+CentenarianOS (15).
 
 ## When something goes wrong: a short table
 
@@ -456,3 +491,5 @@ signed events to CentenarianOS (15).
 | Cron answers 403 | Wrong bearer | Check the variable's value for stray spaces or quotes |
 | `CSRF verification failed` on a form | The origin is not trusted | `DJANGO_CSRF_TRUSTED_ORIGINS` must name `https://invest.witus.online` |
 | `DisallowedHost` | The host is not allowed | `DJANGO_ALLOWED_HOSTS`, or Vercel's system variables are off |
+| "2026-03 is closed. Reopen its review, with a reason, to change it." | The entry's month is closed | Open the month's review and **Reopen** it with a reason |
+| "2026-03 has no buy and no skip with a reason." when closing | The month was missed and nothing says why | Log a **Skip** for that month with **Why**, then close it |
