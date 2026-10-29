@@ -1,5 +1,5 @@
 """The owner's accounts, outside the admin: a list, and one account valued at the latest closes
-with its watch list underneath (chapter 09).
+with its watch list underneath (chapter 09) and a line naming the method it runs (chapter 10).
 
 Both views sit behind `login_required`, which sends a visitor to `LOGIN_URL` (the WitUS sign-in,
 chapter 07), and both read only the accounts the signed-in user owns. Someone else's account is a
@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from invest_witus_site.holdings.models import Account
+from invest_witus_site.methods.models import MethodPlan
 from invest_witus_site.prices.portfolio import value_snapshot, watch_list
 from invest_witus_site.watchlist.forms import WatchForm
 
@@ -43,5 +44,7 @@ def account_page(
         "valuation": valuation,
         "watch": watch_list(account, today),
         "watch_form": watch_form or WatchForm(),
+        # Chapter 10: the method this account runs, or None; the method page holds the rest.
+        "method_plan": MethodPlan.active_for(account),
     }
     return render(request, "holdings/account_detail.html", context)

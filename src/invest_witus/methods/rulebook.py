@@ -38,6 +38,18 @@ class Method:
         return self.rule(rule_id).lesson or self.lesson or LESSON_COMING
 
 
+def available_methods() -> list[Method]:
+    """Every method that ships in this package, by id: one per `.toml` file. Chapter 10's start
+    form reads this list, so a method added as a file appears there without a code change."""
+    package = files("invest_witus.methods")
+    ids = sorted(
+        resource.name.removesuffix(".toml").replace("_", "-")
+        for resource in package.iterdir()
+        if resource.name.endswith(".toml")
+    )
+    return [load_method(method_id) for method_id in ids]
+
+
 def load_method(method_id: str) -> Method:
     """Read `<method_id with underscores>.toml` from the methods package."""
     resource = files("invest_witus.methods") / f"{method_id.replace('-', '_')}.toml"

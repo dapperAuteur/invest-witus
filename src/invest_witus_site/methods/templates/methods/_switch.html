@@ -1,0 +1,10 @@
+{# The view switch (chapter 10): three plain links. The current one carries aria-current, which #}
+{# a screen reader announces; the choice is remembered in the session by the view that handles ?view=. #}
+<nav class="views" aria-label="View">
+  <ul class="plain views-list">
+    {% for key, label in views %}
+    <li><a href="?view={{ key }}{{ through_query }}"{% if key == view %} aria-current="page"{% endif %}>{{ label }}</a></li>
+    {% endfor %}
+  </ul>
+  <p class="small muted">Three arrangements of the same plan, rules, review and journal. Reviewed through {{ through|date:"Y-m-d" }}.</p>
+</nav>
