@@ -1,0 +1,83 @@
+# Operations runbook: the commands the owner runs
+
+Everything here runs from the repository root on the owner's machine. Nothing here prints a secret. Values come
+from the dashboards named; this file never holds one.
+
+## Where the secrets live
+
+| Secret | Lives in | Read by |
+|---|---|---|
+| `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Vercel → invest-witus → Settings → Environment Variables (Production, Sensitive) | the deployed site |
+| `STORAGE_DATABASE_URL`, `STORAGE_DATABASE_URL_UNPOOLED` and the other `STORAGE_*` names | written by the Neon integration on the same page (the connect dialog's prefix was `STORAGE`) | the site (pooled) and migrations (unpooled) |
+| `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_CLIENT_SECRET` | same page; the matching `WITUS_OIDC_SECRET__INVEST` sits on the witus-online project | Sign in with WitUS |
+| `TIINGO_API_KEY`, `CRON_SECRET` | same page | the nightly pull and its cron route |
+| the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
+
+Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
+supply them to a local command. For anything that needs production values, make a one-line file as below.
+
+## Production migrations
+
+Run after every merge that adds a migration (the deploy itself never migrates; chapter 06 decided that).
+Between the deploy and this command, pages that touch the new table answer 500.
+
+1. Neon console → project `invest-db` → **Connect** → pooled connection **off** → copy the string (its host has
+   no `-pooler` in it).
+2. Create `.env.migrate` in the repository root (gitignored by `.env*`) with one line:
+   ```
+   STORAGE_DATABASE_URL_UNPOOLED=<the direct string>
+   ```
+3. ```sh
+   cd /Users/bam/Code_NOiCloud/ai-builds/claude/invest-witus
+   DJANGO_SECRET_KEY=only-for-this-shell-not-the-real-one VERCEL= \
+     uv run --env-file .env.migrate python manage.py migrate --database direct
+   rm .env.migrate
+   ```
+   Expected: `Applying <app>.<migration>... OK` lines, then nothing. The throwaway key is fine: `migrate` writes no
+   signed data. `VERCEL=` (empty) keeps the settings in laptop mode. The default database in that shell is the
+   laptop SQLite file; `--database direct` sends everything to Neon. Any "unapplied migrations" warning printed by
+   another command in the same shell is about the laptop file, not Neon.
+
+To see what Neon has: `... python manage.py showmigrations --database direct` with the same env file.
+
+## The owner's login (once per database)
+
+```sh
+read -s DJANGO_SUPERUSER_PASSWORD && export DJANGO_SUPERUSER_PASSWORD
+DJANGO_SUPERUSER_USERNAME=<username> DJANGO_SUPERUSER_EMAIL=<the address on your WitUS account> \
+DJANGO_SECRET_KEY=only-for-this-shell-not-the-real-one VERCEL= \
+  uv run --env-file .env.migrate python manage.py createsuperuser --noinput --database direct
+unset DJANGO_SUPERUSER_PASSWORD
+```
+Use the WitUS account's email so chapter 07 links the two on the first sign-in. A second run says
+`Error: That username is already taken.`
+
+## The nightly price pull
+
+- Scheduled: `vercel.json` runs `GET /api/cron/pull-prices/` at 06:00 UTC daily (Hobby: once a day, within the hour).
+- By hand on production: Vercel → invest-witus → Settings → **Cron Jobs** → **Run**, or
+  `curl -H "Authorization: Bearer <CRON_SECRET>" https://invest.witus.online/api/cron/pull-prices/`
+  (503 means the secret is unset on the project; 403 means the header does not match).
+- By hand on the laptop against the local database: `uv run --env-file .env python manage.py pull_prices`
+  (`--since YYYY-MM-DD`, `--symbols A,B`); with no `TIINGO_API_KEY` in `.env` it reads CSV files from
+  `PRICES_CSV_DIR`.
+
+## The laptop copy
+
+```sh
+uv run --env-file .env python manage.py migrate        # the local SQLite file
+uv run --env-file .env python manage.py runserver      # http://127.0.0.1:8000/
+uv run pytest                                           # the whole suite
+```
+
+## Redeploy
+
+Vercel → Deployments → the latest → **Redeploy** (needed after changing an environment variable; a merge to
+`main` deploys on its own). `https://invest.witus.online/healthz/` reports `{"status": "ok", "database": true}`
+when the site reaches Postgres.
+
+## Vercel project settings that the ecosystem expects
+
+Standard build machine, On-Demand Concurrent Builds off, Ignored Build Step = production and `bundle/*` only
+(set 2026-10-28 with `npx tsx scripts/vercel-build-settings.ts --apply --ignore-step --only invest-witus` from
+the witus repo), Deployment Protection off for Production, System Environment Variables enabled.
