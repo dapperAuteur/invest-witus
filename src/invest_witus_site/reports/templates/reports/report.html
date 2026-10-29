@@ -20,20 +20,20 @@
     <div class="field">
       <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
       {{ form.message }}
-      <p class="small muted">{{ form.message.help_text }}</p>
+      <p class="small muted" id="{{ form.message.auto_id }}_helptext">{{ form.message.help_text }}</p>
       {{ form.message.errors }}
     </div>
     <div class="field">
       <label for="{{ form.page.id_for_label }}">{{ form.page.label }}</label>
       {{ form.page }}
-      <p class="small muted">{{ form.page.help_text }}</p>
+      <p class="small muted" id="{{ form.page.auto_id }}_helptext">{{ form.page.help_text }}</p>
       {{ form.page.errors }}
     </div>
     {% if form.email %}
     <div class="field">
       <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
       {{ form.email }}
-      <p class="small muted">{{ form.email.help_text }}</p>
+      <p class="small muted" id="{{ form.email.auto_id }}_helptext">{{ form.email.help_text }}</p>
       {{ form.email.errors }}
     </div>
     {% else %}

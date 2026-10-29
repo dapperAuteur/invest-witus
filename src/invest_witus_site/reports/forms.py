@@ -27,7 +27,7 @@ class ReportForm(forms.Form):
         label="Your email",
         max_length=254,
         required=False,
-        help_text="So the answer can reach you. Used for this report only.",
+        help_text="So a reply can reach you. Used for this report only.",
     )
     # The honeypot, as on the waitlist form (chapter 04): people never see it, bots fill it in.
     website = forms.CharField(
