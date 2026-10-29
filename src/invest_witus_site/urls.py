@@ -17,6 +17,8 @@ urlpatterns = [
     # The watch list's add and remove actions on an account page (chapter 09). The `pk` captured
     # here is passed on to the included views.
     path("accounts/<int:pk>/watch/", include("invest_witus_site.watchlist.urls")),
+    # The method an account runs, its journal and the review, in three views (chapter 10).
+    path("accounts/<int:pk>/method/", include("invest_witus_site.methods.urls")),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).
     path("api/cron/", include("invest_witus_site.prices.urls")),
     path("", include("invest_witus_site.pages.urls")),

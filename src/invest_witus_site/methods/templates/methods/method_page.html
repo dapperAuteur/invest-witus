@@ -1,0 +1,15 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}{% if plan %}{{ review.method.name }}{% else %}Start a method{% endif %}: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="method-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="method-heading">{% if plan %}{{ review.method.name }}{% else %}Start a method{% endif %}</h1>
+  {# The environment, as text, on every signed-in page (PRD 7.2). The account's kind is what chapter 05 stored. #}
+  <p class="band">{{ account.get_kind_display }} account. {% if account.kind == "paper" %}Simulated money: nothing here is a real trade.{% else %}Entered by hand from statements: the app places no order.{% endif %} Information, not advice.</p>
+  {% include "methods/_switch.html" %}
+  {# The same context, one of three arrangements (chapter 10). The view's letter is the research's. #}
+  {% include view_template %}
+  <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
+</section>
+{% endblock %}

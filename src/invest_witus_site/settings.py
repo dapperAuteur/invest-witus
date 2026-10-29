@@ -5,7 +5,7 @@ safe default for the laptop. The names are listed in `.env.example`; values neve
 Chapter 06 added the server's side: the database from `DATABASE_URL`, a secret key the server
 must set, the HTTPS cookie and proxy settings, the folder `collectstatic` fills, and logging a
 server can show. Chapter 07 added the four names of Sign in with WitUS; chapter 08 the price
-source and the cron secret, at the end. Chapter 09 adds one app and no names.
+source and the cron secret, at the end. Chapters 09 and 10 add one app each and no names.
 """
 
 import contextlib
@@ -103,6 +103,8 @@ INSTALLED_APPS = [
     "invest_witus_site.prices",
     # The watch list (chapter 09): symbols the owner follows, kept per account, pulled nightly.
     "invest_witus_site.watchlist",
+    # The method engine (chapter 10): the plan an account runs, its journal, the review, the views.
+    "invest_witus_site.methods",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.

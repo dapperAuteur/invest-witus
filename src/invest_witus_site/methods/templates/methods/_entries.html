@@ -1,0 +1,31 @@
+{% load holdings_extras %}
+{# The journal as a table (chapter 10). Included with `entries`; the caption is the including view's. #}
+{% if entries %}
+<table class="holdings">
+  <caption class="sr-only">{{ caption }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Day</th>
+      <th scope="col">Action</th>
+      <th scope="col">Symbol</th>
+      <th scope="col" class="num">Amount</th>
+      <th scope="col" class="num">Shares</th>
+      <th scope="col">Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <th scope="row">{{ entry.date|date:"Y-m-d" }}</th>
+      <td>{{ entry.get_action_display }}</td>
+      <td>{{ entry.symbol }}</td>
+      <td class="num">{{ entry.amount|plain_number }}</td>
+      <td class="num">{% if entry.shares is not None %}{{ entry.shares|plain_number }}{% else %}<span class="muted">not recorded</span>{% endif %}</td>
+      <td>{{ entry.note }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Nothing logged yet.</p>
+{% endif %}

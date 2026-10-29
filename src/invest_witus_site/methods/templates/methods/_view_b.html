@@ -1,0 +1,102 @@
+{% load holdings_extras %}
+{# View B, "Method Console" (research 01, direction B): the operator's view. Status, the rule checks #}
+{# with evidence and a lesson column, every month of the plan, the findings and the journal as tables. #}
+{# Read-only by design: the one form is the same log form the other views carry. No order queue yet #}
+{# (chapter 11) and no envelope chart: the method has no backtest range to draw. #}
+{% if plan %}
+<dl class="status" aria-label="Status">
+  <dt>Environment</dt><dd>{{ account.get_kind_display }} ({{ account.broker }})</dd>
+  <dt>Method</dt><dd>{{ review.method.name }}, version {{ review.method.version }} ({{ review.method.id }})</dd>
+  <dt>Plan</dt><dd>{{ plan.amount|plain_number }} into {{ plan.symbols }}, days 1 to {{ plan.buy_window_days }}, since {{ plan.started_on|date:"Y-m-d" }}</dd>
+  <dt>Reviewed through</dt><dd>{{ review.through|date:"Y-m-d" }}</dd>
+  <dt>Months</dt><dd>{{ review.months_done }} done of {{ review.months_due }} due</dd>
+  <dt>Findings</dt><dd>{{ review.findings|length }}</dd>
+  <dt>Journal</dt><dd>{{ entries|length }} entr{{ entries|length|pluralize:"y,ies" }}</dd>
+</dl>
+
+<h2>Rule checks</h2>
+<table class="holdings">
+  <caption class="sr-only">Each rule of the method, its result through the review date, the evidence and its lesson</caption>
+  <thead>
+    <tr>
+      <th scope="col">Rule</th>
+      <th scope="col">Status</th>
+      <th scope="col">Evidence</th>
+      <th scope="col">Lesson</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for check in review.checks %}
+    <tr>
+      <th scope="row">{{ check.rule.text }}</th>
+      <td>{{ check.status }}</td>
+      <td>{{ check.evidence }}</td>
+      <td>{% if check.rule.lesson_url %}<a href="{{ check.rule.lesson_url }}">{{ check.rule.id }}</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Months</h2>
+<table class="holdings">
+  <caption class="sr-only">Every month of the plan through the review date: its window, what was bought, and whether it is done, missed or open</caption>
+  <thead>
+    <tr>
+      <th scope="col">Month</th>
+      <th scope="col">Window closes</th>
+      <th scope="col">Status</th>
+      <th scope="col" class="num">Buys</th>
+      <th scope="col" class="num">Amount</th>
+      <th scope="col" class="num">Shares</th>
+      <th scope="col">Rules flagged</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in review.months %}
+    <tr>
+      <th scope="row">{{ row.label }}</th>
+      <td>{{ row.window_closes|date:"Y-m-d" }}</td>
+      <td>{{ row.status }}</td>
+      <td class="num">{{ row.buys }}</td>
+      <td class="num">{{ row.amount|plain_number }}</td>
+      <td class="num">{% if row.shares is not None %}{{ row.shares|plain_number }}{% elif row.buys %}<span class="muted">not recorded</span>{% endif %}</td>
+      <td>{% if row.rule_ids %}{{ row.rule_ids|join:", " }}{% else %}<span class="muted">none</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Findings</h2>
+{% if review.findings %}
+<table class="holdings">
+  <caption class="sr-only">Every finding of the review, by day</caption>
+  <thead>
+    <tr>
+      <th scope="col">Day</th>
+      <th scope="col">Rule</th>
+      <th scope="col">What happened</th>
+      <th scope="col">Lesson</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for finding in review.findings %}
+    <tr>
+      <th scope="row">{{ finding.day|date:"Y-m-d" }}</th>
+      <td>{{ finding.rule.text }}</td>
+      <td>{{ finding.message }}</td>
+      <td>{% if finding.rule.lesson_url %}<a href="{{ finding.rule.lesson_url }}">{{ finding.rule.id }}</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="on-plan">No findings through {{ review.through|date:"Y-m-d" }}: every rule passed.</p>
+{% endif %}
+
+<h2>Journal</h2>
+{% include "methods/_entries.html" with caption="Every trade logged for this account, in date order" %}
+<h3>Log an entry</h3>
+{% include "methods/_log_form.html" %}
+{% else %}
+<p>No method runs on this account, so there is nothing to supervise. <a href="?view=c">Start one in the Lesson Lab</a>.</p>
+{% endif %}

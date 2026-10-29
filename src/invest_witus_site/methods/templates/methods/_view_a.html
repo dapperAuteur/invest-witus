@@ -1,0 +1,32 @@
+{% load holdings_extras %}
+{# View A, "The Plan and the Logbook" (research 01, direction A): the everyday home. One next action, #}
+{# the on-plan status with its fixes, the plan's rules each with its lesson, and the logbook. #}
+{% if plan %}
+<section class="card" aria-labelledby="next-heading">
+  <h2 id="next-heading">Next</h2>
+  <p>{% if review.next_action.status == "due" %}Due now: buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, the end of this month's window.{% else %}Buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} between {{ review.next_action.opens|date:"Y-m-d" }} and {{ review.next_action.closes|date:"Y-m-d" }}. Nothing to do before then.{% endif %}</p>
+</section>
+
+<section aria-labelledby="status-heading">
+  <h2 id="status-heading">{% if review.on_plan %}You are on plan{% else %}Off plan: {{ review.findings|length }} thing{{ review.findings|length|pluralize }} to look at{% endif %}</h2>
+  <p>{{ review.months_done }} of {{ review.months_due }} scheduled buy{{ review.months_due|pluralize }} made through {{ review.through|date:"Y-m-d" }}. A finding is a place the journal left the method; the lesson beside it says why the rule exists.</p>
+  {% include "methods/_findings.html" %}
+</section>
+
+<section aria-labelledby="plan-heading">
+  <h2 id="plan-heading">My plan</h2>
+  <p>{{ review.method.summary }}</p>
+  <p>{{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
+  <h3>The rules</h3>
+  {% include "methods/_rules.html" with rules=review.rules %}
+</section>
+
+<section aria-labelledby="logbook-heading">
+  <h2 id="logbook-heading">Logbook</h2>
+  {% include "methods/_entries.html" with caption="Every trade logged for this account, in date order" %}
+  <h3>Write a log entry</h3>
+  {% include "methods/_log_form.html" %}
+</section>
+{% else %}
+<p>No method yet on this account. <a href="?view=c">Read the rules and start one in the Lesson Lab</a>.</p>
+{% endif %}

@@ -147,3 +147,18 @@ button[type="submit"] { min-height: 2.75rem; padding: 0 1.25rem; background: var
 .message { padding: 0.5rem 0.75rem; margin: 0.5rem 0; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); }
 .message.success { border-color: var(--accent); }
 .message.error { border-color: var(--danger); }
+
+/* The method page (chapter 10): the view switch, the environment band, the status list and the cards. */
+.views-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 1rem 0; }
+.views-list a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; text-decoration: none; }
+.views-list a[aria-current="page"] { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); font-weight: 700; }
+.band { border: 1px dashed var(--muted); border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+.card { border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem 1.25rem; margin: 1.5rem 0; background: var(--surface); }
+.card h2 { margin-top: 0; }
+.status { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 1rem 0; font-size: 0.9375rem; }
+.status dt { color: var(--muted); }
+.status dd { margin: 0; }
+.rules li, .findings li { margin-bottom: 0.5rem; }
+.method-form { max-width: 28rem; }
+.method-form input, .method-form select { width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
+.helptext { display: block; font-size: 0.875rem; color: var(--muted); margin-top: 0.25rem; }
