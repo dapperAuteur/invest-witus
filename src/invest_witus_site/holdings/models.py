@@ -13,6 +13,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 
 from invest_witus.holdings import Change, Position, compare
 from invest_witus.money import to_money, to_shares
@@ -55,10 +56,39 @@ class Account(models.Model):
     )
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
 
+    class Alpaca(models.TextChoices):
+        """Which Alpaca environment the account mirrors (chapter 11). Paper is the only choice:
+        live trading needs the checklist in a later chapter and separate keys, and is not here."""
+
+        NONE = "", "Not linked"
+        PAPER = "paper", "Alpaca paper"
+
+    alpaca: models.CharField[str, str] = models.CharField(
+        max_length=5,
+        choices=Alpaca.choices,
+        blank=True,
+        default="",
+        help_text="Chapter 11. Paper accounts only, one per owner.",
+    )
+
     class Meta:
         ordering = ["name"]
         constraints = [
             models.UniqueConstraint(fields=["owner", "name"], name="account_name_once_per_owner"),
+            # Chapter 11: a link to Alpaca's paper environment only on a paper account, and one per
+            # owner, because the server holds one pair of paper keys and two linked rows would
+            # count the same orders twice.
+            models.CheckConstraint(
+                condition=Q(alpaca="") | Q(kind="paper"),
+                name="alpaca_link_on_paper_accounts_only",
+                violation_error_message="Only a paper account can be linked to Alpaca paper.",
+            ),
+            models.UniqueConstraint(
+                fields=["owner"],
+                condition=Q(alpaca="paper"),
+                name="one_alpaca_paper_account_per_owner",
+                violation_error_message="This owner already has an account linked to Alpaca paper.",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -70,6 +100,10 @@ class Account(models.Model):
 
     def latest_snapshot(self) -> Snapshot | None:
         return self.snapshots().first()
+
+    @property
+    def is_alpaca_paper(self) -> bool:
+        return self.alpaca == "paper"
 
 
 class Holding(models.Model):

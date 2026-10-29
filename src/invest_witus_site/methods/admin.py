@@ -15,6 +15,7 @@ class MethodPlanAdmin(admin.ModelAdmin[MethodPlan]):
         "symbols",
         "buy_window_days",
         "started_on",
+        "practice_budget",
         "active",
     )
     list_editable = ("active",)

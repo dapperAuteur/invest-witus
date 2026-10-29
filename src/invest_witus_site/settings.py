@@ -105,6 +105,8 @@ INSTALLED_APPS = [
     "invest_witus_site.watchlist",
     # The method engine (chapter 10): the plan an account runs, its journal, the review, the views.
     "invest_witus_site.methods",
+    # Alpaca paper trading (chapter 11): the paper client, the orders, the confirm step, the sync.
+    "invest_witus_site.paper",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -277,3 +279,19 @@ PRICES_CSV_DIR = Path(os.environ.get("PRICES_CSV_DIR") or DATA_DIR / "prices")
 # read October 28, 2026; at least 16 random characters). Empty means the route answers 503 and
 # runs nothing: a deploy that forgot the variable fails closed.
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
+
+# Alpaca paper trading (chapter 11). The owner's paper keys, from the paper dashboard's API Keys
+# module; empty means every Alpaca feature says "not set" and nothing is called. The client's host
+# is fixed in `paper/alpaca.py` to paper-api.alpaca.markets, never read from here. Live trading is
+# not built: it needs the checklist in a later chapter and separate keys under other names.
+ALPACA_PAPER_KEY_ID = os.environ.get("ALPACA_PAPER_KEY_ID", "")
+ALPACA_PAPER_SECRET_KEY = os.environ.get("ALPACA_PAPER_SECRET_KEY", "")
+# Alpaca's own tools read the host from APCA_API_BASE_URL (its paper trading page, read October
+# 29, 2026). This app does not, but a value pointing anywhere except the paper host means someone
+# expects live trading here, so the settings refuse to start rather than run beside that belief.
+_alpaca_base_url = os.environ.get("APCA_API_BASE_URL", "")
+if _alpaca_base_url and _alpaca_base_url.rstrip("/") != "https://paper-api.alpaca.markets":
+    raise ImproperlyConfigured(
+        "APCA_API_BASE_URL points somewhere other than https://paper-api.alpaca.markets. "
+        "This app trades on paper only; unset it or set it to the paper host."
+    )

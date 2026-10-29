@@ -381,6 +381,16 @@ Acceptance:
 - A review cannot be closed with an unexplained skip.
 - The daily job copies new Alpaca orders and fills into the app before evaluating rules.
 
+*Built in chapter 11 (2026-10-29), paper only: the `paper` app's client is built for `paper-api.alpaca.markets` and
+refuses the live host, the settings refuse a live `APCA_API_BASE_URL`, and tests assert both; keys are read from two
+environment variables on the server and never rendered or logged; `MethodPlan.practice_budget` is the plan's budget
+and Confirm refuses buys beyond what is left, with Alpaca's balance shown beside it and ignored; "This month's buys"
+are staged from the plan on the method page and placed only on the owner's click, once each by `client_order_id`;
+each order is a journal entry the nightly sync corrects; the paper page states Alpaca's paper limits and prints the
+host beside the environment. Deferred: staged orders shown "with the rule that produced each" (method 1 has one
+buy rule), Hold with a reason and closing the review (chapter 12), plan value from the app's own fills, importing
+orders placed outside the app, live trading and its checklist; decisions log, rows 94 to 102.*
+
 ### 7.8 In-app reporter: bug, feature, question
 
 So BAM can send bugs and questions to Claude through the app. Pattern from Tour Manager OS (help bubble plus Inbox

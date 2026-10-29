@@ -19,6 +19,9 @@ urlpatterns = [
     path("accounts/<int:pk>/watch/", include("invest_witus_site.watchlist.urls")),
     # The method an account runs, its journal and the review, in three views (chapter 10).
     path("accounts/<int:pk>/method/", include("invest_witus_site.methods.urls")),
+    # The account linked to Alpaca paper: its positions, cash and orders, the Confirm step and
+    # the order check (chapter 11). Owner, superuser and a linked account only.
+    path("accounts/<int:pk>/paper/", include("invest_witus_site.paper.urls")),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).
     path("api/cron/", include("invest_witus_site.prices.urls")),
     path("", include("invest_witus_site.pages.urls")),

@@ -58,6 +58,16 @@ class StartMethodForm(forms.Form):
     started_on = forms.DateField(
         label="Start", widget=forms.DateInput(attrs={"type": "date"}), initial=date.today
     )
+    # Chapter 11: optional, and used only on an account linked to Alpaca paper, where Confirm
+    # refuses buys beyond what is left of it.
+    practice_budget = forms.DecimalField(
+        label="Practice budget",
+        required=False,
+        min_value=ONE_CENT,
+        max_digits=14,
+        decimal_places=2,
+        help_text="Paper accounts only: the practice money this plan may spend. Optional.",
+    )
 
     def __init__(self, account: Account, data: Mapping[str, Any] | None = None) -> None:
         super().__init__(data)
@@ -88,6 +98,7 @@ class StartMethodForm(forms.Form):
             buy_window_days=self.cleaned_data["buy_window_days"],
             symbols=self.cleaned_data["symbols"],
             started_on=self.cleaned_data["started_on"],
+            practice_budget=self.cleaned_data["practice_budget"],
         )
 
 

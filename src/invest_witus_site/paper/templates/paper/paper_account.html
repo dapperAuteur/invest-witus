@@ -1,0 +1,102 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Alpaca paper: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="paper-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="paper-heading">Alpaca paper</h1>
+  {# The environment as text (PRD 7.2 and 7.7): the host beside it, and the line about live trading. #}
+  <p class="band">Alpaca paper ({{ host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+  {% if error %}
+  <p class="error">Alpaca did not answer. {{ error }}</p>
+  {% endif %}
+
+  <h2>Practice budget</h2>
+  {% if plan %}
+  <dl class="status" aria-label="Practice budget">
+    <dt>Budget</dt><dd>{% if plan.practice_budget is not None %}{{ plan.practice_budget|plain_number }}{% else %}not set{% endif %}</dd>
+    <dt>Spent</dt><dd>{{ spent|plain_number }}</dd>
+    <dt>Plan</dt><dd>{{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} days of each month</dd>
+  </dl>
+  <p>The budget is the app's own number. Alpaca's paper balance cannot be set, so the plan spends from this budget and Alpaca's cash below is not the plan's.</p>
+  {% else %}
+  <p>No method runs on this account. <a href="{% url 'method-page' account.pk %}?view=c">Start one</a>, with a practice budget.</p>
+  {% endif %}
+
+  {% if alpaca_account %}
+  <h2>Alpaca's account</h2>
+  <dl class="status" aria-label="Alpaca's paper account">
+    <dt>Cash</dt><dd>{{ alpaca_account.cash|plain_number }}</dd>
+    <dt>Buying power</dt><dd>{{ alpaca_account.buying_power|plain_number }}</dd>
+    <dt>Equity</dt><dd>{{ alpaca_account.equity|plain_number }}</dd>
+    <dt>Status</dt><dd>{{ alpaca_account.status }}{% if alpaca_account.trading_blocked %}, trading blocked{% endif %}</dd>
+  </dl>
+
+  <h2>Positions</h2>
+  {% if positions %}
+  <table class="holdings">
+    <caption class="sr-only">Positions on Alpaca's paper account, as Alpaca reports them</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">Shares</th>
+        <th scope="col" class="num">Price</th>
+        <th scope="col" class="num">Last close</th>
+        <th scope="col" class="num">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for position in positions %}
+      <tr>
+        <th scope="row">{{ position.symbol }}</th>
+        <td class="num">{{ position.qty|plain_number }}</td>
+        <td class="num">{{ position.current_price|plain_number }}</td>
+        <td class="num">{{ position.lastday_price|plain_number }}</td>
+        <td class="num">{{ position.market_value|plain_number }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No positions yet.</p>
+  {% endif %}
+  {% endif %}
+
+  <h2>Orders the app placed</h2>
+  {% if orders %}
+  <table class="holdings">
+    <caption class="sr-only">Every paper order this app placed for the account, newest month first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Month</th>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">Amount</th>
+        <th scope="col">Status</th>
+        <th scope="col" class="num">Shares filled</th>
+        <th scope="col">Order id</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <th scope="row">{{ order.month }}</th>
+        <td>{{ order.symbol }}</td>
+        <td class="num">{{ order.notional|plain_number }}</td>
+        <td>{{ order.status }}{% if order.message %}: {{ order.message }}{% endif %}</td>
+        <td class="num">{{ order.filled_qty|plain_number }}</td>
+        <td>{{ order.alpaca_id|default:"none yet" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No orders yet. The method page's Confirm button places this month's buys.</p>
+  {% endif %}
+  <form method="post" action="{% url 'paper-sync' account.pk %}">
+    {% csrf_token %}
+    <button type="submit">Check orders now</button>
+  </form>
+  <p class="small muted">{{ paper_limits }} Information, not advice.</p>
+  <p><a href="{% url 'method-page' account.pk %}">The method page</a> · <a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
+</section>
+{% endblock %}

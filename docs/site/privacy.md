@@ -39,6 +39,8 @@ No market data, prices or performance figures are shown on any public page, and 
 
 Added October 28, 2026: once a day the app asks Tiingo for the closing prices of the symbols the operator's accounts hold or watch, using the operator's own Tiingo token, and keeps them in its own database. That request carries symbols and dates, nothing about a person. A copy of the app run from the tutorial reads prices from a file on that machine and asks no one.
 
+Added October 29, 2026: when the operator presses Confirm on an account linked to Alpaca's paper environment, the app sends Alpaca one order per symbol (the symbol, a dollar amount and an order id the app makes), using the operator's own paper keys, and keeps Alpaca's answer and the order's fill in its own database. Alpaca's cash and positions for that paper account are shown to the operator only. Paper orders are simulated; no real money moves. A copy of the app with no Alpaca keys sends nothing.
+
 ## Cookies
 
 The public pages set one cookie, for the form protection Django uses (CSRF). Signing in adds a session cookie, which holds only a session id; the sign-in in progress and who is signed in live on the server. There are no advertising or analytics cookies.

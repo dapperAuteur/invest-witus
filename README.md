@@ -110,6 +110,21 @@ on A after. Starting a method and logging an entry are POST forms behind the sig
 nothing on the page is a price, and no public page links it. The walk-through is
 [chapter 10](docs/chapters/10-the-method-engine-and-the-three-views.md), section 10.10.
 
+## Alpaca paper trading
+
+Chapter 11 adds a `paper` app. An account linked to Alpaca's paper environment (the admin's **Alpaca** field;
+paper accounts only, one per owner) gets "This month's buys" on its method page: the plan's amount split across
+its symbols to the cent, the practice budget the app keeps beside Alpaca's own balance (which cannot be set), and
+a **Confirm** button that sends one notional market day order per symbol to `https://paper-api.alpaca.markets`
+with a `client_order_id` made of the account, the plan, the month and the symbol, so a second click or a retry
+never buys twice. Each order goes into the journal at once; `manage.py sync_paper_orders`, the paper page's
+"Check orders now" and a step in the nightly cron read the orders back and fill in the shares. With the market
+closed the button reads "Confirm: queue for the open". The client is built for the paper host only and refuses
+the live one, and the settings refuse to start if `APCA_API_BASE_URL` names another host; live trading is not
+built. The keys are `ALPACA_PAPER_KEY_ID` and `ALPACA_PAPER_SECRET_KEY` (`.env.example`); without them nothing
+calls Alpaca. Everything here is for the site owner's superuser only. The walk-through is
+[chapter 11](docs/chapters/11-alpaca-paper-and-the-monthly-review.md), sections 11.9 and 11.10.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"
