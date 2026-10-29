@@ -14,6 +14,7 @@ This repository is two things at once:
 
 The user guide and the screen-recording scripts for each feature, written for the person who uses the app rather
 than the person who builds it, live in [`docs/guide/`](docs/guide/README.md).
+The commands the owner runs against production (migrations, the superuser, the cron by hand) are in `docs/05-operations.md`.
 
 Information, not advice. Invest.WitUS is a learning tool. It does not recommend securities and is not open to
 other users yet.
