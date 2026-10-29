@@ -129,6 +129,9 @@ in, **Accounts** in the header lists the same account under **Your accounts** wi
 page says **No statement yet.** with the link **Enter the first one in the admin.** The account linked to Alpaca
 paper (see [Alpaca paper](#alpaca-paper-chapter-11)) also shows **Paper account** on its row, and **Paper
 account** appears in the header beside **Accounts** on every page while you are signed in as the site owner.
+Every row also links that account's **Logbook**, and the header shows **Logbook** for the first account with a
+plan or a journal entry (decision 115). On a phone or a narrow window, signed in, the header's links fold behind a
+**Menu** button; press it to open them, Escape to close. **Sign out** stays visible beside it.
 
 **What can go wrong.**
 

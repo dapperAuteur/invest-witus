@@ -6,22 +6,38 @@
       <img src="{% static 'brand/witus/logomark.svg' %}" alt="" width="32" height="32">
       Invest.WitUS
     </a>
-    <nav aria-label="Primary">
-      <a href="{% url 'faq' %}">FAQ</a>
-      <a href="{% url 'home' %}#waitlist">Waitlist</a>
+    <nav class="site-nav" aria-label="Primary" data-menu>
       {% if user.is_authenticated %}
-        {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form. #}
-        {# Chapter 08: the link to their accounts, valued, on this branch only; no public page links it. #}
-        <a href="{% url 'account-list' %}">Accounts</a>
-        {# The Alpaca paper page, for the owner of the account linked to it (`paper_account_id`). #}
-        {% if paper_account_id %}<a href="{% url 'paper-account' paper_account_id %}">Paper account</a>{% endif %}
-        <span class="who muted">{{ display_name }}</span>
-        {% include "accounts/_sign_out_form.html" %}
-      {% else %}
-        {# While a visitor is signed out, this link's accessible name is exactly "Sign in" on every page. #}
-        {# Never rename it (shared UI rule, 2026-10-16): the smoke test in tests/test_ch04.py fails if it changes. #}
-        <a class="button" href="{% url 'sign-in' %}">Sign in</a>
+      {# Small screens (decision 115): a signed-in person's links fold behind this button. It starts #}
+      {# `hidden`, so with JavaScript off there is no dead button and the list stays visible; #}
+      {# pages/menu.js shows it and folds the list only below 40rem. Signed out there are two links #}
+      {# and no button, so the public pages keep carrying no script (chapter 06a's test). The sign-in #}
+      {# and sign-out control sits outside the list and is always shown. #}
+      <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="primary-menu" hidden>Menu</button>
       {% endif %}
+      <ul class="menu-links" id="primary-menu">
+        <li><a href="{% url 'faq' %}">FAQ</a></li>
+        <li><a href="{% url 'home' %}#waitlist">Waitlist</a></li>
+        {% if user.is_authenticated %}
+        {# Chapter 08: the link to their accounts, valued, on this branch only; no public page links it. #}
+        <li><a href="{% url 'account-list' %}">Accounts</a></li>
+        {# The Alpaca paper page, for the owner of the account linked to it (`paper_account_id`). #}
+        {% if paper_account_id %}<li><a href="{% url 'paper-account' paper_account_id %}">Paper account</a></li>{% endif %}
+        {# The first account with a plan or an entry (`logbook_account_id`, decision 115). #}
+        {% if logbook_account_id %}<li><a href="{% url 'logbook' logbook_account_id %}">Logbook</a></li>{% endif %}
+        {% endif %}
+      </ul>
+      <div class="menu-always">
+        {% if user.is_authenticated %}
+          {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form. #}
+          <span class="who muted">{{ display_name }}</span>
+          {% include "accounts/_sign_out_form.html" %}
+        {% else %}
+          {# While a visitor is signed out, this link's accessible name is exactly "Sign in" on every page. #}
+          {# Never rename it (shared UI rule, 2026-10-16): the smoke test in tests/test_ch04.py fails if it changes. #}
+          <a class="button" href="{% url 'sign-in' %}">Sign in</a>
+        {% endif %}
+      </div>
     </nav>
   </div>
 </header>

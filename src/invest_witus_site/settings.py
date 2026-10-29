@@ -137,6 +137,8 @@ TEMPLATES = [
                 "invest_witus_site.accounts.context_processors.identity",
                 # The header's "Paper account" link for the owner of a linked account.
                 "invest_witus_site.paper.context_processors.paper_link",
+                # The header's "Logbook" link for an owner with a plan or an entry (decision 115).
+                "invest_witus_site.methods.context_processors.logbook_link",
             ],
         },
     },
