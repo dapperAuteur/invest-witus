@@ -38,8 +38,9 @@ from invest_witus_site.prices.history import (
     preset_range,
     stored_span,
 )
-from invest_witus_site.prices.manual import HISTORY_RANGES
+from invest_witus_site.prices.manual import DEFAULT_HISTORY_RANGE, HISTORY_RANGES
 from invest_witus_site.prices.models import DailyClose
+from invest_witus_site.prices.owner_views import run_history_many
 from invest_witus_site.watchlist.forms import WatchForm
 from invest_witus_site.watchlist.models import WatchItem
 
@@ -61,6 +62,11 @@ def add(request: HttpRequest, pk: int) -> HttpResponse:
     if parsed.refused:
         reasons = "; ".join(f"{token} ({reason})" for token, reason in parsed.refused)
         messages.error(request, f"Refused: {reasons}.")
+    if form.cleaned_data["fetch_history"] and report.added:
+        # The symbols this submission added, through Get history for several symbols (2026-10-29):
+        # one request each within the run's budget and time limit, each symbol's guard kept.
+        choice = form.cleaned_data["history_range"] or DEFAULT_HISTORY_RANGE
+        run_history_many(request, report.added, choice)
     return redirect("account-detail", pk=account.pk)
 
 
