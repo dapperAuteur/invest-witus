@@ -1,5 +1,5 @@
 """Line charts of stored closes: one symbol on its history page, or up to six rebased to 100 on the
-compare page (2026-10-29, decisions 119 to 122).
+compare page (2026-10-29, decisions 128 to 131).
 
 Everything is computed here, in Decimal, and drawn by the template `prices/_chart.html`:
 
@@ -9,7 +9,7 @@ Everything is computed here, in Decimal, and drawn by the template `prices/_char
 - **The axes** are HTML beside the SVG, placed by the same percentages, so their text stays a
   readable size at 320 pixels wide instead of shrinking with the drawing.
 - **The values** a line uses are the adjusted close when every day in the range has one, else the
-  close, and the legend says which (decision 120). A compare line is that value times 100 over
+  close, and the legend says which (decision 129). A compare line is that value times 100 over
   its first value in the range.
 - **The hover data** is the same numbers already formatted with `money`, so the owner pages'
   small script only picks a day and shows text the server wrote; the table carries the same text

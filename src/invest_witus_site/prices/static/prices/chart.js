@@ -1,4 +1,4 @@
-// The owner chart pages' hover readout (2026-10-29, decision 122). No library. The server writes every
+// The owner chart pages' hover readout (2026-10-29, decision 131). No library. The server writes every
 // number already formatted (prices/charts.py, `Plot.hover`) into a JSON script tag, so this file only
 // picks the day nearest the pointer, or the day the arrow keys reach, and shows that day's text in a
 // polite live region. Without it the tables under the chart carry the same values. Served from

@@ -361,7 +361,7 @@ def test_watched_symbols_join_the_universe_and_cash_stays_out(
 
 def history_cell(symbol: str) -> str:
     """The text of a row's History cell: 2026-10-29's Get history form (decision 116), after the
-    row's checkbox for Fetch history for selected (decision 125)."""
+    row's checkbox for Fetch history for selected (decision 134)."""
     choices = "1 year5 years10 yearsAll available"
     select = f"Select {symbol} for Fetch history for selected"
     return f"{select} How far back to fetch {symbol} {choices} Get history for {symbol}"

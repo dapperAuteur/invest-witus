@@ -1,5 +1,5 @@
 """The price chart, labelled; adjusted closes, splits and dividends; comparing symbols; the hover
-readout; and Get history for several symbols (2026-10-29, decisions 119 to 125).
+readout; and Get history for several symbols (2026-10-29, decisions 128 to 134).
 
 Every source is a CSV folder, a `MockTransport` or rows written straight into the table: no
 request leaves the process, and the symbols are placeholders.

@@ -20,7 +20,7 @@ dividend paid out on "date" (note that "date" will be the "exDate" for the divid
 a distribution". The page says "Both raw prices and adjusted prices are available" and that the
 adjustment "follows the standard method set forth by" CRSP and "incorporates both split and
 dividend adjustments". The parser keeps `adjClose`, `splitFactor` and `divCash` beside `close`
-(decisions 120 and 123); it does not keep `volume` or the other adjusted fields.
+(decisions 129 and 132); it does not keep `volume` or the other adjusted fields.
 """
 
 import json

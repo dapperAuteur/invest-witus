@@ -9,7 +9,7 @@ already has, for the signed-in owner only, behind a ten-minute guard each:
   limit so it answers inside Vercel's function maximum.
 - **Get history** is one request for one symbol over a chosen range (1, 5 or 10 years, or all
   available), written with `DailyClose.upsert`, so a second press adds nothing.
-- **Fetch history for selected / for all** (2026-10-29, decision 125) is Get history for several
+- **Fetch history for selected / for all** (2026-10-29, decision 134) is Get history for several
   watched symbols in one press: one request per symbol, inside the same 50-request budget, pause
   and 240-second limit as Fetch prices now, each symbol behind its own Get history guard.
 
