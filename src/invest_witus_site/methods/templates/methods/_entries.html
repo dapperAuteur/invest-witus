@@ -1,5 +1,7 @@
 {% load holdings_extras %}
 {# The journal as a table (chapter 10). Included with `entries`; the caption is the including view's. #}
+{# Chapter 12: the Action column says Buy, Sell, Hold or Skip, and the Note column adds the reason, the #}
+{# state and the tags when an entry has them. The full logbook, with every column, is its own page. #}
 {% if entries %}
 <table class="holdings">
   <caption class="sr-only">{{ caption }}</caption>
@@ -17,11 +19,11 @@
     {% for entry in entries %}
     <tr>
       <th scope="row">{{ entry.date|date:"Y-m-d" }}</th>
-      <td>{{ entry.get_action_display }}</td>
+      <td>{{ entry.what }}</td>
       <td>{{ entry.symbol }}</td>
-      <td class="num">{{ entry.amount|money }}</td>
-      <td class="num">{% if entry.shares is not None %}{{ entry.shares|quantity }}{% else %}<span class="muted">not recorded</span>{% endif %}</td>
-      <td>{{ entry.note }}</td>
+      <td class="num">{% if entry.amount is not None %}{{ entry.amount|money }}{% endif %}</td>
+      <td class="num">{% if entry.shares is not None %}{{ entry.shares|quantity }}{% elif entry.is_trade %}<span class="muted">not recorded</span>{% endif %}</td>
+      <td>{{ entry.note }}{% if entry.reason %} <span class="small">Why: {{ entry.reason }}</span>{% endif %}{% if entry.state %} <span class="small muted">{{ entry.get_state_display }}</span>{% endif %}{% if entry.tags %} <span class="small muted">#{{ entry.tag_list|join:" #" }}</span>{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>

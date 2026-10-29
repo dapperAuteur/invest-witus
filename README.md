@@ -125,6 +125,19 @@ built. The keys are `ALPACA_PAPER_KEY_ID` and `ALPACA_PAPER_SECRET_KEY` (`.env.e
 calls Alpaca. Everything here is for the site owner's superuser only. The walk-through is
 [chapter 11](docs/chapters/11-alpaca-paper-and-the-monthly-review.md), sections 11.9 and 11.10.
 
+## The journal and the monthly close
+
+Chapter 12 turns the journal into a logbook. An entry is a trade, a hold or a skip; a hold or a skip needs a
+reason, and any entry may carry a state of mind (one of six words) and up to five tags. A skip with its reason
+explains a month with no buy: the review keeps the finding, shows the reason beside it, and marks the rule
+"explained". Each month whose buy window has closed gets a review, closed on its own page with three short answers
+(what I did, what the rules said, what I'll do next month); a closed month's entries are read-only until the review
+is reopened with a reason, and every close and reopen is kept. **Change or end this plan** on the method page writes
+a new dated version with its reason, and each month is judged by the version in force then. On a paper account, a
+month whose order ended unfilled offers **Place again**. The logbook at `/accounts/<id>/logbook/` filters by month,
+kind and tag and exports CSV (the columns are in [chapter 12](docs/chapters/12-the-journal-and-closing-the-month.md),
+decision 9). Migrations run from the merge workflow; the walk-through is chapter 12, section 12.10.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"

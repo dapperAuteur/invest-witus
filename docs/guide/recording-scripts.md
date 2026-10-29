@@ -1,6 +1,6 @@
 # Invest.WitUS recording scripts
 
-Seven quick-reference clips, one per feature, for BAM to record by hand. The format follows the ecosystem's
+Eight quick-reference clips, one per feature, for BAM to record by hand. The format follows the ecosystem's
 tutorial plans (witus plans 31 and 33): numbered steps, each with a **[SCREEN]** line (what to show and where
 the cursor goes, with the labels exactly as the app prints them) and a **VOICE** line (the narration, first
 person). Quick-reference clips run 3 to 8 steps and about 60 to 90 seconds; the VOICE lines double as the
@@ -29,6 +29,7 @@ Where a clip runs:
 | 3, 4 | The laptop copy, http://127.0.0.1:8000/admin/ | The admin on production holds real statements |
 | 5 | Both: the Vercel dashboard for the run, then the laptop copy for the values | Production values would show real symbols; a laptop copy prices placeholders from a CSV file |
 | 6 | The laptop copy, after chapter 09 merges | Same reason as 3 and 4 |
+| 8 | The laptop copy, after chapter 12 merges | The journal and reviews on production are personal |
 
 ## Test data for the laptop copy
 
@@ -358,3 +359,48 @@ has none, so do not mention one.
 **Retake notes.** The FAQ is long; scroll with the keyboard and never faster than the eye can read a heading.
 The reference list at the end is not on camera for more than a second. Nothing on this page is personal, so
 production is fine.
+
+## Script 8: Skip a month, close it, and export the logbook
+
+**Target length:** 90 seconds, 7 steps. **Where:** the laptop copy, signed in. **Shows money:** yes (amounts).
+
+**Preconditions and test data.** The account `Practice` running index investing from `2026-01-01`, 100.00 into
+`INDEX`, days 1 to 7, with chapter 10's two buys (2026-01-02 and 2026-02-12) and nothing in March; migrated to
+chapter 12 (`methods.0003`). No month closed yet. Every label below is from the templates at tag `v12`.
+
+1. **[SCREEN]** `/accounts/<id>/method/?view=b&through=2026-03-31`. Hold on the **Rule checks** table: "Buy once
+   in every month of the plan." reads **fail**; the **Months** table shows `2026-03` as **missed**.
+   **VOICE:** "March has no buy, and the review says so. The method asks for one every month."
+2. **[SCREEN]** Scroll to **Log an entry**. Set **Day** to `2026-03-04`, **Kind** to **Skip**, leave **Action**,
+   **Symbol** and **Amount** empty, type `Practice month: I read the lesson again instead.` in **Why**, pick
+   **Unsure** in **State**, type `practice` in **Tags**; click **Log it**. Hold on "Logged: 2026-03-04 skip."
+   **VOICE:** "A skip is a decision, so it needs a reason. I write why, and how I felt."
+3. **[SCREEN]** The same view, reloaded with `?view=b&through=2026-03-31`: the rule now reads **explained**, the
+   evidence "1 finding: 2026-03 (1 explained)", March reads **skipped**, and the finding shows "Explained by a
+   skip:" with the reason.
+   **VOICE:** "The miss is still on the record. The reason sits beside it, and the rule reads explained, not
+   failed."
+4. **[SCREEN]** Click **A: The Plan and the Logbook**. Hold on **Close last month**, then click **Review 2026-01**.
+   Fill **What I did** with `Bought on day 2.`, leave **What the rules said** as drafted, fill **What I'll do next
+   month** with `Buy in the first week.`; click **Close 2026-01**. Hold on "Closed 2026-01. Its entries are
+   read-only now."
+   **VOICE:** "Once a month's window closes, I close its review in three short answers. The middle one is drafted
+   from the findings."
+5. **[SCREEN]** Close **2026-02** and **2026-03** the same way, saying what happened. Then on the log form try a
+   buy dated `2026-03-20`; hold on "2026-03 is closed. Reopen its review, with a reason, to change it."
+   **VOICE:** "A closed month is read-only. To change it, I reopen it, and I have to say why."
+6. **[SCREEN]** Open **Review 2026-03**, type `The skip was logged on the wrong day.` in **Why reopen it**, click
+   **Reopen 2026-03**. Scroll to **History**: one "Closed" line with the three answers, one "Reopened" line with
+   the reason.
+   **VOICE:** "Every close and every reopen stays in the history, with what I wrote and when."
+7. **[SCREEN]** **Open the logbook** under the view switch. Pick **Skip** in **Kind**, click **Show**, then
+   **Download these as CSV**; open the file in a text editor and hold on the header row.
+   **VOICE:** "The logbook filters by month, kind and tag, and downloads as CSV with the same filters. What I did,
+   never what it is worth. Information, not advice."
+
+**Closing line:** "A skip with a reason, a month closed in writing, and a journal I can take with me."
+
+**Retake notes.** The notices vanish on the next page load; capture each before clicking on. The times in
+**History** are the times you pressed the buttons, in UTC. Do not open the CSV in a spreadsheet on camera: a text
+editor shows the columns exactly. Reopen March before recording again, or start from a fresh copy, because a
+closed month refuses step 2's skip.

@@ -1,0 +1,7 @@
+{# View A's "Close last month" (chapter 12): the oldest month whose review is still open. The review page #}
+{# has the month's findings and entries and the three questions; closing it makes its entries read-only. #}
+<section class="card" aria-labelledby="close-heading">
+  <h2 id="close-heading">Close last month</h2>
+  <p>{{ review_to_close.month }}'s window closed on {{ review_to_close.opened_on|date:"Y-m-d" }}. Write its review in three short answers: what you did, what the rules said, and what you'll do next month.{% if open_reviews > 1 %} {{ open_reviews|add:"-1" }} more month{{ open_reviews|add:"-1"|pluralize }} after it {{ open_reviews|add:"-1"|pluralize:"is,are" }} open too.{% endif %}</p>
+  <p><a href="{% url 'method-review' account.pk review_to_close.month %}">Review {{ review_to_close.month }}</a></p>
+</section>

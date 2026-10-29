@@ -218,6 +218,12 @@ lesson, each rule's status as the word pass or fail with its evidence in words. 
 note (chapter 12), a deviation that writes a journal entry with a reason (chapter 12), the loader refusing a rule
 without the `lesson` key, method 2 (chapter 14); decisions log, rows 86 to 93.*
 
+*Chapter 12 (2026-10-29): a change of amount, window or symbols makes a new `MethodPlan` version that points at the
+one it replaced, with the reason and its start date; each month is judged by the version in force that month, and
+its review row points at that version. A skip is recorded only with a reason, and a rule whose only findings are
+explained by skips reads "explained". Changing the method of a running plan is still a new plan; decisions log,
+rows 103 to 112.*
+
 ### 7.2 Three views, all built, with a toggle
 
 From [`research/01`](research/01-ux-benchmarks-and-three-directions.md) and the mockup
@@ -354,6 +360,14 @@ Acceptance:
 - Deleting a journal entry is a soft delete with a reason; automatic entries cannot be edited, only annotated.
 - Personal journals never land in git (`data/private/` for any local export).
 
+*Built in chapter 12 (2026-10-29): manual entries of three kinds (a trade, a hold, a skip; the last two need a
+reason), a state of mind from six words and free tags on any entry; the logbook page per account with filters by
+month, kind and tag; months marked done, skipped or missed and each review closed with a written answer; the count
+of months that followed every rule in view B; CSV export of the journal for its owner; automatic entries (paper
+orders, chapter 11) not edited by hand. Deferred: the rule-following rate as a share, automatic entries for failed
+rule checks, annotations, tag rename and merge, soft delete, exceptions and lab notes as kinds; decisions log,
+rows 103 to 112.*
+
 ### 7.7 Alpaca paper trading and the monthly review
 
 - Paper by default. Paper and live credentials are separate records (or separate env vars in phase 1); the host
@@ -390,6 +404,12 @@ each order is a journal entry the nightly sync corrects; the paper page states A
 host beside the environment. Deferred: staged orders shown "with the rule that produced each" (method 1 has one
 buy rule), Hold with a reason and closing the review (chapter 12), plan value from the app's own fills, importing
 orders placed outside the app, live trading and its checklist; decisions log, rows 94 to 102.*
+
+*Chapter 12 (2026-10-29): Hold and Skip with a required reason; the monthly review opens when the month's window
+closes, is closed by the owner with three written answers, cannot be closed while a month has a missed buy with no
+skip to explain it, and is reopened only with a reason, every step audited; closing writes the review row, not a
+journal entry (decisions log, row 106); a month whose paper order ended unfilled offers "Place again" with a new
+order id. The event to CentenarianOS is chapter 15.*
 
 ### 7.8 In-app reporter: bug, feature, question
 

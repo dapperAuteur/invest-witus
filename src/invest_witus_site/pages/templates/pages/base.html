@@ -30,6 +30,8 @@
     {% block content %}{% endblock %}
   </main>
   {% include "pages/_footer.html" %}
+  {# The header's Menu button (decision 115), for signed-in pages only: the public pages carry no script. #}
+  {% if user.is_authenticated %}<script src="{% static 'pages/menu.js' %}" defer></script>{% endif %}
   {% if vercel_analytics_enabled %}
   {# Vercel Web Analytics (chapter 06a): the snippet from Vercel's quickstart for plain HTML sites, read #}
   {# October 28, 2026. The first tag queues calls until the deferred script loads. The path is the setting #}

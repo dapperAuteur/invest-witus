@@ -298,7 +298,7 @@ def test_an_entry_round_trips_to_chapter_03s_entry(account: Account) -> None:
     assert earlier.to_entry() == Entry(date(2026, 1, 2), Action.BUY, "INDEX", D("100.01"))
     assert later.to_entry().action is Action.SELL and later.shares is None
     assert JournalEntry.entries_for(account) == [earlier, later]
-    assert str(earlier) == "2026-01-02 buy 100.01 of INDEX"
+    assert str(earlier) == "2026-01-02 buy $100.01 of INDEX"
 
 
 @pytest.mark.django_db
@@ -607,7 +607,7 @@ def test_the_owner_logs_an_entry_from_the_form(
     assert response.redirect_chain == [(page_url(account), 302)]
     row = JournalEntry.objects.get(account=account)
     assert (row.symbol, row.amount, row.shares) == ("INDEX", D("100.00"), None)
-    assert "Logged: 2026-01-02 buy 100.00 of INDEX." in text(response)
+    assert "Logged: 2026-01-02 buy $100.00 of INDEX." in text(response)
     for change, message in [
         ({"amount": "0"}, "Ensure this value is greater than or equal to 0.01."),
         ({"symbol": "AB CD"}, CHARACTER_RULE),

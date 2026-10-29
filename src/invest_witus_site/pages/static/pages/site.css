@@ -62,11 +62,32 @@ h3 { font-size: 1.1rem; }
 .header-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.5rem; flex-wrap: wrap; }
 .brand { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text); font-weight: 800; text-decoration: none; }
 .brand img { display: block; }
-.site-header nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.site-header nav { display: flex; align-items: center; gap: 0.5rem 1rem; flex-wrap: wrap; min-width: 0; }
 .site-header nav a { min-height: 2.75rem; display: inline-flex; align-items: center; }
+/* The links as a list (decision 115), laid out in the row as before; no bullets, no indent. */
+.menu-links { display: flex; align-items: center; gap: 0 1rem; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
+.menu-always { display: flex; align-items: center; gap: 0.5rem 1rem; flex-wrap: wrap; min-width: 0; }
 /* Signed in (chapter 07): the name and the Sign out form sit in the row like the links. */
 .site-header nav form { margin: 0; }
-.site-header .who { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-header .who { max-width: 14rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The Menu button: a 44px target like every other control. `hidden` wins until menu.js clears it. */
+.menu-toggle {
+  min-height: 2.75rem; min-width: 2.75rem; padding: 0 1rem; background: transparent; color: var(--text);
+  font: inherit; font-weight: 700; border: 1px solid var(--border); border-radius: 0.375rem; cursor: pointer;
+}
+.menu-toggle[hidden] { display: none; }
+.menu-toggle[aria-expanded="true"] { border-color: var(--accent); }
+@media (max-width: 39.99rem) {
+  .site-header .who { max-width: 9rem; }
+  /* With menu.js running, the list folds below the row until the button opens it. */
+  .js-menu { width: 100%; justify-content: space-between; }
+  .js-menu .menu-links { display: none; order: 3; width: 100%; flex-direction: column; align-items: stretch; padding: 0.25rem 0 0.75rem; }
+  .js-menu.is-open .menu-links { display: flex; }
+  .js-menu .menu-links a { width: 100%; }
+}
+@media (min-width: 40rem) {
+  .menu-toggle { display: none; }
+}
 .site-footer form { margin: 0.25rem 0; }
 .site-footer button[type="submit"] { min-height: 2.25rem; padding: 0 0.75rem; font-size: 0.875rem; }
 .signed-in { margin: 0.5rem 0 0; }
@@ -162,3 +183,13 @@ button[type="submit"] { min-height: 2.75rem; padding: 0 1.25rem; background: var
 .method-form { max-width: 28rem; }
 .method-form input, .method-form select { width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
 .helptext { display: block; font-size: 0.875rem; color: var(--muted); margin-top: 0.25rem; }
+/* Chapter 12: the logbook's filters, text boxes and radio choices, the explained finding, the lists. */
+.method-form textarea, .filters select { width: 100%; padding: 0.5rem 0.75rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
+.method-form input[type="radio"] { width: auto; min-height: auto; margin-right: 0.5rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 0 1rem; align-items: end; }
+.filters .field { min-width: 10rem; }
+.filters select { min-height: 2.75rem; }
+.explained { font-style: italic; }
+.reviews li, .versions li, .events li { margin-bottom: 0.375rem; }
+fieldset.field { border: 0; padding: 0; margin: 0 0 1rem; }
+fieldset.field legend { font-weight: 600; margin-bottom: 0.25rem; padding: 0; }

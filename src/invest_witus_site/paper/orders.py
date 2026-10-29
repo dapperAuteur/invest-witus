@@ -6,7 +6,9 @@ Three jobs, in the order they happen:
 1. `month_buys` stages this month's buys from the active plan: the plan's amount split across its
    symbols to the cent, each with its deterministic `client_order_id`, and the one reason, if any,
    that Confirm is not offered (outside the window, no practice budget, over the budget, a buy
-   already logged by hand, more than one symbol).
+   already logged by hand, a skip logged for the month, more than one symbol). Chapter 12: when
+   the month's order ended with nothing filled, the buy is staged again as a new attempt with its
+   own id, and the button reads "Place again".
 2. `confirm` places what is staged and not yet placed, one order per symbol, and writes one
    journal entry per order. A second click, a retry after a timeout, or two clicks at once find
    the same row (unique `client_order_id`) and the same Alpaca order, so nothing is bought twice.
@@ -26,7 +28,8 @@ from django.utils import timezone
 
 from invest_witus.money import CENT, to_money, to_shares
 from invest_witus_site.holdings.models import Account
-from invest_witus_site.methods.models import JournalEntry, MethodPlan
+from invest_witus_site.holdings.templatetags.holdings_extras import money
+from invest_witus_site.methods.models import SKIP, JournalEntry, MethodPlan
 from invest_witus_site.paper.alpaca import (
     PAPER_HOST,
     AlpacaError,
@@ -81,19 +84,25 @@ def split_amount(amount: Decimal, symbols: list[str]) -> list[tuple[str, Decimal
 def practice_spent(plan: MethodPlan) -> Decimal:
     """What the plan has spent of its practice budget: every buy in the account's journal since
     the plan started, placed through Alpaca or logged by hand. A pending order has its entry
-    already, so its money is spent the moment it is placed."""
+    already, so its money is spent the moment it is placed. Chapter 12: since the plan's first
+    version started, so a change of amount does not reset what was spent."""
     buys = JournalEntry.objects.filter(
-        account=plan.account, action="buy", date__gte=plan.started_on
+        account=plan.account, action="buy", date__gte=plan.chain_start()
     ).values_list("amount", flat=True)
-    return sum(buys, ZERO)
+    return sum((amount for amount in buys if amount is not None), ZERO)
 
 
 @dataclass(frozen=True, slots=True)
 class StagedBuy:
+    """One symbol's buy this month. `order` is the row for this `client_order_id`, if any;
+    `previous` is the attempt before it, set only when that one ended with nothing filled."""
+
     symbol: str
     notional: Decimal
     client_order_id: str
     order: PaperOrder | None
+    attempt: int = 1
+    previous: PaperOrder | None = None
 
     @property
     def placed(self) -> bool:
@@ -124,20 +133,32 @@ class MonthBuys:
     def can_confirm(self) -> bool:
         return not self.refusal and bool(self.to_place)
 
+    @property
+    def placing_again(self) -> bool:
+        """The button says "Place again" when what it places replaces an unfilled order."""
+        return any(buy.previous is not None for buy in self.to_place)
+
+
+def staged(plan: MethodPlan, month: str, symbol: str, notional: Decimal) -> StagedBuy:
+    """The buy for one symbol: the newest attempt's row, or, when that attempt ended with nothing
+    filled, the next attempt with its own id. The attempt number comes from the rows, so two
+    clicks on "Place again" compute the same id and the unique column keeps it to one order."""
+    attempts = [order for order in PaperOrder.for_month(plan, month) if order.symbol == symbol]
+    latest = attempts[-1] if attempts else None
+    account_pk = plan.account.pk
+    if latest is not None and latest.ended_unfilled:
+        attempt = latest.attempt + 1
+        cid = client_order_id(account_pk, plan.pk, month, symbol, attempt)
+        return StagedBuy(symbol, notional, cid, None, attempt, previous=latest)
+    attempt = latest.attempt if latest is not None else 1
+    cid = client_order_id(account_pk, plan.pk, month, symbol, attempt)
+    return StagedBuy(symbol, notional, cid, latest, attempt)
+
 
 def month_buys(plan: MethodPlan, day: date) -> MonthBuys:
     month = month_of(day)
     parts = split_amount(plan.amount, plan.symbol_list())
-    existing = {order.symbol: order for order in PaperOrder.for_month(plan, month)}
-    buys = [
-        StagedBuy(
-            symbol,
-            notional,
-            client_order_id(plan.account.pk, plan.pk, month, symbol),
-            existing.get(symbol),
-        )
-        for symbol, notional in parts
-    ]
+    buys = [staged(plan, month, symbol, notional) for symbol, notional in parts]
     window_closes = date(day.year, day.month, plan.buy_window_days)
     spent = practice_spent(plan)
     unplaced = sum((buy.notional for buy in buys if not buy.placed), ZERO)
@@ -179,6 +200,8 @@ def refusal_for(
         )
     if hand_logged_buys(plan, day):
         return f"A buy for {month_of(day)} is already in the journal, logged by hand."
+    if skip_logged(plan, day):
+        return f"You logged a skip for {month_of(day)}, with its reason: nothing is placed."
     if not any(not buy.placed for buy in buys):
         return ""
     if budget is None:
@@ -188,8 +211,8 @@ def refusal_for(
         )
     if unplaced > budget - spent:
         return (
-            f"This month's buys, {unplaced:.2f}, are more than the practice budget left, "
-            f"{budget - spent:.2f}."
+            f"This month's buys, {money(unplaced)}, are more than the practice budget left, "
+            f"{money(budget - spent)}."
         )
     return ""
 
@@ -204,6 +227,13 @@ def hand_logged_buys(plan: MethodPlan, day: date) -> bool:
         .exclude(pk__in=from_orders.values("journal_entry"))
         .exists()
     )
+
+
+def skip_logged(plan: MethodPlan, day: date) -> bool:
+    """A skip this month in the journal: the owner decided not to buy, and said why."""
+    return JournalEntry.objects.filter(
+        account=plan.account, kind=SKIP, date__year=day.year, date__month=day.month
+    ).exists()
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,8 +260,11 @@ class PaperSection:
 
 
 def paper_section(plan: MethodPlan) -> PaperSection:
-    """Built by the method page for a linked account. One request to Alpaca, the clock."""
-    stage = month_buys(plan, today())
+    """Built by the method page for a linked account. One request to Alpaca, the clock. The
+    buys come from the plan version in force today (chapter 12), which is not the active row
+    while a change is scheduled for next month."""
+    day = today()
+    stage = month_buys(plan.in_force(day), day)
     try:
         clock = paper_client().clock()
     except AlpacaError as error:
@@ -256,7 +289,9 @@ class ConfirmResult:
 
 def confirm(plan: MethodPlan, day: date, client: AlpacaPaper) -> ConfirmResult:
     """Place this month's staged buys that are not placed yet. The checks run again here, on the
-    server, whatever the page showed: a stale tab cannot buy outside the window or the budget."""
+    server, whatever the page showed: a stale tab cannot buy outside the window or the budget.
+    The plan is the version in force on `day`."""
+    plan = plan.in_force(day)
     stage = month_buys(plan, day)
     if stage.refusal:
         raise ConfirmRefused(stage.refusal)
@@ -294,6 +329,7 @@ def place_one(
                 "month": month_of(day),
                 "symbol": buy.symbol,
                 "notional": buy.notional,
+                "attempt": buy.attempt,
             },
         )
         if order.placed:

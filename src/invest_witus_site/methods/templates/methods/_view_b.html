@@ -9,8 +9,8 @@
   <dt>Method</dt><dd>{{ review.method.name }}, version {{ review.method.version }} ({{ review.method.id }})</dd>
   <dt>Plan</dt><dd>{{ plan.amount|money }} into {{ plan.symbols }}, days 1 to {{ plan.buy_window_days }}, since {{ plan.started_on|date:"Y-m-d" }}</dd>
   <dt>Reviewed through</dt><dd>{{ review.through|date:"Y-m-d" }}</dd>
-  <dt>Months</dt><dd>{{ review.months_done }} done of {{ review.months_due }} due</dd>
-  <dt>Findings</dt><dd>{{ review.findings|length }}</dd>
+  <dt>Months</dt><dd>{{ review.months_done }} done of {{ review.months_due }} due; {{ review.months_followed }} followed every rule</dd>
+  <dt>Findings</dt><dd>{{ review.findings|length }}{% if review.explained_count %}, {{ review.explained_count }} explained by a skip{% endif %}</dd>
   <dt>Journal</dt><dd>{{ entries|length }} entr{{ entries|length|pluralize:"y,ies" }}</dd>
 </dl>
 
@@ -83,7 +83,7 @@
     <tr>
       <th scope="row">{{ finding.day|date:"Y-m-d" }}</th>
       <td>{{ finding.rule.text }}</td>
-      <td>{{ finding.message }}</td>
+      <td>{{ finding.message }}{% if finding.explained %} <span class="explained">Explained by a skip: {{ finding.explanation }}</span>{% endif %}</td>
       <td>{% if finding.rule.lesson_url %}<a href="{{ finding.rule.lesson_url }}">{{ finding.rule.id }}</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</td>
     </tr>
     {% endfor %}
@@ -92,6 +92,10 @@
 {% else %}
 <p class="on-plan">No findings through {{ review.through|date:"Y-m-d" }}: every rule passed.</p>
 {% endif %}
+
+<h2>Monthly reviews</h2>
+{% include "methods/_reviews.html" %}
+{% include "methods/_versions.html" %}
 
 <h2>Journal</h2>
 {% include "methods/_entries.html" with caption="Every trade logged for this account, in date order" %}

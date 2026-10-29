@@ -8,6 +8,8 @@
   {# The environment, as text, on every signed-in page (PRD 7.2). The account's kind is what chapter 05 stored. #}
   <p class="band">{{ account.get_kind_display }} account. {% if account.kind == "paper" %}Simulated money: nothing here is a real trade.{% else %}Entered by hand from statements: the app places no order.{% endif %} Information, not advice.</p>
   {% include "methods/_switch.html" %}
+  {# Chapter 12: the logbook and the plan's change form, the same two links in every view. #}
+  <p class="small"><a href="{% url 'logbook' account.pk %}">Open the logbook</a>: every entry, with filters and a CSV export.{% if plan %} <a href="{% url 'method-change' account.pk %}">Change or end this plan</a>, with a reason.{% endif %}</p>
   {# Chapter 11: on an account linked to Alpaca paper, this month's buys and the Confirm button. #}
   {% if paper %}{% include "paper/_month_buys.html" %}{% endif %}
   {# The same context, one of three arrangements (chapter 10). The view's letter is the research's. #}

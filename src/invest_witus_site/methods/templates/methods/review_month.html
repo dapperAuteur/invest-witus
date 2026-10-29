@@ -1,0 +1,58 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Review of {{ review.month }}: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="review-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="review-heading">Review of {{ review.month }}</h1>
+  <p class="band">{% if review.closed %}Closed {{ review.closed_at|date:"Y-m-d" }}. This month's entries are read-only until the review is reopened with a reason.{% else %}Open since {{ review.opened_on|date:"Y-m-d" }}, the day the month's window closed.{% endif %}</p>
+  <p>Judged by version {{ version.version }} of the plan: {{ version.amount|money }} into {{ version.symbols }} within the first {{ version.buy_window_days }} day{{ version.buy_window_days|pluralize }} of the month.{% if row %} The month is <strong>{{ row.status }}</strong>: {{ row.buys }} buy{{ row.buys|pluralize }}, {{ row.amount|money }} in all.{% endif %}</p>
+
+  <h2>What the review found</h2>
+  {% if findings %}
+  <ul class="findings">
+    {% for finding in findings %}
+    <li>{{ finding.message }}{% if finding.explained %} <span class="explained">Explained by a skip: {{ finding.explanation }}</span>{% endif %} <span class="small">Rule: {{ finding.rule.text }}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="on-plan">Every rule passed in {{ review.month }}.</p>
+  {% endif %}
+
+  <h2>The month's entries</h2>
+  {% include "methods/_entries.html" with caption="Every entry dated in this month" %}
+
+  {% if review.closed %}
+  <h2>The written review</h2>
+  <dl class="status">
+    <dt>What I did</dt><dd>{{ review.did|linebreaksbr }}</dd>
+    <dt>What the rules said</dt><dd>{{ review.rules_said|linebreaksbr }}</dd>
+    <dt>What I'll do next month</dt><dd>{{ review.next_month|linebreaksbr }}</dd>
+  </dl>
+  <h2>Reopen the month</h2>
+  <form method="post" action="{% url 'method-review-reopen' account.pk review.month %}" class="method-form" novalidate>
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" with form=reopen_form %}
+    <button type="submit">Reopen {{ review.month }}</button>
+  </form>
+  {% else %}
+  <h2>Close the month</h2>
+  <p>Three short answers. Closing makes this month's entries read-only; you can reopen it later with a reason.</p>
+  <form method="post" action="{% url 'method-review-close' account.pk review.month %}" class="method-form" novalidate>
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" with form=close_form %}
+    <button type="submit">Close {{ review.month }}</button>
+  </form>
+  {% endif %}
+
+  {% if events %}
+  <h2>History</h2>
+  <ol class="events">
+    {% for event in events %}
+    <li>{{ event.at|date:"Y-m-d H:i" }}: {{ event.get_action_display }}{% if event.by %} by {{ event.by.get_username }}{% endif %}. <span class="small">{{ event.text|linebreaksbr }}</span></li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+  <p><a href="{% url 'method-page' account.pk %}">Back to the method</a> · <a href="{% url 'logbook' account.pk %}?month={{ review.month }}">This month in the logbook</a></p>
+</section>
+{% endblock %}
