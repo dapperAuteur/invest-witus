@@ -1,6 +1,6 @@
 # Invest.WitUS: ecosystem integration contracts
 
-**Last updated:** 2026-10-28 (chapter 06: section 7, 8 and 9 rows) · Companion to [`01-prd.md`](01-prd.md).
+**Last updated:** 2026-10-29 (WitUS Outbox: section 10, rows in sections 8 and 9) · Companion to [`01-prd.md`](01-prd.md).
 
 Invest.WitUS is the first Python app in the WitUS ecosystem. Every other app is TypeScript, so nothing here is
 shared code: each contract below is the ecosystem's existing contract, written for Django. Sources are the
@@ -225,6 +225,8 @@ as the list. Fields collected: name and email only.
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1 | used since chapter 11 (2026-10-29) |
 | `ALPACA_LIVE_KEY_ID`, `ALPACA_LIVE_SECRET_KEY` | Alpaca live, only after the checklist | *proposed*; absent by default |
 | `TIINGO_API_KEY` | End-of-day prices, phase 1 (owner's own key); unset, the pull reads `PRICES_CSV_DIR` | This app's name (chapter 08; this table said `TIINGO_API_TOKEN` until then) |
+| `OUTBOX_TRIGGER_ENABLED` | WitUS Outbox's kill switch (section 10): exactly `true` sends the owner's drafts, anything else keeps them here | The guide's name |
+| `OUTBOX_INGEST_URL`, `OUTBOX_SOURCE_SLUG`, `OUTBOX_INGEST_SECRET` | WitUS Outbox's ingest URL, this app's slug in Outbox's `INGEST_SOURCES`, its secret (section 10) | The guide's names |
 | `OWNER_WITUS_SUB` | The phase 1 owner's WitUS user id; everyone else sees the landing page | *proposed* |
 
 ---
@@ -244,3 +246,66 @@ Each item becomes a task file in `plans/user-tasks/` when its chapter is next (o
 | 7 | Approve and build the new CentenarianOS receiver route; mint its secret; set `CENTOS_EVENTS_*` here | centenarian-os repo and Vercel | Chapter 15 |
 | 8 | Add `invest-witus` to `ecosystem-repos.json` and run the propagate script | witus repo | Shared rules in this repo's `CLAUDE.md` |
 | 9 | Before phase 2: a securities lawyer's answers (research 03), written answers from Alpaca and Tiingo, minors research | Outside counsel, vendors | Any other user |
+| 10 | Register the Outbox source: one secret per environment, `{"slug","hmac_secret","workspace_name"}` appended to witus-outbox's `INGEST_SOURCES`, redeploy Outbox, the same secret here, then `OUTBOX_TRIGGER_ENABLED=true` when ready (task 22) | witus-outbox Vercel, this app's Vercel | Section 10: the owner's post drafts reaching Outbox |
+
+---
+
+## 10. Signed drafts to WitUS Outbox (the owner's posts)
+
+**Contract source:** the integration guide `examples/INTEGRATE.md`, the contract `examples/README.md` and the
+reference sender `examples/sender.ts` in `claude/witus-outbox` (fetched from its `main` on 2026-10-29), checked
+against Outbox's `app/api/ingest/route.ts`, `lib/hmac.ts` and `lib/ingest-sources.ts`. Outbox has no recipe for
+this app under `examples/triggers/`; the nearest is `witus-online.md`. The guide does not ask a publisher to
+contribute a recipe.
+
+**What it is.** WitUS Outbox is the ecosystem's human-reviewed social-publishing queue. A publisher app posts a
+signed draft; the owner edits, schedules, approves or rejects it in Outbox, and Outbox posts it. This app sends
+one thing: a post the site owner writes by hand in the admin (**Draft a post**), for the site launch (once) or a
+milestone of their choosing. No event in the app writes a post by itself.
+
+**Request.** The same four headers and signature as section 1 (`invest_witus_site/signing.py`, shared by both
+clients). Body, serialized once and signed as sent:
+
+| Field | This app sends |
+|---|---|
+| `external_ref` | `site-launch-<platform>` or `milestone-<draft id>-<platform>`; Outbox is idempotent on `(source, external_ref)`, so a resend answers with the row it already has |
+| `platform` | `linkedin`, `twitter`, `bluesky` (the guide's default three; Outbox accepts eight, the others need an image) |
+| `caption` | the owner's text, at most 280 characters for every platform |
+| `media_urls` | always `[]` |
+| `scheduled_at` | a placeholder a week ahead (the guide's), UTC with `Z` |
+| `as_draft` | always `true`: nothing is posted until the owner approves it in Outbox |
+
+No `links` and no `social_profile_ids`: Outbox picks profiles from the slug's workspace when the draft is promoted.
+Answers: 200 `{"ok":true,"id":"<uuid>","status":"draft"}` (or the existing row's status on a repeat); 401 for a
+missing header, an unknown slug, a bad signature or a stale timestamp, not told apart; 400 for a body that is not
+JSON or not the schema; 500 for Outbox's database.
+
+**The guide's gates, in Python.**
+
+1. *Kill switch:* `OUTBOX_TRIGGER_ENABLED` must be exactly `true`, as the guide's helper checks; unset, `1` or
+   `True` keep everything off and the row reads "Off, will retry".
+2. *Owner only:* the admin pages are superuser only, and a draft not written by a superuser is blocked at send.
+   The guide reads an owner id from an env var; this app's owner is its superuser (chapter 11's rule).
+3. *Per-user opt-in:* not built. There are no other users until the legal gate (PRD, invariant 3).
+
+**Never account data.** `outbox/guard.py` checks every field of every body before it is signed, and the admin
+form checks the text before it is saved: only the six fields above, no media, always a draft, and no money
+amount, percentage, share count, cashtag or symbol that any table in the app records (held, on a statement,
+watched, in a plan, journaled, ordered on paper or priced). A blocked row is never sent or retried.
+
+**Where this app differs from the guide, and why.**
+
+- The guide says to copy `sender.ts` byte for byte. This is Python, so `outbox/client.py` ports its contract and
+  the tests check the signature against one computed with `openssl` and against Outbox's verification, ported.
+- The guide sends after the response with Next.js `after()` and does not retry. Vercel's Python runtime has no
+  `after()`, so the send is inline with a 5-second timeout after the row is saved (chapter 13's pattern). A draft
+  that never reached Outbox is retried by the nightly cron and by **Send again**; that is safe because Outbox
+  answers a repeated `external_ref` with its existing row. Posting to the networks stays Outbox's job.
+- The guide logs `source`, `platform`, `external_ref` and status; so does this app, and never the caption.
+
+**Triggers considered** (decisions log, row 129): built, the owner's **Draft a post** (launch once, or a
+milestone). Declined: a tutorial chapter tagged (the tutorial is private and tags are pushed from git, not from
+the app); a blog post about Invest (bam-landing-page publishes the blog and has its own Outbox recipe); an
+automatic launch post (no event in the app marks a launch, so the owner drafts it); anything from an account.
+
+**Env (sender):** `OUTBOX_TRIGGER_ENABLED`, `OUTBOX_INGEST_URL`, `OUTBOX_SOURCE_SLUG`, `OUTBOX_INGEST_SECRET`.
