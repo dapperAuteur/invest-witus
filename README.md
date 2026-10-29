@@ -100,7 +100,10 @@ close, labelled. `/accounts/<id>/compare/?symbols=A,B,C&days=365` puts up to six
 symbols on one chart, each rebased to 100 at its first day in the range. On those two pages only, a small script
 (`prices/static/prices/chart.js`, no library) reads out the day nearest the pointer or the arrow keys; public
 pages carry no script. The Watch list section can fetch history for several symbols in one press (ticked or typed), and the add form
-can fetch the new symbols' history as it adds them. The statements
+can fetch the new symbols' history as it adds them. Since 2026-10-30 the history page opens with **About <SYMBOL>**:
+the name, exchange and a short description from Tiingo's ticker metadata (stored in `SymbolProfile`, refreshed at
+most weekly by the nightly pull or **Get description**), labelled "Description from Tiingo, as of DATE", with a
+"Search Wikipedia" link to Wikipedia's search page for the name (never a guessed article). The statements
 comparison in the admin notes a stored split between the two dates. How to use them:
 [the user guide](docs/guide/using-invest-witus.md).
 
@@ -153,7 +156,8 @@ decision 9). Migrations run from the merge workflow; the walk-through is chapter
 ## The in-app reporter
 
 Chapter 13 adds **Report a problem or ask a question** to the header and the footer of every page, signed in or
-out: a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
+out (and since 2026-10-30 a floating **Help** bubble: a plain link to `/report/` signed out, so public pages still
+carry no script; signed in, `pages/help.js` opens the form in a `<dialog>`): a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
 in a `reports` app first, then sent to WitUS Inbox as a signed request (`X-Witus-Source`, `X-Witus-Timestamp`,
 and `X-Witus-Signature`, an HMAC-SHA256 of the timestamp and the exact body, per Inbox's
 `docs/webhook-contract.md`); a new waitlist signup is copied the same way. A send that fails keeps its reason on
@@ -170,7 +174,8 @@ latest full month is left out), and put the month's amount into the top N in equ
 leaves the top N. Seven rules in `src/invest_witus/methods/momentum_12_1.toml`, each checked by
 `invest_witus/adherence/momentum.py`, every lesson "lesson coming". Start it from the same form with **Top N to
 hold**; the candidates join the watch list so the nightly pull stores their closes (a candidate needs a little over
-a year of history to be ranked; **Get 5 years of history** fetches it). The method page shows the ranking as bars
+a year of history to be ranked; a new symbol's first fetch stores two years, and **Get 5 years of history** fetches
+more). The method page shows the ranking as bars
 with a table, the watch list a 12-1 column, a watched symbol's chart the window shaded with the excluded month, each
 with a "How to read this" note, for the owner of an account running momentum only. On a paper account Confirm buys
 the top N in equal parts; sells are listed, not placed, and a buy of a symbol sold within 30 days carries a

@@ -18,8 +18,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from invest_witus_site.holdings.models import Account
-from invest_witus_site.prices import manual
-from invest_witus_site.prices.models import ManualRun
+from invest_witus_site.prices import manual, profiles
+from invest_witus_site.prices.models import ManualRun, SymbolProfile
 from invest_witus_site.prices.pull import DAYS_BACK, pull
 from invest_witus_site.prices.sources import PriceSourceError, source_from_settings
 from invest_witus_site.watchlist.models import WatchItem, parse_symbols
@@ -170,4 +170,48 @@ def fetch_history_many(request: HttpRequest, pk: int) -> HttpResponse:
         )
         return back
     run_history_many(request, symbols, request.POST.get("range", ""))
+    return back
+
+
+@login_required
+@require_POST
+def fetch_profile(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
+    """Get description (decision 150): one metadata request for a watched symbol, back to its
+    page. Refused while the stored profile is younger than `profiles.REFRESH_DAYS`, and inside
+    each symbol's 10-minute guard, so a held-down button cannot spend the hourly requests."""
+    account = get_object_or_404(Account, pk=pk, owner=request.user)
+    item = get_object_or_404(WatchItem, account=account, symbol=symbol.strip().upper())
+    back = redirect("watch-history", pk=account.pk, symbol=item.symbol)
+    source = profiles.profile_source_from_settings()
+    if source is None:
+        messages.error(
+            request,
+            "Descriptions come from Tiingo's metadata, and TIINGO_API_KEY is not set here.",
+        )
+        return back
+    now = timezone.now()
+    stored = SymbolProfile.objects.filter(symbol=item.symbol).first()
+    if stored is not None and profiles.is_fresh(stored, now):
+        messages.info(
+            request,
+            f"{item.symbol}'s description was fetched {manual.when(stored.fetched_at)}. It "
+            f"refreshes at most once every {profiles.REFRESH_DAYS} days; the next after "
+            f"{manual.when(profiles.next_refresh(stored))}.",
+        )
+        return back
+    refused_until = manual.claim(ManualRun.Kind.PROFILE, item.symbol, now)
+    if refused_until is not None:
+        messages.error(
+            request,
+            f"{item.symbol}'s description was asked for less than {manual.GUARD_MINUTES} "
+            f"minutes ago. Get description can run for it again at {manual.when(refused_until)}.",
+        )
+        return back
+    try:
+        profiles.fetch_profile(source, item.symbol, now)
+    except PriceSourceError as error:
+        later = " Try again after the hour." if error.retry_later else ""
+        messages.error(request, f"{item.symbol}: {error.problem}. Nothing was stored.{later}")
+        return back
+    messages.success(request, f"Fetched {item.symbol}'s name and description from Tiingo.")
     return back

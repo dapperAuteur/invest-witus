@@ -57,11 +57,14 @@ FETCH_TIME_LIMIT_SECONDS = 240.0
 # answer. One request either way.
 HISTORY_RANGES: dict[str, tuple[str, int | None]] = {
     "1y": ("1 year", 1),
+    "2y": ("2 years", 2),
     "5y": ("5 years", 5),
     "10y": ("10 years", 10),
     "all": ("All available", None),
 }
-DEFAULT_HISTORY_RANGE = "1y"
+# The add form's automatic first fetch asks for two years, like the nightly backfill
+# (decision 149): the 12-1 window needs about 13 months.
+DEFAULT_HISTORY_RANGE = "2y"
 ALL_AVAILABLE_SINCE = date(1900, 1, 1)
 
 STOP_REASONS = {
@@ -125,7 +128,7 @@ def fetch_messages(result: PullResult) -> tuple[str, list[str], list[str]]:
     errors = [f"Refused {symbol}: {problem}" for symbol, problem in result.failed.items()]
     infos: list[str] = []
     if result.backfilled:
-        infos.append(f"A year of closes, first time: {', '.join(result.backfilled)}.")
+        infos.append(f"Two years of closes, first time: {', '.join(result.backfilled)}.")
     if result.skipped:
         reason = STOP_REASONS.get(result.stopped, "the run's limits")
         infos.append(
@@ -166,7 +169,8 @@ class HistoryResult:
 def fetch_history(source: PriceSource, symbol: str, since: date, until: date) -> HistoryResult:
     """One request for `symbol` from `since` to `until`, written once per day. A source's
     refusal raises `PriceSourceError` for the view to word. A range that reaches back past the
-    nightly backfill's year is recorded in `Backfill`, so the next night does not ask again."""
+    nightly backfill's window (two years) is recorded in `Backfill`, so the next night does not
+    ask again."""
     points = source.closes(symbol, since, until)
     counts = DailyClose.upsert(symbol, points, source.name)
     if points and since <= until - timedelta(days=BACKFILL_DAYS):

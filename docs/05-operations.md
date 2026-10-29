@@ -81,15 +81,15 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
 - Scheduled: `vercel.json` runs `GET /api/cron/pull-prices/` at 06:00 UTC daily (Hobby: once a day, within the hour).
 - From the site, signed in as the owner (the usual way since 2026-10-29, decisions 116 to 118):
   - **Fetch prices now**, on `/accounts/` and in each account page's **Watch list** section, runs the same pull
-    for the symbols your own accounts hold or watch: the last seven days, a year for a symbol's first pull, at
+    for the symbols your own accounts hold or watch: the last seven days, two years for a symbol's first pull, at
     most 50 requests with the one-second pause, and a 240-second time limit so the page answers inside
     Vercel's 300-second maximum. The message reads `Fetched closes from tiingo for N symbols in R requests:
     I inserted, U updated, C unchanged, F refused, B backfilled, S skipped for budget.`, then one line per
     refused symbol, and, when the run stopped early, `Stopped by <reason>; not reached: ... The rest continue
     tonight.`
   - **Get history**, beside each watched symbol and on its history page, asks that one symbol's 1, 5 or 10
-    years, or all available, in one request, and says how many days were added and the earliest close now
-    stored. A range past a year also writes the symbol's **Price backfills** row.
+    years (or 2 since 2026-10-30), or all available, in one request, and says how many days were added and the earliest close now
+    stored. A range of two years or more also writes the symbol's **Price backfills** row.
   - Each button runs once every 10 minutes: per owner for Fetch prices now, per symbol for Get history. A
     second press says when it can run again. **Prices** → **Manual price runs** in the admin lists the last
     run of each; delete a row to lift its guard.
@@ -102,12 +102,14 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
   buttons do not offer): `uv run --env-file .env python manage.py pull_prices` (`--since YYYY-MM-DD`,
   `--symbols A,B`); with no `TIINGO_API_KEY` in `.env` it reads CSV files from `PRICES_CSV_DIR`. The command has
   no 10-minute guard and no time limit.
-- A year of history (2026-10-29): a symbol's first pull asks for 365 days in its one request, then writes a
+- Two years of history (2026-10-29, two years since 2026-10-30, decision 149): a symbol's first pull asks for
+  730 days in its one request, then writes a
   **Price backfills** row (admin, under **Prices**). Nothing to run by hand: migration `prices/0002` is applied
   by the migrate workflow on merge, and the next nightly run backfills every held and watched symbol that has
   no row yet, up to the 50-request budget, the rest the night after. The cron JSON lists them under
-  `backfilled`. To ask for a symbol's year again, delete its **Price backfills** row; to reach further back
-  than a year, press **Get history** beside the symbol (or, as the fallback, `pull_prices --symbols A --since
+  `backfilled`. After the two-year change merges, each symbol backfilled under the one-year rule asks once
+  more for two years on its next pull (one request each, inside the budget); nothing to run by hand. To ask
+  for a symbol's two years again, delete its **Price backfills** row; to reach further back, press **Get history** beside the symbol (or, as the fallback, `pull_prices --symbols A --since
   YYYY-MM-DD`).
 - Adjusted closes, splits and dividends (2026-10-29, decisions 134, 137 and 138): migration
   `prices/0004_daily_close_adjustments` adds `adj_close`, `split_factor` and `div_cash` to the closes table
@@ -119,6 +121,15 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
   symbol is refilled, its chart uses the unadjusted close and says so. When a later nightly week brings a new
   split or dividend, `DailyClose.upsert` rescales the stored adjusted closes the week did not cover by the same
   ratio; the pull's log line ends with `rescaled N` when that happens.
+- Symbol profiles (2026-10-30, decision 150): migration `prices/0005_symbol_profile` adds the `SymbolProfile`
+  table (a new table, additive; it also lists **Get description** as a manual run kind, no column change),
+  applied by the migrate workflow on merge. After the closes, the nightly cron fetches Tiingo's ticker metadata
+  (`GET /tiingo/daily/<ticker>`) for each symbol with no profile or one older than 7 days, inside what the
+  closes left of the 50-request budget and at most 10 a night, and adds `profiles` (`requests`, `fetched`,
+  `failed`, `skipped`) to its JSON; with no `TIINGO_API_KEY`, or after a 429, the body has no `profiles`. The
+  symbol page's **Get description** button fetches one now (10-minute guard per symbol, under **Manual price
+  runs**). **Prices** → **Symbol profiles** in the admin lists them; delete a row to fetch it again. Nothing to
+  run by hand: the first night after the merge fetches up to 10, the rest over the next nights.
 - **Fetch history for selected** and **Fetch history for all** (2026-10-29, decision 139), under the Watch list
   table, run Get history for several watched symbols in one press: one request each, at most 50, the one-second
   pause, the 240-second limit, a symbol inside its 10-minute guard skipped and named, and `The rest: press

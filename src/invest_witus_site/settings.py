@@ -139,6 +139,8 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "invest_witus_site.pages.context_processors.site",
+                # The floating Help bubble on every page (decision 151).
+                "invest_witus_site.pages.context_processors.help_bubble",
                 "invest_witus_site.accounts.context_processors.identity",
                 # The header's "Paper account" link for the owner of a linked account.
                 "invest_witus_site.paper.context_processors.paper_link",

@@ -30,6 +30,7 @@
     {% block content %}{% endblock %}
   </main>
   {% include "pages/_footer.html" %}
+  {% include "pages/_help_bubble.html" %}
   {# The header's Menu button (decision 115), for signed-in pages only: the public pages carry no script. #}
   {% if user.is_authenticated %}<script src="{% static 'pages/menu.js' %}" defer></script>{% endif %}
   {% if vercel_analytics_enabled %}

@@ -280,11 +280,12 @@ def footing_ratio(
 class Backfill(models.Model):
     """A symbol whose history the pull has already asked for, and how far back (2026-10-29).
 
-    The first pull of a symbol asks for a year of closes in its one request instead of the
-    nightly week, then writes a row here. A symbol without a row, or with one that does not
-    reach back far enough, gets the year on its next pull: one held or watched before this
-    table existed included. A refused or skipped request writes no row, so the next night tries
-    again. Deleting a row in the admin asks for the year again.
+    The first pull of a symbol asks for two years of closes (`pull.BACKFILL_DAYS`; one year
+    until 2026-10-30) in its one request instead of the nightly week, then writes a row here. A
+    symbol without a row, or with one that does not reach back far enough, gets the two years on
+    its next pull: one held or watched before this table existed included. A refused or skipped
+    request writes no row, so the next night tries again. Deleting a row in the admin asks for
+    the two years again.
     """
 
     symbol: models.CharField[str, str] = models.CharField(max_length=20, unique=True)
@@ -323,6 +324,8 @@ class ManualRun(models.Model):
     class Kind(models.TextChoices):
         FETCH_NOW = "fetch-now", "Fetch prices now"
         HISTORY = "history", "Get history"
+        # Decision 150: the symbol page's Get description, keyed on the symbol.
+        PROFILE = "profile", "Get description"
 
     kind: models.CharField[str, str] = models.CharField(max_length=20, choices=Kind.choices)
     key: models.CharField[str, str] = models.CharField(
@@ -345,3 +348,48 @@ class ManualRun(models.Model):
 
     def __str__(self) -> str:
         return f"{self.Kind(self.kind).label} {self.key} at {self.ran_at:%Y-%m-%d %H:%M}"
+
+
+# The profile's text columns, shared with the parser that cuts a vendor's answer to fit.
+PROFILE_NAME_MAX = 200
+EXCHANGE_CODE_MAX = 40
+
+
+class SymbolProfile(models.Model):
+    """What the price vendor says a symbol is (2026-10-30, decision 150): its name, the exchange
+    code, a description and the first and last day it has prices for. One row per symbol, from
+    Tiingo's ticker metadata endpoint (`GET /tiingo/daily/<ticker>`), refreshed at most once a
+    week (`profiles.REFRESH_DAYS`) by the nightly pull or the symbol page's Get description.
+
+    Shown on the owner's symbol page only, labelled with its source and the day it was fetched:
+    information, never advice. The free plan is "Internal Use Only", like the closes.
+    """
+
+    symbol: models.CharField[str, str] = models.CharField(max_length=20, unique=True)
+    name: models.CharField[str, str] = models.CharField(max_length=PROFILE_NAME_MAX, blank=True)
+    exchange_code: models.CharField[str, str] = models.CharField(
+        max_length=EXCHANGE_CODE_MAX, blank=True
+    )
+    description: models.TextField[str, str] = models.TextField(blank=True)
+    start_date: models.DateField[datetime.date | None, datetime.date | None] = models.DateField(
+        null=True, blank=True, help_text="The earliest day the source has prices for."
+    )
+    end_date: models.DateField[datetime.date | None, datetime.date | None] = models.DateField(
+        null=True, blank=True, help_text="The latest day the source has prices for."
+    )
+    source: models.CharField[str, str] = models.CharField(max_length=20)
+    fetched_at: models.DateTimeField[datetime.datetime, datetime.datetime] = models.DateTimeField(
+        help_text="When the source answered."
+    )
+
+    class Meta:
+        ordering = ["symbol"]
+        verbose_name = "symbol profile"
+        verbose_name_plural = "symbol profiles"
+
+    def __str__(self) -> str:
+        return f"{self.symbol}: {self.name}" if self.name else self.symbol
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.symbol = self.symbol.strip().upper()
+        super().save(*args, **kwargs)

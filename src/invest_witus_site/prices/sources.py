@@ -97,6 +97,15 @@ class TiingoEod:
     def closes(self, symbol: str, since: date, until: date) -> list[PricePoint]:
         url = f"{self.base_url}/tiingo/daily/{symbol}/prices"
         params = {"startDate": since.isoformat(), "endDate": until.isoformat(), "format": "json"}
+        return parse_tiingo(symbol, self.get(symbol, url, params))
+
+    def metadata(self, symbol: str) -> str:
+        """The ticker's metadata (decision 150), `GET /tiingo/daily/<ticker>`, as the body's text
+        for `profiles.parse_profile`. One request, refused the same way as the closes."""
+        return self.get(symbol, f"{self.base_url}/tiingo/daily/{symbol}", {"format": "json"})
+
+    def get(self, symbol: str, url: str, params: dict[str, str]) -> str:
+        """One GET with the owner's token; the body's text, or `PriceSourceError`."""
         # The token travels in the header, never in the URL, so no log that keeps URLs has it.
         headers = {"Authorization": f"Token {self.api_key}", "Content-Type": "application/json"}
         try:
@@ -116,7 +125,7 @@ class TiingoEod:
             raise PriceSourceError(
                 symbol, f"Tiingo answered {response.status_code}: {response.text[:200]}"
             )
-        return parse_tiingo(symbol, response.text)
+        return response.text
 
 
 def parse_tiingo(symbol: str, text: str) -> list[PricePoint]:

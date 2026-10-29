@@ -16,4 +16,6 @@ urlpatterns = [
     path("<str:symbol>/", views.history, name="watch-history"),
     # Get history (2026-10-29): one request for a watched symbol's closes over a chosen range.
     path("<str:symbol>/fetch-history/", owner_views.fetch_history, name="watch-fetch-history"),
+    # Get description (2026-10-30, decision 150): the symbol's name, exchange and description.
+    path("<str:symbol>/profile/", owner_views.fetch_profile, name="watch-fetch-profile"),
 ]
