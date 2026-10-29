@@ -16,6 +16,7 @@ from datetime import date
 from invest_witus_site.holdings.models import Holding
 from invest_witus_site.prices.models import DailyClose, UpsertCount
 from invest_witus_site.prices.sources import PriceSource, PriceSourceError
+from invest_witus_site.watchlist.models import WatchItem
 
 log = logging.getLogger(__name__)
 
@@ -33,8 +34,9 @@ PAUSE_SECONDS = 1.0
 
 
 def watch_symbols() -> set[str]:
-    """Reserved for chapter 09: the symbols on the owner's watch lists. Nothing yet."""
-    return set()
+    """Every symbol on any account's watch list (chapter 09). A watched symbol with no close yet
+    is exactly what the next run should fetch, so there is no filter here."""
+    return set(WatchItem.objects.values_list("symbol", flat=True))
 
 
 def symbol_universe() -> list[str]:

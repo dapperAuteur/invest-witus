@@ -48,14 +48,19 @@ class Valuation:
     unpriced: list[str]
 
 
+def is_stale(quote: Quote, today: date) -> bool:
+    """A calendar test: more than `STALE_AFTER_DAYS` days between the close and today. Shared by
+    the valued statement line and, from chapter 09, the watch list."""
+    return (today - quote.as_of).days > STALE_AFTER_DAYS
+
+
 def value_line(position: Position, quote: Quote | None, today: date) -> ValuedLine:
     """Shares times close, rounded to cents half up (chapter 01's `to_money`). Both factors are
     Decimals; a float in either place fails here with a TypeError instead of a wrong number."""
     if quote is None:
         return ValuedLine(position.symbol, position.shares, None, None, False)
     value = to_money(position.shares * quote.close)
-    stale = (today - quote.as_of).days > STALE_AFTER_DAYS
-    return ValuedLine(position.symbol, position.shares, quote, value, stale)
+    return ValuedLine(position.symbol, position.shares, quote, value, is_stale(quote, today))
 
 
 def value_positions(

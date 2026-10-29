@@ -14,6 +14,9 @@ urlpatterns = [
     path("auth/witus/", include("invest_witus_site.accounts.urls")),
     # The signed-in owner's accounts, valued at the latest stored closes (chapter 08).
     path("accounts/", include("invest_witus_site.holdings.urls")),
+    # The watch list's add and remove actions on an account page (chapter 09). The `pk` captured
+    # here is passed on to the included views.
+    path("accounts/<int:pk>/watch/", include("invest_witus_site.watchlist.urls")),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).
     path("api/cron/", include("invest_witus_site.prices.urls")),
     path("", include("invest_witus_site.pages.urls")),

@@ -20,7 +20,9 @@ def parse_symbols(text: str) -> list[str]:
 
 
 class Command(BaseCommand):
-    help = "Store end-of-day closes for every held symbol, or for --symbols, since a date."
+    help = (
+        "Store end-of-day closes for every held or watched symbol, or for --symbols, since a date."
+    )
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -40,7 +42,7 @@ class Command(BaseCommand):
             raise CommandError(f"--since {since} is after today ({today})")
         symbols = parse_symbols(options["symbols"]) if options["symbols"] else symbol_universe()
         if not symbols:
-            self.stdout.write("Nothing to pull: no account holds a symbol yet.")
+            self.stdout.write("Nothing to pull: no account holds or watches a symbol yet.")
             return
         result = pull(source_from_settings(), symbols, since, today)
         self.stdout.write(
