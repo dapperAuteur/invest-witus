@@ -83,6 +83,12 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
 - By hand on the laptop against the local database: `uv run --env-file .env python manage.py pull_prices`
   (`--since YYYY-MM-DD`, `--symbols A,B`); with no `TIINGO_API_KEY` in `.env` it reads CSV files from
   `PRICES_CSV_DIR`.
+- A year of history (2026-10-29): a symbol's first pull asks for 365 days in its one request, then writes a
+  **Price backfills** row (admin, under **Prices**). Nothing to run by hand: migration `prices/0002` is applied
+  by the migrate workflow on merge, and the next nightly run backfills every held and watched symbol that has
+  no row yet, up to the 50-request budget, the rest the night after. The cron JSON lists them under
+  `backfilled`. To ask for a symbol's year again, delete its **Price backfills** row; to reach further back
+  than a year, `pull_prices --symbols A --since YYYY-MM-DD`.
 
 ## Paper orders (chapter 11)
 

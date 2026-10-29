@@ -264,6 +264,12 @@ continue; a rate limit stops the run and lists the symbols not reached. A run ma
 one-second pause between symbols, inside Tiingo's free plan (50 requests an hour, 1,000 a day, 500 unique
 symbols a month, "Internal Use Only", which is why values are shown to the signed-in owner and no one else).
 
+**A year on the first night (2026-10-29).** The first time the pull meets a symbol, held or watched, it asks for
+the last 365 days instead of seven, in the same single request, and notes the symbol under **Prices**, **Price
+backfills**. Symbols the pull already knew before this change get their year on the next run. A run still
+makes at most 50 requests; a symbol that did not fit, or that the source refused, asks for its year again the
+next night. Delete a **Price backfills** row to ask for that symbol's year again.
+
 **When it runs.** Vercel's cron calls `GET /api/cron/pull-prices/` once a day at 06:00 UTC (`vercel.json`,
 `0 6 * * *`), which is 01:00 or 02:00 in Indiana depending on the season, after Tiingo's mutual fund NAV time.
 Vercel sends `Authorization: Bearer <CRON_SECRET>` with the request; the route answers 403 to anything else
@@ -283,8 +289,8 @@ Or from a shell, with the secret in the shell for one command and never in a fil
 
 **What you should see.** HTTP 200 and JSON with `source` (`tiingo`), `since` and `until` (the seven-day window),
 `symbols` (the universe), `requests`, `inserted`, `updated`, `unchanged`, `failed` (a map of symbol to reason),
-`skipped` (symbols not reached) and `schedule` (the cron expression when Vercel fired it, empty for a call by
-hand). Run it again: `inserted` 0 and `unchanged` the same number. In the admin, under **Prices**, **Daily
+`skipped` (symbols not reached), `backfilled` (symbols whose year was fetched this run) and `schedule` (the
+cron expression when Vercel fired it, empty for a call by hand). Run it again: `inserted` 0 and `unchanged` the same number. In the admin, under **Prices**, **Daily
 closes** lists what was stored: **Symbol**, **Date**, **Close**, **Source**, **Fetched at**, with a search box
 and a **By source** filter. Deleting a row there makes the next run fetch that day again. The next morning,
 **Cron Jobs** shows the scheduled run after 06:00 UTC.
@@ -364,6 +370,30 @@ account page is where they are kept.
   days old.
 - The PRD (section 7.5) also describes "the change since you added it"; the chapter shows no such column. The
   guide follows the code.
+
+## A watched symbol's price history
+
+**What it is for.** The closes the app has stored for one watched symbol, as a line and as a table, over the
+last 30, 90 or 365 days. Like every price, it is shown to the signed-in owner only.
+
+**Open it.** On the account page, in the **Watch list** table, press a symbol. The address is
+`/accounts/<id>/watch/<SYMBOL>/`.
+
+**What you should see.** The symbol as the heading, the note under it, then **As of** the newest stored close with
+its price and source; **stale** beside it when that close is more than five days old, as on the account page.
+Then **30 days · 90 days · 365 days** (90 is where it opens) and a line chart of the closes, oldest on the left,
+a dot on the newest, with the low, the high and the dates under it. Under the chart, the same closes as a table,
+**Date**, **Close** and **Source**, newest first. The chart draws no more than the table holds: a screen reader
+reads the chart's title (the symbol, the range, how many closes, the low and the high) and then the table.
+
+**What can go wrong.**
+
+- "No close stored yet.": the symbol was added since the last nightly run. The next run fetches its year.
+- "No closes stored in the last 30 days.": the newest close is older than the range; the **As of** line says
+  when it is from. Pick a longer range, or check the pull's `failed` list for the symbol.
+- Only a week of closes on a symbol watched before 2026-10-29: the year arrives with the next nightly run; until
+  then the chart shows what is stored.
+- A 404: the symbol is not on this account's watch list, or the account is not yours.
 
 ## The FAQ and Report a bad actor
 
