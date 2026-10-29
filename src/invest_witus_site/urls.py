@@ -25,6 +25,9 @@ urlpatterns = [
     # The account linked to Alpaca paper: its positions, cash and orders, the Confirm step and
     # the order check (chapter 11). Owner, superuser and a linked account only.
     path("accounts/<int:pk>/paper/", include("invest_witus_site.paper.urls")),
+    # Report a problem or ask a question, signed in or out; saved here, sent to WitUS Inbox
+    # (chapter 13).
+    path("report/", include("invest_witus_site.reports.urls")),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).
     path("api/cron/", include("invest_witus_site.prices.urls")),
     path("", include("invest_witus_site.pages.urls")),

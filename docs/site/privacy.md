@@ -1,6 +1,6 @@
 # Privacy
 
-Last updated: October 28, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
+Last updated: October 29, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
 
 Not advice. Invest.WitUS is a learning tool. It is not a broker, not an investment adviser, and it never recommends a security.
 
@@ -10,9 +10,10 @@ One operator in Indiana, who builds the WitUS family of learning tools. No emplo
 
 ## What we store, and why
 
-Today the app holds two kinds of data:
+Today the app holds three kinds of data:
 
-- **The waitlist.** Your name and email address, and the time you joined. We keep it to tell you when the app opens to learners. Nothing else is collected with it.
+- **The waitlist.** Your name and email address, and the time you joined. We keep it to tell you when the app opens to learners. Nothing else is collected with it. From October 29, 2026 a copy of a new signup also goes to WitUS Inbox, where the operator reads it.
+- **Reports.** Added October 29, 2026: what you send through "Report a problem or ask a question": the kind (a bug, an idea or a question), your message, the page you name, an email address (the one you type, or the one from your WitUS sign-in), your browser's description of itself (its user agent), and the app's version. To limit how many reports one sender can make in an hour, the app keeps a scrambled code made from your IP address with the app's own secret key; the address itself is not stored. A copy of each report goes to WitUS Inbox, where the operator reads it. Write nothing in a report you would not want the operator to read.
 - **The operator's own records.** Plans (the method an account runs and the plan's own numbers, added October 28, 2026), holdings entered by hand from statements, the symbols on each account's watch list (added October 28, 2026), a trading journal (its entries, logged by hand, added October 28, 2026; from October 29, 2026 each entry may also hold a written reason, a state of mind chosen from a short list, and tags), the monthly reviews written about it (added October 29, 2026), and paper (simulated) trades, all belonging to the operator.
 
 When the app opens to other learners, education only and alongside the course, it will store for each person: the WitUS user id, email address and name from Sign in with WitUS (the operator's own sign-in stores the same three today); the plans they write; the holdings they enter; their journal; and their paper trades. Nothing is collected that the app does not use.

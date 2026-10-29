@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from invest_witus_site.pages.forms import WaitlistForm
 from invest_witus_site.pages.markdown_pages import load_page
 from invest_witus_site.pages.models import WaitlistEntry
+from invest_witus_site.reports.delivery import mirror_waitlist
 
 # The positioning line, word for word from the PRD (section 7.10).
 POSITIONING = (
@@ -33,8 +34,13 @@ def waitlist(request: HttpRequest) -> HttpResponse:
     if not form.is_valid():
         return render(request, "pages/waitlist.html", {"form": form})
     if not form.is_bot():
-        WaitlistEntry.join(name=form.cleaned_data["name"], email=form.cleaned_data["email"])
-    # TODO(chapter 13): mirror the signup to WitUS Inbox as a `waitlist-signup` (doc 02, section 6).
+        entry, created = WaitlistEntry.join(
+            name=form.cleaned_data["name"], email=form.cleaned_data["email"]
+        )
+        if created:
+            # Chapter 13: the new signup is copied to WitUS Inbox, saved first and sent after,
+            # and a failed send waits for the nightly retry. The thank-you never depends on it.
+            mirror_waitlist(entry)
     return redirect("waitlist-thanks")
 
 
