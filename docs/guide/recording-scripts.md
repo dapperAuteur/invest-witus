@@ -404,3 +404,34 @@ chapter 12 (`methods.0003`). No month closed yet. Every label below is from the 
 **History** are the times you pressed the buttons, in UTC. Do not open the CSV in a spreadsheet on camera: a text
 editor shows the columns exactly. Reopen March before recording again, or start from a fresh copy, because a
 closed month refuses step 2's skip.
+
+## Script 9: Report a problem or ask a question
+
+**Target length:** 60 seconds, 5 steps. **Where:** the laptop copy, signed out, then the admin signed in as the
+owner. **Shows money:** no.
+
+**Preconditions and test data.** Migrated to chapter 13 (`reports.0001`), no `INBOX_` names in `.env`, so the
+form shows that forwarding is off and nothing leaves the laptop. Every label below is from the templates at tag
+`v13`.
+
+1. **[SCREEN]** `/faq/`, scrolled to the footer. Hold on **Report a problem or ask a question** in the
+   **Partners & Legal** column, then click it.
+   **VOICE:** "Every page has this link, in the header and in the footer, signed in or not."
+2. **[SCREEN]** The form. Hold on **What page were you on?**, which already reads `/faq/`, and on the note
+   "Forwarding to WitUS Inbox is off."
+   **VOICE:** "It knows which page I came from. On my laptop there is no Inbox, and the form says so."
+3. **[SCREEN]** Pick **A question**, type `Where does the logbook live?` in **Your message** and
+   `you@example.com` in **Your email**; click **Send**. Hold on **Thank you**.
+   **VOICE:** "The report is saved first. Sending it on is a separate step that can fail without losing it."
+4. **[SCREEN]** `/admin/`, **Reports and WitUS Inbox**, **Reports**. Hold on the row: **A question**, **New**,
+   **Off, will retry**. Open it and hold on **Last error**.
+   **VOICE:** "The owner sees every report, with where its copy stands and why."
+5. **[SCREEN]** Back on the list, tick the row, choose **Send again to WitUS Inbox**, click **Go**. Hold on the
+   message.
+   **VOICE:** "With Inbox set up, the nightly job sends anything still waiting, and this button does it now."
+
+**Closing line:** "Saved here first, sent when it can be, and nothing lost on the way."
+
+**Retake notes.** Five reports an hour from one address is the limit: delete the rows in the admin between
+takes, or wait. With Inbox off, step 5's message reads "Send again: 1 off." and the row keeps its reason; that is
+the honest answer on a laptop.

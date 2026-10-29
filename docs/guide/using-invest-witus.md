@@ -562,6 +562,31 @@ Written for the app at `v12`. Everything here is on the method page (`/accounts/
   state, tags, reason, note, source, month_closed`. A reason or note that starts with `=`, `+`, `-` or `@` is
   saved with an apostrophe in front, so a spreadsheet shows it as text.
 
+## Report a problem or ask a question (chapter 13)
+
+Written for the app at `v13`. The link **Report a problem or ask a question** is in the header of every page (the
+last link in the list; on a phone, signed in, it is behind **Menu**) and in the footer, in the **Partners & Legal**
+column under **Report a bad actor**. It works signed in or out.
+
+- **The form.** Pick what it is about: **Something is broken (a bug)**, **An idea for the app (a feature)** or
+  **A question**. Write **Your message**; leave out passwords and keys. **What page were you on?** is filled in
+  from the page you came from, without anything after a `?`; change or clear it. Signed out, **Your email** is
+  required so a reply can reach you; signed in, the email and name from your WitUS sign-in are used and there is
+  no email box. Press **Send**.
+- **Afterward.** A thank-you page. It promises no reply time, and the operator reads every report.
+- **Five an hour.** A sixth report within an hour, from the same address or the same signed-in person, brings
+  the form back with "You have sent five reports in the last hour". The earlier ones are saved.
+- **What happens to it.** The report is saved in the app first, then sent to WitUS Inbox, where the operator
+  triages every WitUS app's mail. A bug also texts the operator. If Inbox is down, the report waits and is sent
+  by the nightly job; nothing is lost.
+- **On a copy without Inbox** (your laptop, a learner's copy), the form says "Forwarding to WitUS Inbox is off",
+  and reports are kept for the owner in the admin.
+- **The owner's side.** Admin, **Reports and WitUS Inbox**, **Reports**: every report with its kind, a triage
+  status you set (New, Triaged, Done) and its Inbox status (Not tried yet, Sent, Failed, will retry, or Off, will
+  retry) with the last error in words. Select rows and choose **Send again to WitUS Inbox** to send them now.
+  **Waitlist copies to Inbox** lists each new waitlist signup's copy the same way. On the laptop,
+  `uv run --env-file .env python manage.py reports` prints the reports not marked Done.
+
 ## What the app will not do
 
 - **Advise.** It recommends no security and never says which to buy. Every rule it checks (later chapters)
@@ -575,14 +600,13 @@ Written for the app at `v12`. Everything here is on the method page (`/accounts/
   behind a checklist and separate keys.
 - **Admit other users yet.** The waitlist is a list; approving an entry changes its status and sends nothing.
   Other learners come after the legal gate, with the course, for education only.
-- **Send email.** Nothing in this phase emails anyone; the contact page is a mailto link. The mirror of signups
-  and bug reports to WitUS Inbox is chapter 13.
+- **Send email.** Nothing in this phase emails anyone; the contact page is a mailto link. Since chapter 13, new
+  waitlist signups and reports are copied to WitUS Inbox, the operator's inbox, which sends nothing to you.
 - **Import a CSV statement.** Statements are typed into the admin; the column-mapped import is a later phase.
 - **Keep your money data in git.** Real statements live in the database; the tutorial's samples use
   placeholder symbols; `data/private/` is ignored by git.
 
-Still to come, each its own chapter: the in-app bug reporter (13), 12-1 momentum (14), signed events to
-CentenarianOS (15).
+Still to come, each its own chapter: 12-1 momentum (14), signed events to CentenarianOS (15).
 
 ## When something goes wrong: a short table
 
@@ -598,6 +622,8 @@ CentenarianOS (15).
 | **no price yet** on one line | The source does not know that symbol | Fix the spelling in **Holdings**, or accept it |
 | **stale** beside a date | The close is more than five days old | Check the Cron Jobs page for the last run |
 | Cron answers 503 | `CRON_SECRET` not in the running deployment | Redeploy |
+| A report reads **Off, will retry** in the admin | The three `INBOX_` names are not all set on this deployment | Set them and redeploy; the nightly job sends the waiting rows |
+| A report reads **Failed, will retry** with a 401 | Inbox does not know this source or secret, or the clock is off | Check the slug in Inbox's `INGEST_SOURCES`, redeploy Inbox, compare the secrets; then **Send again** |
 | Cron answers 403 | Wrong bearer | Check the variable's value for stray spaces or quotes |
 | `CSRF verification failed` on a form | The origin is not trusted | `DJANGO_CSRF_TRUSTED_ORIGINS` must name `https://invest.witus.online` |
 | `DisallowedHost` | The host is not allowed | `DJANGO_ALLOWED_HOSTS`, or Vercel's system variables are off |

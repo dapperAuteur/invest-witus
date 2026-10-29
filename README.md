@@ -138,6 +138,18 @@ month whose order ended unfilled offers **Place again**. The logbook at `/accoun
 kind and tag and exports CSV (the columns are in [chapter 12](docs/chapters/12-the-journal-and-closing-the-month.md),
 decision 9). Migrations run from the merge workflow; the walk-through is chapter 12, section 12.10.
 
+## The in-app reporter
+
+Chapter 13 adds **Report a problem or ask a question** to the header and the footer of every page, signed in or
+out: a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
+in a `reports` app first, then sent to WitUS Inbox as a signed request (`X-Witus-Source`, `X-Witus-Timestamp`,
+and `X-Witus-Signature`, an HMAC-SHA256 of the timestamp and the exact body, per Inbox's
+`docs/webhook-contract.md`); a new waitlist signup is copied the same way. A send that fails keeps its reason on
+the row and is retried by the nightly cron, or by **Send again** in the admin. Five reports an hour per address
+and per person, counted in the database; a honeypot; CSRF. The names are `INBOX_INGEST_URL`, `INBOX_SOURCE_SLUG`
+and `INBOX_INGEST_SECRET` (`.env.example`); without them reports are kept in the admin and nothing is sent. The
+walk-through is [chapter 13](docs/chapters/13-the-in-app-reporter.md), section 13.10.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"

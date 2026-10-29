@@ -34,14 +34,22 @@ Body: `form_type` (kebab string, required), `submitter_email` (optional), `submi
 Receiver behaviour: a timestamp more than 5 minutes from the receiver's clock is rejected; an unknown source or a
 bad signature returns 401; a schema-invalid body returns 400. Failures return a bare `{"ok":false}`.
 
+Checked against Inbox's code on 2026-10-29 for chapter 13 (decisions log, row 119): `submitter_name` must be 1 to
+255 characters and `submitter_email` a valid address, so empty ones are left out; a `hmac_secret` under 32
+characters empties Inbox's whole source list; the window applies both ways, so a retry signs again; a 500 is
+Inbox's database failing; success is `{"ok":true,"id":"<uuid>"}`; there is no idempotency key. A source is
+registered by appending `{"slug","hmac_secret"}` to the `INGEST_SOURCES` variable on the witus-inbox project, per
+environment, and redeploying Inbox.
+
 **Django implementation.**
 
 - Serialize the body once to bytes, sign those exact bytes, and send those exact bytes (`httpx.post(url,
   content=raw, headers=...)`); never re-serialize after signing.
 - `hmac.new(secret.encode(), f"{ts}.".encode() + raw, hashlib.sha256).hexdigest()`; compare nothing on the sender
   side, but use `hmac.compare_digest` in the test that verifies the round trip.
-- Store first (the `Report` or `WaitlistEntry` row is the system of record), then mirror in the background; a
-  failure sets `attempts` and the daily job retries. Never block the user on Inbox.
+- Store first (the `Report` row, or a `WaitlistMirror` row for a waitlist entry, is the system of record), then
+  send at once with a short timeout; a failure sets `attempts` and `last_error` and the daily job retries. Never
+  fail the user's request on Inbox. Built in chapter 13 (`reports/inbox.py`, `reports/delivery.py`).
 - Log only source, `form_type` and HTTP status. Never log the secret, the signature input, or the payload.
 
 **Form types (proposed):**
