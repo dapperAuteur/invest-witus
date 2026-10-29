@@ -16,7 +16,28 @@ from the dashboards named; this file never holds one.
 Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
 supply them to a local command. For anything that needs production values, make a one-line file as below.
 
-## Production migrations
+## Automatic migrations (the usual way)
+
+`.github/workflows/migrate-production.yml` migrates Neon after every push to `main` that changes a migration
+file, and on demand (GitHub → Actions → **Migrate production database** → **Run workflow**). Its summary lists
+every migration and whether it is applied. It needs one repository secret, set once, without the value ever
+appearing on screen:
+
+```sh
+neon connection-string --project-id <invest-db project id> | gh secret set NEON_DIRECT_URL --repo dapperAuteur/invest-witus
+```
+
+(`neon connection-string` prints the direct, unpooled string by default; `--pooled` would print the pooler one,
+which migrations should not use. `gh secret set` reads the value from the pipe.) Vercel deploys the same push in
+parallel, so pages that need a brand-new table answer 500 for about a minute until the job finishes; the old
+pages keep working because migrations here only add.
+
+Cost: one short Linux job per migration-bearing merge. GitHub's included Actions usage for private repositories
+on the Free plan is a monthly dollar amount (12 USD, about 2,000 Linux minutes); a Linux 2-core minute past that
+is 0.006 USD (GitHub Docs, "GitHub Actions billing", read 2026-10-28). This job takes about a minute, a few times a
+month: zero in practice. Neon wakes the compute for a few seconds per run.
+
+## Production migrations by hand (fallback)
 
 Run after every merge that adds a migration (the deploy itself never migrates; chapter 06 decided that).
 Between the deploy and this command, pages that touch the new table answer 500.
