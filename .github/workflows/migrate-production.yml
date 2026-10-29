@@ -1,0 +1,65 @@
+# Migrate the production database after a merge to main, so the owner never pastes a connection string.
+#
+# Runs when a push to main changes a migration file, and on demand (Actions -> "Migrate production
+# database" -> Run workflow). It reads one repository secret, NEON_DIRECT_URL: the Neon direct
+# (unpooled) connection string for the invest-db project. Set it once without copying the value:
+#   neon connection-string --project-id <invest-db project id> | gh secret set NEON_DIRECT_URL --repo dapperAuteur/invest-witus
+# GitHub masks the value in every log line. The job fails closed when the secret is missing.
+#
+# Timing: Vercel deploys the same push in parallel. Migrations here are additive, so the old code keeps
+# working on the new schema, and the new code's pages that need a new table answer 500 only until this
+# job finishes (about a minute). Cost: one short Linux job per migration-bearing merge, inside GitHub's
+# included Actions allowance for private repositories (docs/05-operations.md has the figures).
+name: Migrate production database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**/migrations/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require NEON_DIRECT_URL
+        env:
+          NEON_DIRECT_URL: ${{ secrets.NEON_DIRECT_URL }}
+        run: |
+          if [ -z "$NEON_DIRECT_URL" ]; then
+            echo "::error::Set the repository secret NEON_DIRECT_URL (see docs/05-operations.md, Automatic migrations)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Install the app's dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Migrate
+        env:
+          STORAGE_DATABASE_URL_UNPOOLED: ${{ secrets.NEON_DIRECT_URL }}
+          # Migrations sign nothing, so a throwaway key is enough; the site's real key stays on Vercel.
+          DJANGO_SECRET_KEY: migrate-only-not-the-site-key
+          VERCEL: ""
+        run: |
+          uv run python manage.py migrate --database direct --noinput
+          uv run python manage.py migrate --database direct --check
+          {
+            echo "### Production migrations"
+            echo
+            echo '```'
+            uv run python manage.py showmigrations --database direct
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
