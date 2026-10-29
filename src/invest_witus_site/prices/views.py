@@ -22,7 +22,8 @@ from invest_witus_site.outbox.client import configured as outbox_configured
 from invest_witus_site.outbox.delivery import send_unsent as send_unsent_posts
 from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_client
 from invest_witus_site.paper.orders import sync_orders
-from invest_witus_site.prices.pull import DAYS_BACK, pull, symbol_universe
+from invest_witus_site.prices.profiles import profile_source_from_settings, refresh_profiles
+from invest_witus_site.prices.pull import DAYS_BACK, REQUESTS_PER_RUN, pull, symbol_universe
 from invest_witus_site.prices.sources import source_from_settings
 from invest_witus_site.reports.delivery import send_unsent
 from invest_witus_site.reports.inbox import configured as inbox_configured
@@ -49,6 +50,13 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
         source_from_settings(), symbol_universe(), today - timedelta(days=DAYS_BACK), today
     )
     body = result.as_dict()
+    # Decision 150: then the symbols' names and descriptions, at most weekly each, inside what
+    # the closes left of the run's budget. Only with a Tiingo key (the CSV source has no
+    # metadata) and never after a rate limit; without them the body is unchanged.
+    metadata = profile_source_from_settings()
+    if metadata is not None and result.stopped != "rate limit":
+        left = REQUESTS_PER_RUN - result.requests
+        body["profiles"] = refresh_profiles(metadata, result.symbols, left).as_dict()
     # Chapter 11: then the paper orders, once the owner's Alpaca paper keys are set. Without them
     # the body is chapter 08's, unchanged. A failure is reported in the body; the prices stand.
     if keys_configured():

@@ -8,6 +8,7 @@
   <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span>: watch list</p>
   <h1 id="history-heading">{{ item.symbol }}</h1>
   {% if item.note %}<p class="muted">{{ item.note }}</p>{% endif %}
+  {% include "watchlist/_profile.html" %}
   {% if latest %}
   <p>As of {{ latest.as_of|date:"Y-m-d" }}: {{ latest.close|money }} ({{ latest.source }}){% if stale %} <span class="stale">stale</span> The newest stored close is more than {{ stale_after_days }} days old; the nightly pull has not stored a newer one.{% endif %}</p>
   {% else %}

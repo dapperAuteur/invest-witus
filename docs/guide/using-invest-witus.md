@@ -404,8 +404,8 @@ the signed-in owner only.
 **Open it.** On the account page, in the **Watch list** table, press a symbol. The address is
 `/accounts/<id>/watch/<SYMBOL>/`.
 
-**What you should see.** The symbol as the heading, the note under it, then **As of** the newest stored close with
-its price and source; **stale** beside it when that close is more than five days old, as on the account page.
+**What you should see.** The symbol as the heading, the note under it, then **About FUNDX** (see **What the symbol
+is** below), then **As of** the newest stored close with its price and source; **stale** beside it when that close is more than five days old, as on the account page.
 Then the range: **30 days · 90 days · 365 days · 5 years · 10 years · All** (90 is where it opens; the current
 one is in bold), and under it **Or pick dates** with **From** and **To** and a **Show these dates** button (see
 **Pick a range** below). Then a link **Compare FUNDX with other symbols**, which keeps the range, and the chart:
@@ -438,6 +438,28 @@ keyboard, press **Tab** until the chart is outlined, then **Left** and **Right**
 go to the first and last day; a screen reader announces each day. That is all the app stores per day: no
 intraday prices and no volume. With JavaScript off there is no box, and the table under the chart has the same
 values.
+
+**What the symbol is (2026-10-30).** The **About FUNDX** section under the heading says what the price vendor
+says the symbol is: the company or fund name in bold and **Exchange** (the vendor's exchange code, such as
+`NYSE ARCA`); the first 60 words of the vendor's description, with the rest under **Full description** when it is
+longer; the first and last day the vendor has prices for; and the line `Description from Tiingo, as of
+2026-10-30. Information only, not advice or a recommendation.` The date is the day the app fetched it. When the
+vendor gave a name, **More about <name>: Search Wikipedia** opens Wikipedia's search page for that name.
+Wikipedia picks the article, so check it is the same fund before you read on; the app never guesses an article,
+and it links to an issuer's own site only if the vendor's data names one (Tiingo's does not today).
+
+- **Where it comes from.** Tiingo's ticker metadata, one request per symbol, stored in the app. The nightly pull
+  fetches a symbol's profile when it has none or it is more than 7 days old, after the closes and with what is
+  left of the run's 50 requests (at most 10 profiles a night). A page never asks the vendor.
+- **Get description.** With no profile stored, or one older than 7 days, the section has a **Get description**
+  button (**Get description again** when it is old). Press it for one request now; the notice reads `Fetched
+  FUNDX's name and description from Tiingo.` Inside the 7 days the button is gone and the section says `Refreshes
+  at most once every 7 days.`
+- **What can go wrong.** `No description stored yet.`: the symbol is new; wait for the nightly pull or press
+  **Get description**. `FUNDX: Tiingo answered 404: ... Nothing was stored.`: the vendor does not know the symbol;
+  pressing again inside 10 minutes says when it can run. `this copy has no Tiingo key`: a laptop with CSV files
+  has no descriptions. `The source has no description for FUNDX.`: the vendor's description is empty. Like the
+  closes, the description is shown to the signed-in owner only (Tiingo's free plan is "Internal Use Only").
 
 **Pick a range (2026-10-29).**
 
