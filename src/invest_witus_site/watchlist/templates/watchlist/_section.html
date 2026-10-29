@@ -17,6 +17,7 @@
         <th scope="col" class="num">Close</th>
         <th scope="col">As of</th>
         <th scope="col">Source</th>
+        {% if momentum_badges is not None %}<th scope="col">12-1 return</th>{% endif %}
         <th scope="col">History</th>
         <th scope="col"><span class="sr-only">Remove</span></th>
       </tr>
@@ -33,6 +34,7 @@
         {% else %}
         <td class="muted" colspan="3">no price yet</td>
         {% endif %}
+        {% if momentum_badges is not None %}{% with badge=momentum_badges|item:row.item.symbol %}<td>{% if badge.direction == "none" %}<span class="muted" title="{{ badge.reason }}">not ranked</span>{% else %}<span class="momentum-badge momentum-{{ badge.direction }}">{{ badge.text }}</span>{% endif %}</td>{% endwith %}{% endif %}
         <td class="history-cell"><label class="pick-label"><input type="checkbox" name="symbols" value="{{ row.item.symbol }}" form="bulk-history" class="pick"><span class="sr-only">Select {{ row.item.symbol }} for Fetch history for selected</span></label>{% include "prices/_history_form.html" with symbol=row.item.symbol return_to="account" %}</td>
         <td>
           <form method="post" action="{% url 'watch-remove' account.pk row.item.pk %}">
@@ -57,6 +59,7 @@
     <button type="submit" name="which" value="all">Fetch history for all</button>
   </form>
   <p class="small muted" id="bulk-history-help">Get history for several symbols in one press: tick symbols in the History column or type them, separated by commas or spaces (only symbols on this list), or press for all. One request per symbol, at most 50, within four minutes; a symbol fetched in the last 10 minutes is skipped and named.</p>
+  {% if momentum_badges is not None %}<p class="how-to-read"><strong>How to read this.</strong> The 12-1 return is each symbol's change in adjusted close over this month's 12-1 window: from the end of the month 13 months back to the end of the month 2 months back, leaving out the latest full month. The arrow and the word say which way it went; the number says how far. "Not ranked" means a close is missing at one end of the window. The method page ranks your plan's candidates by this number. <span class="muted">Lesson coming.</span></p>{% endif %}
   <p><a href="{% url 'compare' account.pk %}?symbols={% for row in watch.rows|slice:":6" %}{{ row.item.symbol }}{% if not forloop.last %},{% endif %}{% endfor %}">Compare these symbols on one chart</a></p>
   {% if watch.unpriced %}
   <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. Press <strong>Fetch prices now</strong> to ask for them without waiting. A symbol the price source does not know stays unpriced; the pull's log names it.</p>

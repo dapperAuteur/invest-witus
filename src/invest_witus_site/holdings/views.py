@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.models import MethodPlan
+from invest_witus_site.methods.momentum import badges_for
 from invest_witus_site.prices.manual import HISTORY_RANGES
 from invest_witus_site.prices.portfolio import value_snapshot, watch_list
 from invest_witus_site.watchlist.forms import WatchForm
@@ -39,14 +40,22 @@ def account_page(
     today = timezone.localdate()
     snapshot = account.latest_snapshot()
     valuation = value_snapshot(snapshot, today) if snapshot is not None else None
+    plan = MethodPlan.active_for(account)
+    watch = watch_list(account, today)
     context = {
         "account": account,
         "snapshot": snapshot,
         "valuation": valuation,
-        "watch": watch_list(account, today),
+        "watch": watch,
         "watch_form": watch_form or WatchForm(),
         # Chapter 10: the method this account runs, or None; the method page holds the rest.
-        "method_plan": MethodPlan.active_for(account),
+        "method_plan": plan,
+        # Chapter 14: each watched symbol's 12-1 badge, on an account running 12-1 momentum only.
+        "momentum_badges": (
+            badges_for([row.item.symbol for row in watch.rows], today)
+            if plan is not None and plan.is_momentum
+            else None
+        ),
         # The Get history form's choices beside each watched symbol (2026-10-29).
         "history_ranges": [(value, label) for value, (label, _) in HISTORY_RANGES.items()],
     }

@@ -1,6 +1,6 @@
 # Invest.WitUS recording scripts
 
-Eight quick-reference clips, one per feature, for BAM to record by hand. The format follows the ecosystem's
+Ten quick-reference clips, one per feature, for BAM to record by hand. The format follows the ecosystem's
 tutorial plans (witus plans 31 and 33): numbered steps, each with a **[SCREEN]** line (what to show and where
 the cursor goes, with the labels exactly as the app prints them) and a **VOICE** line (the narration, first
 person). Quick-reference clips run 3 to 8 steps and about 60 to 90 seconds; the VOICE lines double as the
@@ -30,6 +30,7 @@ Where a clip runs:
 | 5 | Both: the Vercel dashboard for the run, then the laptop copy for the values | Production values would show real symbols; a laptop copy prices placeholders from a CSV file |
 | 6 | The laptop copy, after chapter 09 merges | Same reason as 3 and 4 |
 | 8 | The laptop copy, after chapter 12 merges | The journal and reviews on production are personal |
+| 10 | The laptop copy, after chapter 14 merges | The ranking needs a year of closes; the laptop's planted placeholders give it without a vendor |
 
 ## Test data for the laptop copy
 
@@ -436,3 +437,47 @@ form shows that forwarding is off and nothing leaves the laptop. Every label bel
 **Retake notes.** Five reports an hour from one address is the limit: delete the rows in the admin between
 takes, or wait. With Inbox off, step 5's message reads "Send again: 1 off." and the row keeps its reason; that is
 the honest answer on a laptop.
+
+## Script 10: Start 12-1 momentum and read the ranking
+
+**Target length:** 90 seconds, 7 steps. **Where:** the laptop copy, signed in. **Shows money:** yes (amounts and
+made-up closes).
+
+**Preconditions and test data.** Migrated to chapter 14 (`methods.0004`). An account `Momentum practice` at
+`Example Brokerage`, Kind **Paper (practice)**, with no method yet. Plant the placeholder closes off camera, after
+step 2, with chapter 14's Listing 14-28 (it calls `plant_candidates` for the twenty months before this one). Every
+label below is from the templates at tag `v14`.
+
+1. **[SCREEN]** `/accounts/<id>/method/` opens on **C: The Lesson Lab**. Scroll past index investing to **12-1
+   momentum, monthly top N in equal parts** and hold on its seven rules, each reading "lesson coming".
+   **VOICE:** "A second method, written as seven rules. I read them before I start."
+2. **[SCREEN]** In **Start a method on this account**: **Method** `12-1 momentum, monthly top N in equal parts`,
+   **Amount each month** `100`, **Buy window, in days** `7`, **Symbols** `ALPHA BETA GAMMA DELTA`, **Start** the
+   first of this month, **Top N to hold** `2`. Click **Start this method**. Hold on the two messages.
+   **VOICE:** "My candidates, chosen before any ranking, and how many to hold. The app watches them so it has their
+   prices."
+3. **[SCREEN]** Reload. Hold on **The ranking for** this month: three bars, ALPHA and BETA filled with "top 2",
+   GAMMA outlined to the left of the line.
+   **VOICE:** "Each bar is a year's change without the latest month. The two filled bars are the ones the method
+   holds."
+4. **[SCREEN]** Scroll to the table under the bars and read ALPHA's row: the two dates and closes and `+24.3%`.
+   Then hold on **How to read this**.
+   **VOICE:** "The table has the two prices behind each number, so I can check it by hand. A high rank is a fact
+   about the past year, not a forecast."
+5. **[SCREEN]** Hold on **Not ranked**: DELTA and the months it needs, and **Get 5 years of history for DELTA**.
+   Do not press it on the laptop.
+   **VOICE:** "DELTA has too little history to rank, so the method leaves it out until it has a year."
+6. **[SCREEN]** **Account** page, **Watch list**: the **12-1 return** column with `▲ up`, `▼ down` and "not
+   ranked". Click **ALPHA**, pick **All**, and hold on the shading and the "excluded" label.
+   **VOICE:** "The darker shading is the window the return is measured over; the lighter strip is the latest month,
+   which the method leaves out."
+7. **[SCREEN]** Back on the method page, **This month's rebalance**: **Buy $50.00 of ALPHA**, **Buy $50.00 of
+   BETA**. Hold on the last line.
+   **VOICE:** "The month's money, in equal parts, into the top two. Arithmetic on my own list. Information, not
+   advice."
+
+**Closing line:** "Seven rules, one ranking, and the reason behind every number on the page."
+
+**Retake notes.** The month in the heading is the month you record in; the planted closes move with it, so the
+numbers stay the same. To record step 2 again, end the plan from **Change or end this plan** first, or delete the
+account in the admin and plant again.

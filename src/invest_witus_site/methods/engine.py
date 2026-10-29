@@ -16,17 +16,36 @@ Chapter 12 adds three things, all arrangement, none a new rule:
   the finding, the month reads "skipped" instead of "missed", and the rule's status reads
   "explained" when every finding it has is. The rule and `CHECKED_RULES` are unchanged.
 - **The count of months followed:** the months due that were done with no finding.
+
+Chapter 14 adds the second method, 12-1 momentum. Its rules are checked by its own rule set,
+`invest_witus.adherence.momentum.review`, which needs each month's ranking: this module reads the
+candidates' stored closes once (`methods/momentum.py`), ranks every month the review covers, and
+passes the rankings in. Everything else is the same arrangement: the spans, the month rows (a
+month with any trade is done, since a rebalance may be only a sale), a skip explaining a month
+with no trade, and the next action, whose symbols are that month's top N. An index plan takes
+exactly the path it took before.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from datetime import date
 from decimal import Decimal
 
+from invest_witus.adherence import momentum as momentum_rules
 from invest_witus.adherence.journal import Action, Entry
 from invest_witus.adherence.plan import Plan
 from invest_witus.adherence.review import Finding, months_due, review
+from invest_witus.methods.momentum_12_1 import Month, Ranking
 from invest_witus.methods.rulebook import LESSON_COMING, Method
 from invest_witus_site.methods.models import SKIP, JournalEntry, MethodPlan, Span, version_spans
+from invest_witus_site.methods.momentum import (
+    MomentumView,
+    PriceSeries,
+    momentum_view,
+    price_series,
+    ranking_for,
+    series_since,
+)
 
 ZERO = Decimal("0")
 # The one rule a skip can explain: a month with no buy. The id is the TOML file's.
@@ -105,6 +124,8 @@ class MonthRow:
     rule_ids: list[str]
     version: int = 1
     skip_reason: str = ""
+    # Chapter 14: the month's top N in rank order, or why there is none (12-1 momentum only).
+    ranking: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,6 +155,8 @@ class MethodReview:
     months: list[MonthRow]
     next_action: NextAction
     spans: list[Span] = field(default_factory=list[Span])
+    # Chapter 14: the ranking, the bars and the rebalance; None for an index plan.
+    momentum: MomentumView | None = None
 
     @property
     def on_plan(self) -> bool:
@@ -198,13 +221,17 @@ def month_rows(
     findings: list[FindingLine],
     through: date,
     version: int = 1,
+    any_trade: bool = False,
+    rankings: Mapping[Month, str] | None = None,
 ) -> list[MonthRow]:
     """Every month from the plan's start through `through`: the months whose window has closed
     (chapter 03's `months_due`) and, if the review date falls inside a window that is still open,
     that month too, marked open. The rows are the journal's own, not chapter 03's values, because
     the shares column exists only here; the shares total is `None` when any buy in the month
     left shares blank, so a partial total is never printed as a whole. A month with no buy and a
-    skip in the journal reads "skipped", with the skip's reason."""
+    skip in the journal reads "skipped", with the skip's reason.
+    Chapter 14: with `any_trade`, a month with a sale and no buy is done too (a momentum
+    rebalance can be a sale alone), and `rankings` gives each month's top N in words."""
     due = months_due(plan, through)
     months = list(due)
     if through >= plan.start:
@@ -213,12 +240,16 @@ def month_rows(
             months.append(current)
     buys = [e for e in entries if e.action == Action.BUY.value and plan.start <= e.date <= through]
     skips = [e for e in entries if e.kind == SKIP and plan.start <= e.date <= through]
+    traded = [e for e in entries if e.is_trade and plan.start <= e.date <= through]
     rows: list[MonthRow] = []
     for year, month in months:
         label = month_label(year, month)
         in_month = [b for b in buys if (b.date.year, b.date.month) == (year, month)]
         skipped = [s for s in skips if (s.date.year, s.date.month) == (year, month)]
-        if in_month:
+        done = bool(in_month) or (
+            any_trade and any((t.date.year, t.date.month) == (year, month) for t in traded)
+        )
+        if done:
             status = "done"
         elif skipped:
             status = "skipped"
@@ -239,7 +270,8 @@ def month_rows(
                 shares=shares,
                 rule_ids=sorted({f.rule.id for f in findings if f.month == label}),
                 version=version,
-                skip_reason=skipped[0].reason if skipped and not in_month else "",
+                skip_reason=skipped[0].reason if skipped and not done else "",
+                ranking=(rankings or {}).get((year, month), ""),
             )
         )
     return rows
@@ -273,13 +305,16 @@ def next_action(
     )
 
 
-def explain(findings: list[FindingLine], months: list[MonthRow]) -> list[FindingLine]:
+def explain(
+    findings: list[FindingLine], months: list[MonthRow], rule_id: str = ONE_BUY
+) -> list[FindingLine]:
     """Attach a skip's reason to the "No buy" finding of a month the journal says was skipped.
-    Only that rule, and only a month with no buy: a skip does not excuse two buys."""
+    Only that rule, and only a month with no buy: a skip does not excuse two buys. Chapter 14:
+    `rule_id` names the method's missed-month rule ("No rebalance" for 12-1 momentum)."""
     skipped = {row.label: row.skip_reason for row in months if row.status == "skipped"}
     return [
         replace(finding, explanation=skipped[finding.month])
-        if finding.rule.id == ONE_BUY and finding.month in skipped
+        if finding.rule.id == rule_id and finding.month in skipped
         else finding
         for finding in findings
     ]
@@ -307,20 +342,45 @@ def build_review(plan: MethodPlan, entries: list[JournalEntry], through: date) -
     by_id = {rule.id: rule for rule in rules}
     findings: list[FindingLine] = []
     months: list[MonthRow] = []
+    series = momentum_prices(spans) if plan.is_momentum else None
     for span in spans:
         upto = span_through(span, through)
         version = span.plan.to_plan()
-        found = finding_lines(review(span.plan.method(), version, trades, upto), by_id)
+        if series is None:
+            found = finding_lines(review(span.plan.method(), version, trades, upto), by_id)
+            months_found = month_rows(version, entries, found, upto, span.plan.version)
+        else:
+            rankings = span_rankings(span.plan, version, upto, series)
+            checked = momentum_rules.review(
+                span.plan.method(),
+                version,
+                span.plan.top_n or 1,
+                trades,
+                upto,
+                rankings,
+                held_since=spans[0].first,
+            )
+            found = finding_lines(checked, by_id)
+            words = {month: ranking_words(ranking) for month, ranking in rankings.items()}
+            months_found = month_rows(
+                version, entries, found, upto, span.plan.version, any_trade=True, rankings=words
+            )
         findings += found
-        months += month_rows(version, entries, found, upto, span.plan.version)
-    findings = explain(findings, months)
+        months += months_found
+    findings = explain(
+        findings, months, momentum_rules.MISSED_MONTH if series is not None else ONE_BUY
+    )
     skipped = frozenset(
         (e.date.year, e.date.month) for e in entries if e.kind == SKIP and e.date >= spans[0].first
     )
     now = version_on(spans, through)
     action = next_action(now.to_plan(), trades, through, skipped)
     if now is not plan and action.opens >= plan.started_on:
+        now = plan
         action = next_action(plan.to_plan(), trades, through, skipped)
+    if series is not None:
+        top = ranking_for(now, (action.opens.year, action.opens.month), series).top
+        action = replace(action, symbols=top)
     return MethodReview(
         plan=plan,
         method=method,
@@ -332,4 +392,33 @@ def build_review(plan: MethodPlan, entries: list[JournalEntry], through: date) -
         months=months,
         next_action=action,
         spans=spans,
+        momentum=momentum_view(plan, through, series) if series is not None else None,
     )
+
+
+# --- Chapter 14: the rankings a momentum review reads ---------------------------------------------
+
+
+def momentum_prices(spans: list[Span]) -> PriceSeries:
+    """One query for every candidate any version names, from the first window's start on."""
+    symbols = {symbol for span in spans for symbol in span.plan.symbol_list()}
+    first = spans[0].first
+    return price_series(symbols, series_since((first.year, first.month)))
+
+
+def span_rankings(
+    version: MethodPlan, plan: Plan, through: date, series: PriceSeries
+) -> dict[Month, Ranking]:
+    """The ranking of every month the span's review covers: the months due, and the month of
+    `through` while its window is still open, so its row can say what the top N is."""
+    months: list[Month] = list(months_due(plan, through))
+    current = (through.year, through.month)
+    if through >= plan.start and current not in months:
+        months.append(current)
+    return {month: ranking_for(version, month, series) for month in months}
+
+
+def ranking_words(ranking: Ranking) -> str:
+    """`ALPHA, BETA` for the top N in rank order, or `not ranked` when no candidate has both
+    closes stored."""
+    return ", ".join(ranking.top) if ranking.ranked else "not ranked"

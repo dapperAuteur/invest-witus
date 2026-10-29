@@ -1,0 +1,13 @@
+{% load holdings_extras %}
+{# This month's 12-1 window on a watched symbol's chart (chapter 14), on an account running 12-1 momentum. #}
+{# Included by watchlist/history.html with `window` (a HistoryWindow), `item`, `account` and `window_query`. #}
+<section aria-labelledby="window-heading">
+  <h2 id="window-heading">The 12-1 window for {{ window.month }}</h2>
+  {% if window.score %}
+  <p>{{ item.symbol }}'s 12-1 return for {{ window.month }}: <strong>{{ window.change_text }}</strong>, from {{ window.score.start_close|money }} on {{ window.score.start_day|date:"Y-m-d" }} to {{ window.score.end_close|money }} on {{ window.score.end_day|date:"Y-m-d" }}.</p>
+  {% else %}
+  <p>{{ item.symbol }} is not ranked for {{ window.month }}: {{ window.result.reason }}.</p>
+  {% endif %}
+  <p class="how-to-read"><strong>How to read this.</strong> The darker shading is the 12-1 window, from the last close of {{ window.start }} to the last close of {{ window.end }}; the return is the change between its two ends, read on the adjusted close. The lighter strip with a dashed edge is {{ window.excluded }}, the latest full month, labelled "excluded": the method leaves it out, so what happened in it does not move the rank. A range shorter than the window shows only the part inside it. <span class="muted">Lesson coming.</span></p>
+  {% if window_query %}<p><a href="?{{ window_query }}">Show the whole window</a></p>{% else %}<p class="small">The stored closes do not reach back to {{ window.first|date:"Y-m-d" }}. <strong>Get history</strong> below with 5 years fetches them.</p>{% endif %}
+</section>

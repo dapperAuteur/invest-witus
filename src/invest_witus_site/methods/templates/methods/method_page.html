@@ -12,6 +12,8 @@
   <p class="small"><a href="{% url 'logbook' account.pk %}">Open the logbook</a>: every entry, with filters and a CSV export.{% if plan %} <a href="{% url 'method-change' account.pk %}">Change or end this plan</a>, with a reason.{% endif %}</p>
   {# Chapter 11: on an account linked to Alpaca paper, this month's buys and the Confirm button. #}
   {% if paper %}{% include "paper/_month_buys.html" %}{% endif %}
+  {# Chapter 14: a 12-1 momentum plan's ranking, its bars and this month's rebalance, in every view. #}
+  {% if review.momentum %}{% include "methods/_momentum.html" with momentum=review.momentum %}{% endif %}
   {# The same context, one of three arrangements (chapter 10). The view's letter is the research's. #}
   {% include view_template %}
   <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>

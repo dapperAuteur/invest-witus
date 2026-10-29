@@ -748,6 +748,40 @@ column under **Report a bad actor**. It works signed in or out.
   **Waitlist copies to Inbox** lists each new waitlist signup's copy the same way. On the laptop,
   `uv run --env-file .env python manage.py reports` prints the reports not marked Done.
 
+## A second method: 12-1 momentum (chapter 14)
+
+Written for the app at `v14`. 12-1 momentum ranks a list of candidates you write down by how much each rose over
+the past year without its latest month, and puts each month's amount into the top few, in equal parts. Everything
+here is on the method page and the watch list of an account that runs it, for the account's owner only. The
+symbols below (`ALPHA`, `BETA`, `GAMMA`, `DELTA`) are placeholders.
+
+- **Start it.** On an account with no method, the method page opens on **C: The Lesson Lab**, which lists both
+  methods with their rules. In the start form pick **12-1 momentum, monthly top N in equal parts**, type your
+  candidates in **Symbols**, the month's money in **Amount each month**, and **Top N to hold**, a number smaller
+  than the number of candidates. Leave **Top N to hold** empty for index investing. Press **Start this method**.
+  The message names the candidates it added to the watch list, so the nightly pull stores their closes.
+- **Fetch enough history.** A candidate is ranked only when it has a close in the month 13 months back and in the
+  month 2 months back, a little over a year of history. The nightly pull's first fetch of a new symbol stores one
+  year, so a new candidate shows under **Not ranked** with the months it needs; press **Get 5 years of history**
+  under that list, once.
+- **Read the ranking.** **The ranking for 2026-11** sits above the view in A, B and C. Each candidate is a bar on
+  one scale: right of the line it rose over the window, left of it it fell; the number has its sign and the word up
+  or down. Filled bars are in the top N and say so; outlined bars are not. The table under the bars has the same
+  ranking with the two closes each return comes from. **How to read this** explains it in four sentences.
+- **This month's rebalance.** Under the ranking: **Buy $50.00 of ALPHA** for each top-N candidate (the amount
+  split to the cent), and **Sell all of GAMMA** for a holding that left the top N. The app does not place sells:
+  on a paper account sell in Alpaca's paper dashboard, then log the sale. A buy of a symbol you sold in the last
+  30 days shows a **Wash-sale warning**.
+- **The review.** The seven rules are checked like method 1's: view B's **Rule checks** shows each one's status
+  and evidence, and its **Months** table has a **Top N** column with the month's top N. A month with no trade at
+  all is "No rebalance"; a skip with its reason explains it, as in chapter 12.
+- **On a paper account,** **This month's buys** lists the top N with their parts and **Confirm** places one order
+  each, once.
+- **The watch list** of a momentum account has a **12-1 return** column: `▲ up +24.3%`, `▼ down -10.5%`, or "not
+  ranked", with its own **How to read this**.
+- **A symbol's history page** shades this month's 12-1 window, darker, and the excluded month, lighter with a
+  dashed edge and labelled "excluded". **Show the whole window** sets the range to cover it.
+
 ## Draft a post for WitUS Outbox (2026-10-29)
 
 For the site owner only. When you want to tell people something about Invest.WitUS (that it is live, or a
@@ -793,7 +827,8 @@ never writes a post by itself and never posts anything: Outbox does, after you a
 - **Keep your money data in git.** Real statements live in the database; the tutorial's samples use
   placeholder symbols; `data/private/` is ignored by git.
 
-Still to come, each its own chapter: 12-1 momentum (14), signed events to CentenarianOS (15).
+Still to come, each its own chapter: rank changes and the rolling 12-1 line (14a), signed events to CentenarianOS
+(15).
 
 ## When something goes wrong: a short table
 

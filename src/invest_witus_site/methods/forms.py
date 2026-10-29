@@ -1,5 +1,7 @@
 """The method page's forms: start a method for an account, and log one journal entry. Chapter 12
-adds three: change or end the plan with a reason, close a month's review, and reopen it."""
+adds three: change or end the plan with a reason, close a month's review, and reopen it. Chapter
+14 adds the top N a 12-1 momentum plan holds, to the start form and the change form, and puts a
+momentum plan's candidates on the account's watch list so the nightly pull stores their closes."""
 
 from collections.abc import Mapping
 from datetime import date, timedelta
@@ -15,6 +17,7 @@ from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.models import (
     MAX_WINDOW_DAYS,
     MIN_WINDOW_DAYS,
+    MOMENTUM,
     ONE_CENT,
     REASON_MAX_LENGTH,
     TRADE,
@@ -26,13 +29,14 @@ from invest_witus_site.methods.models import (
     parse_tags,
     validate_symbol_list,
 )
+from invest_witus_site.methods.momentum import ensure_watched
 
 SYMBOL_BOX = {"autocomplete": "off", "autocapitalize": "characters", "spellcheck": "false"}
 
 
 def method_choices() -> list[tuple[str, str]]:
     """The methods the package ships, read when the form is built, never typed into the form.
-    Today that is one; a second rules file is a second option with no change here."""
+    Chapter 14's second rules file became the second option with no change here."""
     return [(method.id, method.name) for method in available_methods()]
 
 
@@ -75,10 +79,23 @@ class StartMethodForm(forms.Form):
         decimal_places=2,
         help_text="Paper accounts only: the practice money this plan may spend. Optional.",
     )
+    # Chapter 14: 12-1 momentum's one more number. Optional in the form, required by `clean()`
+    # for momentum and refused for index investing, which holds every fund it names.
+    top_n = forms.IntegerField(
+        label="Top N to hold",
+        required=False,
+        min_value=1,
+        help_text=(
+            "12-1 momentum only: how many of the ranked candidates to hold, fewer than the "
+            "candidates you name. Leave it empty for index investing."
+        ),
+    )
 
     def __init__(self, account: Account, data: Mapping[str, Any] | None = None) -> None:
         super().__init__(data)
         self.account = account
+        # The symbols the start put on the watch list (momentum only), for the view's message.
+        self.watched: list[str] = []
 
     def clean_symbols(self) -> str:
         """The box as the stored list: each symbol normalized, once, joined by spaces. A refused
@@ -94,12 +111,13 @@ class StartMethodForm(forms.Form):
                 "This account already runs a method. End it from the method page before "
                 "starting another."
             )
+        check_top_n(self, cleaned.get("method_id"), cleaned.get("top_n"), cleaned.get("symbols"))
         return cleaned
 
     def start(self) -> MethodPlan:
         """The row. Called after `is_valid()`; the model's `save()` normalizes once more."""
         amount: Decimal = self.cleaned_data["amount"]
-        return MethodPlan.objects.create(
+        plan = MethodPlan.objects.create(
             account=self.account,
             method_id=self.cleaned_data["method_id"],
             amount=amount,
@@ -107,6 +125,33 @@ class StartMethodForm(forms.Form):
             symbols=self.cleaned_data["symbols"],
             started_on=self.cleaned_data["started_on"],
             practice_budget=self.cleaned_data["practice_budget"],
+            top_n=self.cleaned_data.get("top_n"),
+        )
+        if plan.is_momentum:
+            self.watched = ensure_watched(self.account, plan.symbol_list())
+        return plan
+
+
+def check_top_n(
+    form: forms.Form, method_id: str | None, top_n: int | None, symbols: str | None
+) -> None:
+    """Chapter 14: a momentum plan names a top N smaller than its candidates (with N equal to the
+    list, the ranking would leave nothing out); an index plan names none."""
+    if "top_n" in form.errors:
+        return
+    if method_id != MOMENTUM:
+        if top_n is not None:
+            form.add_error("top_n", "Leave this empty: index investing holds every fund it names.")
+        return
+    if top_n is None:
+        form.add_error("top_n", "12-1 momentum needs a top N: how many candidates to hold.")
+        return
+    count = len((symbols or "").split())
+    if symbols and top_n >= count:
+        form.add_error(
+            "top_n",
+            f"Name more candidates than the top N: {count} candidate{'' if count == 1 else 's'} "
+            f"and a top {top_n} leaves nothing to rank out.",
         )
 
 
@@ -197,6 +242,8 @@ class PlanChangeForm(forms.Form):
     symbols = forms.CharField(
         label="Symbols", required=False, max_length=200, widget=forms.TextInput(attrs=SYMBOL_BOX)
     )
+    # Chapter 14: shown for a 12-1 momentum plan only; removed in `__init__` for an index plan.
+    top_n = forms.IntegerField(label="Top N to hold", required=False, min_value=1)
     effective = forms.ChoiceField(label="Starting", required=False)
     reason = forms.CharField(
         label="Why",
@@ -212,11 +259,15 @@ class PlanChangeForm(forms.Form):
             "amount": plan.amount,
             "buy_window_days": plan.buy_window_days,
             "symbols": plan.symbols,
+            "top_n": plan.top_n,
             "effective": NEXT_MONTH,
         }
         super().__init__(data, initial=initial)
         self.plan = plan
         self.today = today
+        self.watched: list[str] = []
+        if not plan.is_momentum:
+            del self.fields["top_n"]
         this, following = first_of_month(today), first_of_next_month(today)
         effective = self.fields["effective"]
         assert isinstance(effective, forms.ChoiceField)
@@ -242,8 +293,17 @@ class PlanChangeForm(forms.Form):
         if self.errors:
             return cleaned
         plan = self.plan
+        if plan.is_momentum:
+            check_top_n(self, plan.method_id, cleaned.get("top_n"), cleaned["symbols"])
+            if self.errors:
+                return cleaned
         new = (cleaned["amount"], cleaned["buy_window_days"], cleaned["symbols"])
-        if new == (plan.amount, plan.buy_window_days, plan.symbols):
+        top_n = cleaned.get("top_n") if plan.is_momentum else plan.top_n
+        if new == (plan.amount, plan.buy_window_days, plan.symbols) and top_n == plan.top_n:
+            if plan.is_momentum:
+                raise ValidationError(
+                    "Nothing changed: the amount, the window, the candidates and the top N match."
+                )
             raise ValidationError("Nothing changed: the amount, the window and the symbols match.")
         if cleaned.get("effective") == THIS_MONTH:
             self.check_this_month()
@@ -302,7 +362,7 @@ class PlanChangeForm(forms.Form):
             plan.active = False
             plan.ended_on = starts - timedelta(days=1)
             plan.save()
-            return MethodPlan.objects.create(
+            version = MethodPlan.objects.create(
                 account=plan.account,
                 method_id=plan.method_id,
                 amount=data["amount"],
@@ -313,7 +373,11 @@ class PlanChangeForm(forms.Form):
                 previous=plan,
                 version=plan.version + 1,
                 change_reason=reason,
+                top_n=data.get("top_n") if plan.is_momentum else plan.top_n,
             )
+            if version.is_momentum:
+                self.watched = ensure_watched(version.account, version.symbol_list())
+            return version
 
 
 TEXT_BOX = {"rows": 3}

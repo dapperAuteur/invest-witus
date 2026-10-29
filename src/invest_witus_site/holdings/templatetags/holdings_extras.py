@@ -96,3 +96,10 @@ def percent(value: Decimal | None) -> str:
         return ""
     rounded = value.quantize(CENT, rounding=ROUND_HALF_UP)
     return "0.00%" if rounded == 0 else f"{rounded:+.2f}%"
+
+
+@register.filter
+def item(mapping: object, key: object) -> object:
+    """`{{ badges|item:row.item.symbol }}`: a dictionary's value for a key the template holds in
+    a variable, or None (chapter 14, the watch list's 12-1 badges)."""
+    return mapping.get(key) if isinstance(mapping, dict) else None  # type: ignore[union-attr]

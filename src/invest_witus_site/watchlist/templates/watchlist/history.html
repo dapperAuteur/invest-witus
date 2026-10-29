@@ -27,6 +27,7 @@
   {% if plot %}
   {% include "prices/_chart.html" %}
   {% include "prices/_thinned.html" %}
+  {% if momentum_window %}{% include "watchlist/_momentum_window.html" with window=momentum_window %}{% endif %}
   {% if line.basis == "close" and line.missing_adjusted %}
   <p class="small">Adjusted closes are missing for {{ line.missing_adjusted }} of {{ line.days|length }} day{{ line.days|length|pluralize }} in this range, so the chart uses the unadjusted close, where a split shows as a sudden drop. Press <strong>Get history</strong> with <strong>All available</strong> below once to fill them.</p>
   {% endif %}

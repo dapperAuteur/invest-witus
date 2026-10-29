@@ -189,7 +189,8 @@ def tables_in(html: str) -> list[list[tuple[str, ...]]]:
 
 
 def test_the_package_lists_its_methods_and_the_rules_file_still_matches_the_checks() -> None:
-    assert [method.id for method in available_methods()] == ["index-dca"]
+    # Chapter 14 ships a second method, so this asserts membership, not the whole list.
+    assert "index-dca" in [method.id for method in available_methods()]
     assert {rule.id for rule in load_method("index-dca").rules} == CHECKED_RULES
 
 

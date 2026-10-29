@@ -11,6 +11,7 @@ carrying their report in Django's messages, which the base template prints once.
 """
 
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -23,7 +24,9 @@ from django.views.decorators.http import require_GET, require_POST
 from invest_witus.valuation import STALE_AFTER_DAYS, is_stale
 from invest_witus_site.holdings.models import Account, Holding
 from invest_witus_site.holdings.views import account_page
-from invest_witus_site.prices.charts import MAX_LINES, MAX_POINTS, SeriesInput, build_plot
+from invest_witus_site.methods.models import MethodPlan
+from invest_witus_site.methods.momentum import HistoryWindow, history_window
+from invest_witus_site.prices.charts import MAX_LINES, MAX_POINTS, SeriesInput, band, build_plot
 from invest_witus_site.prices.history import (
     COMPARE_DEFAULT_RANGE,
     DEFAULT_RANGE,
@@ -151,6 +154,13 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
     series = SeriesInput(item.symbol, closes, close_before(item.symbol, chosen.since))
     plot = build_plot([series], f"{item.symbol}, {chosen.title}", rebase=False)
     line = plot.lines[0] if plot else None
+    window = momentum_window(account, item.symbol, timezone.localdate())
+    if plot is not None and window is not None:
+        shaded = (
+            band(plot, "window", "12-1 window", window.first, window.last),
+            band(plot, "excluded", "excluded", window.excluded_first, window.excluded_last),
+        )
+        plot.bands = [each for each in shaded if each is not None]
     latest = DailyClose.latest_for([item.symbol]).get(item.symbol)
     today = timezone.localdate()
     context = {
@@ -164,9 +174,31 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
         "stale_after_days": STALE_AFTER_DAYS,
         "history_ranges": [(value, label) for value, (label, _) in HISTORY_RANGES.items()],
         **range_context(choice, plot.total_days if plot else 0, bool(plot and plot.thinned)),
+        # Chapter 14: this month's 12-1 window, on an account running 12-1 momentum only, and
+        # the From and To that show all of it when the stored closes reach back that far.
+        "momentum_window": window,
+        "window_query": window_query(window, choice.span) if window is not None else "",
     }
     status = 400 if choice.error else 200
     return render(request, "watchlist/history.html", context, status=status)
+
+
+def momentum_window(account: Account, symbol: str, today: date) -> HistoryWindow | None:
+    plan = MethodPlan.active_for(account)
+    if plan is None or not plan.is_momentum:
+        return None
+    return history_window(symbol, today)
+
+
+def window_query(window: HistoryWindow, span: StoredSpan) -> str:
+    """`from=...&to=...` covering the window and the excluded month, or "" when the stored closes
+    do not reach the window's start (the range would be refused)."""
+    if span.first is None or span.last is None or span.first > window.first:
+        return ""
+    until = span.last
+    if until <= window.first:
+        return ""
+    return f"from={window.first:%Y-%m-%d}&to={until:%Y-%m-%d}"
 
 
 def compare_choices(account: Account) -> list[str]:
