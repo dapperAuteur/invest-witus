@@ -16,6 +16,17 @@
   <a class="skip-link" href="#main">Skip to content</a>
   {% include "pages/_header.html" %}
   <main id="main" tabindex="-1">
+    {% if messages %}
+    {# One-time notes from the view that handled a form, through Django's messages framework (chapter 09). #}
+    {# Printed here, once, on whatever page the redirect lands on; iterating them is what clears them. #}
+    <section class="container" aria-label="Notices">
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="message {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
   {% include "pages/_footer.html" %}

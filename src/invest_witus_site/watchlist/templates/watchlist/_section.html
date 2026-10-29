@@ -1,0 +1,63 @@
+{% load holdings_extras %}
+{# The watch list section of the account page (chapter 09). Included by holdings/account_detail.html #}
+{# with `account`, `watch` (the rows with their quotes) and `watch_form`. #}
+<section class="watch" aria-labelledby="watch-heading">
+  <h2 id="watch-heading">Watch list</h2>
+  {% if watch.rows %}
+  <table class="holdings">
+    <caption class="sr-only">Symbols you follow in this account, with the latest stored close</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col">Note</th>
+        <th scope="col" class="num">Close</th>
+        <th scope="col">As of</th>
+        <th scope="col">Source</th>
+        <th scope="col"><span class="sr-only">Remove</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in watch.rows %}
+      <tr>
+        <th scope="row">{{ row.item.symbol }}</th>
+        <td>{{ row.item.note }}</td>
+        {% if row.quote %}
+        <td class="num">{{ row.quote.close|plain_number }}</td>
+        <td>{{ row.quote.as_of|date:"Y-m-d" }}{% if row.stale %} <span class="stale">stale</span>{% endif %}</td>
+        <td>{{ row.quote.source }}</td>
+        {% else %}
+        <td class="muted" colspan="3">no price yet</td>
+        {% endif %}
+        <td>
+          <form method="post" action="{% url 'watch-remove' account.pk row.item.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="link-button">Remove <span class="sr-only">{{ row.item.symbol }}</span></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if watch.unpriced %}
+  <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
+  {% endif %}
+  {% else %}
+  <p>Nothing on the watch list yet.</p>
+  {% endif %}
+  <form method="post" action="{% url 'watch-add' account.pk %}" class="watch-form" novalidate>
+    {% csrf_token %}
+    <div class="field">
+      <label for="{{ watch_form.symbols.id_for_label }}">Symbols</label>
+      {{ watch_form.symbols }}
+      {{ watch_form.symbols.errors }}
+      <p class="small muted">One or more, separated by commas or spaces. Letters, digits, a dot and a hyphen; up to twelve characters each.</p>
+    </div>
+    <div class="field">
+      <label for="{{ watch_form.note.id_for_label }}">Note (optional)</label>
+      {{ watch_form.note }}
+      {{ watch_form.note.errors }}
+    </div>
+    <button type="submit">Add to the watch list</button>
+  </form>
+  <p class="small muted">Watching a symbol places no order and recommends nothing. A symbol reaches a plan only when you add it to the plan's universe. Information, not advice.</p>
+</section>
