@@ -153,7 +153,8 @@ decision 9). Migrations run from the merge workflow; the walk-through is chapter
 ## The in-app reporter
 
 Chapter 13 adds **Report a problem or ask a question** to the header and the footer of every page, signed in or
-out: a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
+out (and since 2026-10-30 a floating **Help** bubble: a plain link to `/report/` signed out, so public pages still
+carry no script; signed in, `pages/help.js` opens the form in a `<dialog>`): a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
 in a `reports` app first, then sent to WitUS Inbox as a signed request (`X-Witus-Source`, `X-Witus-Timestamp`,
 and `X-Witus-Signature`, an HMAC-SHA256 of the timestamp and the exact body, per Inbox's
 `docs/webhook-contract.md`); a new waitlist signup is copied the same way. A send that fails keeps its reason on

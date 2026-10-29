@@ -1,0 +1,47 @@
+{% load static %}
+{# The floating Help bubble (2026-10-30, decision 151), like CentenarianOS's and Learn.WitUS's, beside the #}
+{# header and footer links. Signed out, and with JavaScript off, it is a plain link to /report/: the public #}
+{# pages carry no script (chapter 06a). Signed in, pages/help.js hides the link, shows the button and opens #}
+{# the same report form in a dialog: focus moves in, Escape or Close shuts it, focus returns to the button. #}
+{% if help_bubble_on %}
+<div class="help-bubble-wrap">
+  <a class="help-bubble" href="{% url 'report' %}" data-help-link>Help<span class="sr-only">: report a problem or ask a question</span></a>
+  {% if help_form %}
+  <button type="button" class="help-bubble" aria-haspopup="dialog" aria-controls="help-dialog" data-help-button hidden>Help<span class="sr-only">: report a problem or ask a question</span></button>
+  {% endif %}
+</div>
+{% if help_form %}
+<dialog id="help-dialog" class="help-dialog" aria-labelledby="help-dialog-title">
+  <div class="help-dialog-inner">
+    <div class="help-dialog-head">
+      <h2 id="help-dialog-title">Report a problem or ask a question</h2>
+      <button type="button" class="help-close" data-help-close>Close</button>
+    </div>
+    <p class="small muted">The operator reads every report. Sent as {{ display_name }}, from your WitUS sign-in.</p>
+    <form method="post" action="{% url 'report' %}" class="report-form">
+      {% csrf_token %}
+      <fieldset class="field">
+        <legend>{{ help_form.kind.label }}</legend>
+        {{ help_form.kind }}
+      </fieldset>
+      <div class="field">
+        <label for="{{ help_form.message.id_for_label }}">{{ help_form.message.label }}</label>
+        {{ help_form.message }}
+        <p class="small muted" id="{{ help_form.message.auto_id }}_helptext">{{ help_form.message.help_text }}</p>
+      </div>
+      <div class="field">
+        <label for="{{ help_form.page.id_for_label }}">{{ help_form.page.label }}</label>
+        {{ help_form.page }}
+        <p class="small muted" id="{{ help_form.page.auto_id }}_helptext">{{ help_form.page.help_text }}</p>
+      </div>
+      <div class="honeypot" aria-hidden="true">
+        <label for="{{ help_form.website.id_for_label }}">Leave this field empty</label>
+        {{ help_form.website }}
+      </div>
+      <p class="help-dialog-actions"><button type="submit">Send</button> <a href="{% url 'report' %}">Open the full form</a></p>
+    </form>
+  </div>
+</dialog>
+<script src="{% static 'pages/help.js' %}" defer></script>
+{% endif %}
+{% endif %}
