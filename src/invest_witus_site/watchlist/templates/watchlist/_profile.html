@@ -1,0 +1,27 @@
+{# What the symbol is (2026-10-30, decision 150): the vendor's name, exchange and description, labelled #}
+{# with the source and the day it was fetched. Information only; the owner's page only. #}
+<section class="symbol-profile" aria-labelledby="profile-heading">
+  <h2 id="profile-heading">About {{ item.symbol }}</h2>
+  {% if profile %}
+  <p>{% if profile.name %}<strong>{{ profile.name }}</strong>{% else %}No name in the source's metadata.{% endif %}{% if profile.exchange_code %} · Exchange: {{ profile.exchange_code }}{% endif %}</p>
+  {% if profile.description %}
+  <p>{{ profile_short }}</p>
+  {% if profile_cut %}<details><summary>Full description</summary><p>{{ profile.description }}</p></details>{% endif %}
+  {% else %}
+  <p class="muted">The source has no description for {{ item.symbol }}.</p>
+  {% endif %}
+  {% if profile.start_date or profile.end_date %}<p class="small">The source has prices from {{ profile.start_date|date:"Y-m-d"|default:"an unknown day" }} to {{ profile.end_date|date:"Y-m-d"|default:"an unknown day" }}.</p>{% endif %}
+  <p class="small muted">Description from {% if profile.source == "tiingo" %}Tiingo{% else %}{{ profile.source }}{% endif %}, as of {{ profile.fetched_at|date:"Y-m-d" }}. Information only, not advice or a recommendation.</p>
+  {% if profile_search %}<p class="small">More about {{ profile.name }}: <a href="{{ profile_search }}" rel="noopener noreferrer">Search Wikipedia</a> (Wikipedia's search page for the name; check that the article is this {{ item.symbol }}).</p>{% endif %}
+  {% else %}
+  <p class="muted">No description stored yet.{% if profile_source_set %} The nightly pull fetches it; <strong>Get description</strong> fetches it now.{% else %} Descriptions come from Tiingo's metadata, and this copy has no Tiingo key.{% endif %}</p>
+  {% endif %}
+  {% if profile_source_set and profile_can_refresh %}
+  <form method="post" action="{% url 'watch-fetch-profile' account.pk item.symbol %}">
+    {% csrf_token %}
+    <button type="submit">Get description{% if profile %} again{% endif %}</button>
+  </form>
+  {% elif profile %}
+  <p class="small muted">Refreshes at most once every {{ profile_refresh_days }} days.</p>
+  {% endif %}
+</section>

@@ -1,0 +1,8 @@
+{
+  "ticker": "FUNDX",
+  "name": "Example Total Market Index Fund",
+  "exchangeCode": "NYSE ARCA",
+  "description": "A placeholder fund for the tests. It is not a real security. The words below only make the description longer than the page's short form, so the page has to cut it and offer the rest behind Full description. One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twenty-one twenty-two twenty-three twenty-four twenty-five twenty-six twenty-seven twenty-eight twenty-nine thirty the end.",
+  "startDate": "1993-01-29",
+  "endDate": "2026-10-29"
+}

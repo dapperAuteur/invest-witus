@@ -26,6 +26,7 @@ from invest_witus_site.holdings.models import Account, Holding
 from invest_witus_site.holdings.views import account_page
 from invest_witus_site.methods.models import MethodPlan
 from invest_witus_site.methods.momentum import HistoryWindow, history_window
+from invest_witus_site.prices import profiles
 from invest_witus_site.prices.charts import MAX_LINES, MAX_POINTS, SeriesInput, band, build_plot
 from invest_witus_site.prices.history import (
     COMPARE_DEFAULT_RANGE,
@@ -42,7 +43,7 @@ from invest_witus_site.prices.history import (
     stored_span,
 )
 from invest_witus_site.prices.manual import DEFAULT_HISTORY_RANGE, HISTORY_RANGES
-from invest_witus_site.prices.models import DailyClose
+from invest_witus_site.prices.models import DailyClose, SymbolProfile
 from invest_witus_site.prices.owner_views import run_history_many
 from invest_witus_site.watchlist.forms import WatchForm
 from invest_witus_site.watchlist.models import WatchItem
@@ -166,6 +167,7 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
     context = {
         "account": account,
         "item": item,
+        **profile_context(item.symbol),
         "plot": plot,
         "line": line,
         "rows": page_of(line.newest_first if line else [], request.GET.get("page")),
@@ -181,6 +183,24 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
     }
     status = 400 if choice.error else 200
     return render(request, "watchlist/history.html", context, status=status)
+
+
+def profile_context(symbol: str) -> dict[str, object]:
+    """Decision 150: the stored profile for the "About" section, its short description, the
+    Wikipedia search link (only with a name), and whether Get description may run now."""
+    profile = SymbolProfile.objects.filter(symbol=symbol).first()
+    short, cut = profiles.short_description(profile.description) if profile else ("", False)
+    return {
+        "profile": profile,
+        "profile_short": short,
+        "profile_cut": cut,
+        "profile_search": (
+            profiles.wikipedia_search_url(profile.name) if profile and profile.name else ""
+        ),
+        "profile_can_refresh": not profiles.is_fresh(profile, timezone.now()),
+        "profile_refresh_days": profiles.REFRESH_DAYS,
+        "profile_source_set": profiles.profile_source_from_settings() is not None,
+    }
 
 
 def momentum_window(account: Account, symbol: str, today: date) -> HistoryWindow | None:

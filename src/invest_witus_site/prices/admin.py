@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from invest_witus_site.prices.models import Backfill, DailyClose, ManualRun
+from invest_witus_site.prices.models import Backfill, DailyClose, ManualRun, SymbolProfile
 
 
 @admin.register(DailyClose)
@@ -36,3 +36,13 @@ class ManualRunAdmin(admin.ModelAdmin[ManualRun]):
     list_filter = ("kind",)
     search_fields = ("key",)
     readonly_fields = ("kind", "key", "ran_at")
+
+
+@admin.register(SymbolProfile)
+class SymbolProfileAdmin(admin.ModelAdmin[SymbolProfile]):
+    """What the vendor says each symbol is (decision 150). Delete a row to fetch it again on the
+    next pull."""
+
+    list_display = ("symbol", "name", "exchange_code", "source", "fetched_at")
+    search_fields = ("symbol", "name")
+    readonly_fields = ("fetched_at",)

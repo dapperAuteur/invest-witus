@@ -100,7 +100,10 @@ close, labelled. `/accounts/<id>/compare/?symbols=A,B,C&days=365` puts up to six
 symbols on one chart, each rebased to 100 at its first day in the range. On those two pages only, a small script
 (`prices/static/prices/chart.js`, no library) reads out the day nearest the pointer or the arrow keys; public
 pages carry no script. The Watch list section can fetch history for several symbols in one press (ticked or typed), and the add form
-can fetch the new symbols' history as it adds them. The statements
+can fetch the new symbols' history as it adds them. Since 2026-10-30 the history page opens with **About <SYMBOL>**:
+the name, exchange and a short description from Tiingo's ticker metadata (stored in `SymbolProfile`, refreshed at
+most weekly by the nightly pull or **Get description**), labelled "Description from Tiingo, as of DATE", with a
+"Search Wikipedia" link to Wikipedia's search page for the name (never a guessed article). The statements
 comparison in the admin notes a stored split between the two dates. How to use them:
 [the user guide](docs/guide/using-invest-witus.md).
 

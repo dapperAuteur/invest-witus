@@ -119,6 +119,15 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
   symbol is refilled, its chart uses the unadjusted close and says so. When a later nightly week brings a new
   split or dividend, `DailyClose.upsert` rescales the stored adjusted closes the week did not cover by the same
   ratio; the pull's log line ends with `rescaled N` when that happens.
+- Symbol profiles (2026-10-30, decision 150): migration `prices/0005_symbol_profile` adds the `SymbolProfile`
+  table (a new table, additive; it also lists **Get description** as a manual run kind, no column change),
+  applied by the migrate workflow on merge. After the closes, the nightly cron fetches Tiingo's ticker metadata
+  (`GET /tiingo/daily/<ticker>`) for each symbol with no profile or one older than 7 days, inside what the
+  closes left of the 50-request budget and at most 10 a night, and adds `profiles` (`requests`, `fetched`,
+  `failed`, `skipped`) to its JSON; with no `TIINGO_API_KEY`, or after a 429, the body has no `profiles`. The
+  symbol page's **Get description** button fetches one now (10-minute guard per symbol, under **Manual price
+  runs**). **Prices** → **Symbol profiles** in the admin lists them; delete a row to fetch it again. Nothing to
+  run by hand: the first night after the merge fetches up to 10, the rest over the next nights.
 - **Fetch history for selected** and **Fetch history for all** (2026-10-29, decision 139), under the Watch list
   table, run Get history for several watched symbols in one press: one request each, at most 50, the one-second
   pause, the 240-second limit, a symbol inside its 10-minute guard skipped and named, and `The rest: press
