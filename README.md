@@ -12,6 +12,9 @@ This repository is two things at once:
    [`docs/CHAPTERS.md`](docs/CHAPTERS.md). Learners build their own copy in their own repository and use the
    tags here to check their work.
 
+The user guide and the screen-recording scripts for each feature, written for the person who uses the app rather
+than the person who builds it, live in [`docs/guide/`](docs/guide/README.md).
+
 Information, not advice. Invest.WitUS is a learning tool. It does not recommend securities and is not open to
 other users yet.
 
