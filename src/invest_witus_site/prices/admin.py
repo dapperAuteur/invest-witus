@@ -20,8 +20,8 @@ class DailyCloseAdmin(admin.ModelAdmin[DailyClose]):
 
 @admin.register(Backfill)
 class BackfillAdmin(admin.ModelAdmin[Backfill]):
-    """Which symbols have had their year of closes. Delete a row to ask for the year again on
-    the next pull."""
+    """Which symbols have had their first two years of closes. Delete a row to ask for them
+    again on the next pull."""
 
     list_display = ("symbol", "since", "done_at")
     search_fields = ("symbol",)

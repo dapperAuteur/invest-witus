@@ -545,7 +545,7 @@ def test_fetch_history_for_selected_needs_a_tick_and_a_range(
     client.force_login(owner)
     html = text(client.post(many_url(account), {"which": "selected", "range": "1y"}, follow=True))
     assert "Tick or type at least one symbol on this list, or press Fetch history for all." in html
-    html = text(client.post(many_url(account), {"which": "all", "range": "2y"}, follow=True))
+    html = text(client.post(many_url(account), {"which": "all", "range": "3y"}, follow=True))
     assert "Pick a range:" in html and not ManualRun.objects.exists()
 
 

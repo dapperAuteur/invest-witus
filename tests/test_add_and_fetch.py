@@ -96,7 +96,8 @@ def test_the_add_form_offers_fetch_now_ticked_with_a_range(
     html = text(client.get(f"/accounts/{account.pk}/"))
     assert 'name="fetch_history" id="id_fetch_history" checked' in html
     assert "Fetch their history now</label>" in html
-    assert '<option value="1y" selected>1 year</option>' in html
+    # Decision 149: the automatic first fetch asks for two years, enough for the 12-1 window.
+    assert '<option value="2y" selected>2 years</option>' in html
     for value in ("5y", "10y", "all"):
         assert f'<option value="{value}">' in html
 

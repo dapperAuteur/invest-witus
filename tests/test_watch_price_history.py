@@ -1,8 +1,9 @@
-"""Price history for watched symbols (2026-10-29): a symbol's first pull reaches back a year in its
-one request, inside the run's budget, and a refused or skipped symbol asks again next run; the
-owner's history page draws the closes as an inline SVG line with the same closes as a table; and
-no public page shows a price. Every source here is a CSV folder or a `MockTransport`: no request
-leaves the process, and the symbols are placeholders.
+"""Price history for watched symbols (2026-10-29): a symbol's first pull reaches back two years
+(one until 2026-10-30, decision 149) in its one request, inside the run's budget, and a refused
+or skipped symbol asks again next run; the owner's history page draws the closes as an inline
+SVG line with the same closes as a table; and no public page shows a price. Every source here is
+a CSV folder or a `MockTransport`: no request leaves the process, and the symbols are
+placeholders.
 """
 
 import re
@@ -64,9 +65,13 @@ def write_csv(path: Path, ages: dict[int, str]) -> None:
 
 @pytest.fixture
 def csv_folder(tmp_path: Path, settings: Settings) -> Path:
-    """FUNDX with a close 400 days back (past the year), 300 and 100 days back, and yesterday;
-    INDEX and OTHER with yesterday's only. No file for NONE."""
-    write_csv(tmp_path / "FUNDX.csv", {400: "9.00", 300: "10.00", 100: "11.00", 1: "12.34"})
+    """FUNDX with a close 800 days back (past the two years), 400 (past one year, inside two),
+    300 and 100 days back, and yesterday; INDEX and OTHER with yesterday's only. No file for
+    NONE."""
+    write_csv(
+        tmp_path / "FUNDX.csv",
+        {800: "8.00", 400: "9.00", 300: "10.00", 100: "11.00", 1: "12.34"},
+    )
     write_csv(tmp_path / "INDEX.csv", {1: "101.25"})
     write_csv(tmp_path / "OTHER.csv", {1: "20.50"})
     settings.TIINGO_API_KEY = ""
@@ -96,14 +101,14 @@ def stored_days(symbol: str) -> list[int]:
 
 
 @pytest.mark.django_db
-def test_a_symbols_first_pull_reaches_back_a_year_in_one_request(csv_folder: Path) -> None:
+def test_a_symbols_first_pull_reaches_back_two_years_in_one_request(csv_folder: Path) -> None:
     source = Asked(csv_folder)
     week = today() - timedelta(days=7)
     year = today() - timedelta(days=BACKFILL_DAYS)
     result = pull(source, ["FUNDX"], week, today())
-    assert BACKFILL_DAYS == 365
+    assert BACKFILL_DAYS == 730
     assert source.asked == [("FUNDX", year)] and result.requests == 1
-    assert stored_days("FUNDX") == [300, 100, 1], "the 400-day close is past the year"
+    assert stored_days("FUNDX") == [400, 300, 100, 1], "the 800-day close is past the two years"
     assert result.backfilled == ["FUNDX"] and result.as_dict()["backfilled"] == ["FUNDX"]
     assert Backfill.objects.get(symbol="FUNDX").since == year
     again = pull(source, ["FUNDX"], week, today())
@@ -114,12 +119,36 @@ def test_a_symbols_first_pull_reaches_back_a_year_in_one_request(csv_folder: Pat
 @pytest.mark.django_db
 def test_a_symbol_stored_before_the_backfill_existed_gets_its_year_once(csv_folder: Path) -> None:
     """Symbols the nightly pull already knew (a week of closes, no `Backfill` row) are not left
-    with a week of history: their next pull asks for the year."""
+    with a week of history: their next pull asks for the two years."""
     DailyClose.upsert("FUNDX", [PricePoint(today() - timedelta(days=1), D("12.34"))], "csv")
     source = Asked(csv_folder)
     result = pull(source, ["FUNDX"], today() - timedelta(days=7), today())
     assert source.asked == [("FUNDX", today() - timedelta(days=BACKFILL_DAYS))]
-    assert stored_days("FUNDX") == [300, 100, 1] and result.backfilled == ["FUNDX"]
+    assert stored_days("FUNDX") == [400, 300, 100, 1] and result.backfilled == ["FUNDX"]
+
+
+@pytest.mark.django_db
+def test_a_one_year_backfill_asks_once_more_for_two_years(csv_folder: Path) -> None:
+    """Decision 149: a symbol backfilled under the one-year rule (its `Backfill` row starts 365
+    days back) gets the second year on its next pull, in one request, then never again."""
+    one_year = today() - timedelta(days=365)
+    Backfill.objects.create(symbol="FUNDX", since=one_year, done_at=timezone.now())
+    source = Asked(csv_folder)
+    week = today() - timedelta(days=7)
+    result = pull(source, ["FUNDX"], week, today())
+    two_years = today() - timedelta(days=BACKFILL_DAYS)
+    assert source.asked == [("FUNDX", two_years)] and result.requests == 1
+    assert result.backfilled == ["FUNDX"] and stored_days("FUNDX")[0] == 400
+    assert Backfill.objects.get(symbol="FUNDX").since == two_years
+    pull(source, ["FUNDX"], week, today())
+    assert source.asked[1] == ("FUNDX", week), "the two years are asked for once"
+
+
+def test_two_years_cover_the_12_1_window() -> None:
+    """The 12-1 window reads the month-end close 13 months before the rebalance month (decision
+    143): at most 14 calendar months, 14 x 31 days, back from today. The backfill reaches past
+    that with room for missing days."""
+    assert BACKFILL_DAYS >= 14 * 31
 
 
 @pytest.mark.django_db
@@ -152,12 +181,12 @@ def test_a_refused_symbol_writes_no_backfill_and_asks_for_the_year_again(
 
 
 @pytest.mark.django_db
-def test_an_explicit_since_further_back_than_a_year_is_kept(csv_folder: Path) -> None:
+def test_an_explicit_since_further_back_than_the_backfill_is_kept(csv_folder: Path) -> None:
     source = Asked(csv_folder)
-    long_ago = today() - timedelta(days=500)
+    long_ago = today() - timedelta(days=900)
     result = pull(source, ["FUNDX"], long_ago, today())
     assert source.asked == [("FUNDX", long_ago)]
-    assert stored_days("FUNDX") == [400, 300, 100, 1]
+    assert stored_days("FUNDX") == [800, 400, 300, 100, 1]
     assert result.backfilled == [], "nothing was widened"
     assert Backfill.objects.get(symbol="FUNDX").since == long_ago
 
@@ -191,7 +220,7 @@ def test_the_cron_route_reports_what_it_backfilled(
     body = client.get(
         "/api/cron/pull-prices/", headers={"Authorization": f"Bearer {SECRET}"}
     ).json()
-    assert (body["symbols"], body["backfilled"], body["inserted"]) == (["FUNDX"], ["FUNDX"], 3)
+    assert (body["symbols"], body["backfilled"], body["inserted"]) == (["FUNDX"], ["FUNDX"], 4)
 
 
 # --- The history page ----------------------------------------------------------------------------

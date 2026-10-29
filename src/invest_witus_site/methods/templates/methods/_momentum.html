@@ -64,7 +64,7 @@
     <input type="hidden" name="range" value="5y">
     <button type="submit" name="which" value="selected">Get 5 years of history for {{ momentum.unranked_symbols|join:", " }}</button>
   </form>
-  <p class="small muted">A candidate needs a close in both months of the window, about 13 months of history; the nightly pull's first fetch of a new symbol stores one year. The button asks the price source once per symbol and goes back to the account page.</p>
+  <p class="small muted">A candidate needs a close in both months of the window, about 13 months of history; the nightly pull's first fetch of a new symbol stores two years, so this button is for older symbols or a refused fetch. The button asks the price source once per symbol and goes back to the account page.</p>
   {% endif %}
   <h3>This month's rebalance</h3>
   {% if momentum.rebalance.buys %}
