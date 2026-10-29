@@ -1,0 +1,57 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}{{ item.symbol }} closes: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+{# A watched symbol's stored closes (2026-10-29): a line chart drawn on the server and the same closes as #}
+{# a table, which is the chart's text alternative. The owner's page only; no public page shows a price. #}
+<section class="container" aria-labelledby="history-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span>: watch list</p>
+  <h1 id="history-heading">{{ item.symbol }}</h1>
+  {% if item.note %}<p class="muted">{{ item.note }}</p>{% endif %}
+  {% if latest %}
+  <p>As of {{ latest.as_of|date:"Y-m-d" }}: {{ latest.close|money }} ({{ latest.source }}){% if stale %} <span class="stale">stale</span> The newest stored close is more than {{ stale_after_days }} days old; the nightly pull has not stored a newer one.{% endif %}</p>
+  {% else %}
+  <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night.</p>
+  {% endif %}
+  <nav aria-label="Range" class="small">
+    {% for range in ranges %}
+    {% if range == days %}<strong aria-current="page">{{ range }} days</strong>{% else %}<a href="?days={{ range }}">{{ range }} days</a>{% endif %}{% if not forloop.last %} · {% endif %}
+    {% endfor %}
+  </nav>
+  {% if chart %}
+  <figure class="price-chart">
+    <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" width="100%" role="img" aria-labelledby="chart-title chart-desc" data-points="{{ chart.count }}">
+      <title id="chart-title">{{ item.symbol }}, last {{ days }} days: {{ chart.count }} close{{ chart.count|pluralize }} from {{ chart.first|date:"Y-m-d" }} to {{ chart.last|date:"Y-m-d" }}, low {{ chart.low|money }}, high {{ chart.high|money }}</title>
+      <desc id="chart-desc">A line of the stored closing prices, oldest on the left. The table below lists every close in the chart.</desc>
+      <rect x="0.5" y="0.5" width="{{ chart.width|add:"-1" }}" height="{{ chart.height|add:"-1" }}" fill="none" stroke="currentColor" stroke-opacity="0.2"/>
+      <polyline points="{{ chart.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="{{ chart.latest.x }}" cy="{{ chart.latest.y }}" r="4" fill="currentColor"/>
+    </svg>
+    <figcaption class="small muted">Low {{ chart.low|money }}, high {{ chart.high|money }}, {{ chart.first|date:"Y-m-d" }} to {{ chart.last|date:"Y-m-d" }}. The dot is the newest close.</figcaption>
+  </figure>
+  <table class="holdings">
+    <caption class="sr-only">{{ item.symbol }} closes for the last {{ days }} days, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col" class="num">Close</th>
+        <th scope="col">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in closes %}
+      <tr>
+        <th scope="row">{{ row.date|date:"Y-m-d" }}</th>
+        <td class="num">{{ row.close|money }}</td>
+        <td>{{ row.source }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No closes stored in the last {{ days }} days.</p>
+  {% endif %}
+  <p class="small muted">Closes from the app's own table, written by the nightly pull; the vendor's free plan is for the owner's own use, so this page is the signed-in owner's only. Information, not advice.</p>
+  <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
+</section>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from invest_witus_site.prices.models import DailyClose
+from invest_witus_site.prices.models import Backfill, DailyClose
 
 
 @admin.register(DailyClose)
@@ -16,3 +16,13 @@ class DailyCloseAdmin(admin.ModelAdmin[DailyClose]):
     date_hierarchy = "date"
     ordering = ("symbol", "-date")
     readonly_fields = ("fetched_at",)
+
+
+@admin.register(Backfill)
+class BackfillAdmin(admin.ModelAdmin[Backfill]):
+    """Which symbols have had their year of closes. Delete a row to ask for the year again on
+    the next pull."""
+
+    list_display = ("symbol", "since", "done_at")
+    search_fields = ("symbol",)
+    readonly_fields = ("since", "done_at")
