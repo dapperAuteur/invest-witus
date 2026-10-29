@@ -21,8 +21,8 @@
       <th scope="row">{{ entry.date|date:"Y-m-d" }}</th>
       <td>{{ entry.what }}</td>
       <td>{{ entry.symbol }}</td>
-      <td class="num">{% if entry.amount is not None %}{{ entry.amount|plain_number }}{% endif %}</td>
-      <td class="num">{% if entry.shares is not None %}{{ entry.shares|plain_number }}{% elif entry.is_trade %}<span class="muted">not recorded</span>{% endif %}</td>
+      <td class="num">{% if entry.amount is not None %}{{ entry.amount|money }}{% endif %}</td>
+      <td class="num">{% if entry.shares is not None %}{{ entry.shares|quantity }}{% elif entry.is_trade %}<span class="muted">not recorded</span>{% endif %}</td>
       <td>{{ entry.note }}{% if entry.reason %} <span class="small">Why: {{ entry.reason }}</span>{% endif %}{% if entry.state %} <span class="small muted">{{ entry.get_state_display }}</span>{% endif %}{% if entry.tags %} <span class="small muted">#{{ entry.tag_list|join:" #" }}</span>{% endif %}</td>
     </tr>
     {% endfor %}

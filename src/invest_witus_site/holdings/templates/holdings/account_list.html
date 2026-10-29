@@ -7,7 +7,7 @@
   {% if accounts %}
   <ul>
     {% for account in accounts %}
-    <li><a href="{% url 'account-detail' account.pk %}">{{ account.name }}</a> <span class="muted">({{ account.broker }}, {{ account.get_kind_display|lower }})</span></li>
+    <li><a href="{% url 'account-detail' account.pk %}">{{ account.name }}</a> <span class="muted">({{ account.broker }}, {{ account.get_kind_display|lower }})</span>{% if account.is_alpaca_paper and user.is_superuser %} · <a href="{% url 'paper-account' account.pk %}">Paper account</a>{% endif %}</li>
     {% endfor %}
   </ul>
   <p class="muted">Each page values the account's latest statement at the latest close the app has stored, with the close's date beside it. Information, not advice.</p>

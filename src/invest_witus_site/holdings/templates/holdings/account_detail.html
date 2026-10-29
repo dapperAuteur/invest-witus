@@ -23,12 +23,12 @@
       {% for line in valuation.lines %}
       <tr>
         <th scope="row">{{ line.symbol }}</th>
-        <td class="num">{{ line.shares|plain_number }}</td>
+        <td class="num">{{ line.shares|quantity }}</td>
         {% if line.quote %}
-        <td class="num">{{ line.quote.close|plain_number }}</td>
+        <td class="num">{{ line.quote.close|money }}</td>
         <td>{{ line.quote.as_of|date:"Y-m-d" }}{% if line.stale %} <span class="stale">stale</span>{% endif %}</td>
         <td>{{ line.quote.source }}</td>
-        <td class="num">{{ line.value|plain_number }}</td>
+        <td class="num">{{ line.value|money }}</td>
         {% else %}
         <td class="muted" colspan="4">no price yet</td>
         {% endif %}
@@ -38,7 +38,7 @@
     <tfoot>
       <tr>
         <th scope="row" colspan="5">Total of the priced lines</th>
-        <td class="num">{{ valuation.total|plain_number }}</td>
+        <td class="num">{{ valuation.total|money }}</td>
       </tr>
     </tfoot>
   </table>
@@ -52,7 +52,7 @@
   <section class="method-line" aria-labelledby="method-line-heading">
     <h2 id="method-line-heading">Method</h2>
     {% if method_plan %}
-    <p><a href="{% url 'method-page' account.pk %}">{{ method_plan.method.name }}</a>: {{ method_plan.amount|plain_number }} into {{ method_plan.symbols }} within the first {{ method_plan.buy_window_days }} day{{ method_plan.buy_window_days|pluralize }} of each month, since {{ method_plan.started_on|date:"Y-m-d" }}. The rules, the review and the journal are on the method page.</p>
+    <p><a href="{% url 'method-page' account.pk %}">{{ method_plan.method.name }}</a>: {{ method_plan.amount|money }} into {{ method_plan.symbols }} within the first {{ method_plan.buy_window_days }} day{{ method_plan.buy_window_days|pluralize }} of each month, since {{ method_plan.started_on|date:"Y-m-d" }}. The rules, the review and the journal are on the method page.</p>
     {% else %}
     <p>No method yet on this account. <a href="{% url 'method-page' account.pk %}?view=c">Read the rules and start one.</a></p>
     {% endif %}
