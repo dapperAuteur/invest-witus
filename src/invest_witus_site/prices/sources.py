@@ -12,6 +12,15 @@ goes in the `Authorization` header as `Token <value>`; each day is an object wit
 `high`, `low`, `close`, `volume` and the adjusted and dividend fields. The docs describe `date`
 only as "the date this data pertains to", so the parser reads its first ten characters, which
 covers a bare date and a timestamp alike.
+
+The adjusted close, as read on October 29, 2026 (https://www.tiingo.com/documentation/end-of-day):
+`adjClose` is "The adjusted closing price for the asset on the given date"; `divCash` is "The
+dividend paid out on "date" (note that "date" will be the "exDate" for the dividend)";
+`splitFactor` is "The factor used to adjust prices when a company splits, reverse splits, or pays
+a distribution". The page says "Both raw prices and adjusted prices are available" and that the
+adjustment "follows the standard method set forth by" CRSP and "incorporates both split and
+dividend adjustments". The parser keeps `adjClose`, `splitFactor` and `divCash` beside `close`
+(decisions 120 and 123); it does not keep `volume` or the other adjusted fields.
 """
 
 import json
@@ -25,6 +34,7 @@ import httpx
 from django.conf import settings
 
 from invest_witus.prices.csv_file import PriceFileError, PricePoint, load_prices
+from invest_witus_site.prices.points import AdjustedPoint
 
 log = logging.getLogger(__name__)
 
@@ -110,8 +120,12 @@ class TiingoEod:
 
 
 def parse_tiingo(symbol: str, text: str) -> list[PricePoint]:
-    """A JSON list of days to `PricePoint`s, decoded with `parse_float=Decimal` so that a close
-    written as 101.23 becomes the Decimal 101.23 and never the float 101.23000000000000398."""
+    """A JSON list of days to points, decoded with `parse_float=Decimal` so that a
+    close written as 101.23 becomes the Decimal 101.23 and never the float 101.23000000000000398.
+    A day with any of `adjClose`, `splitFactor` or `divCash` is an `AdjustedPoint`; a day with
+    none of them is a plain `PricePoint`. An `adjClose` or `splitFactor` that is not a positive
+    number, or a negative `divCash`, is refused like a bad close; a missing or `null` one is
+    None."""
     try:
         body: object = json.loads(text, parse_float=Decimal)
     except json.JSONDecodeError as error:
@@ -123,21 +137,45 @@ def parse_tiingo(symbol: str, text: str) -> list[PricePoint]:
         if not isinstance(item, dict):
             raise PriceSourceError(symbol, "expected an object per day")
         day_field = cast(dict[str, object], item)
-        raw_day, raw_close = day_field.get("date"), day_field.get("close")
+        raw_day = day_field.get("date")
         if not isinstance(raw_day, str) or len(raw_day) < 10:
             raise PriceSourceError(symbol, f"not a date: {raw_day!r}")
         try:
             day = date.fromisoformat(raw_day[:10])
         except ValueError:
             raise PriceSourceError(symbol, f"not a date: {raw_day!r}") from None
-        # `bool` is an `int` in Python; `true` is not a price.
-        if isinstance(raw_close, bool) or not isinstance(raw_close, Decimal | int):
-            raise PriceSourceError(symbol, f"close is not a number: {raw_close!r}")
-        close = Decimal(raw_close)
-        if close <= 0:
-            raise PriceSourceError(symbol, f"close must be positive, got {close}")
-        points.append(PricePoint(day=day, close=close))
+        close = price_field(symbol, "close", day_field.get("close"))
+        raw = {name: day_field.get(name) for name in ("adjClose", "splitFactor", "divCash")}
+        if all(value is None for value in raw.values()):
+            points.append(PricePoint(day=day, close=close))
+            continue
+        points.append(
+            AdjustedPoint(
+                day=day,
+                close=close,
+                adj_close=optional(symbol, "adjClose", raw["adjClose"], positive=True),
+                split_factor=optional(symbol, "splitFactor", raw["splitFactor"], positive=True),
+                div_cash=optional(symbol, "divCash", raw["divCash"], positive=False),
+            )
+        )
     return sorted(points, key=lambda point: point.day)
+
+
+def price_field(symbol: str, name: str, raw: object, positive: bool = True) -> Decimal:
+    """One number from the JSON: positive, or with `positive=False` at least zero. `bool` is an
+    `int` in Python; `true` is not a price."""
+    if isinstance(raw, bool) or not isinstance(raw, Decimal | int):
+        raise PriceSourceError(symbol, f"{name} is not a number: {raw!r}")
+    value = Decimal(raw)
+    if positive and value <= 0:
+        raise PriceSourceError(symbol, f"{name} must be positive, got {value}")
+    if value < 0:
+        raise PriceSourceError(symbol, f"{name} must not be negative, got {value}")
+    return value
+
+
+def optional(symbol: str, name: str, raw: object, positive: bool) -> Decimal | None:
+    return None if raw is None else price_field(symbol, name, raw, positive)
 
 
 def source_from_settings() -> PriceSource:
