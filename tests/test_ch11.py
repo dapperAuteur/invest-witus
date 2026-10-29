@@ -459,7 +459,7 @@ def test_a_two_symbol_plan_shows_the_split_without_a_confirm_button(
     plan.symbols = "INDEX OTHER"
     plan.save()
     html = text(owner_client.get(method_url(plan.account)))
-    assert "Buy 50.00 of INDEX" in html and "Buy 50.00 of OTHER" in html
+    assert "Buy $50.00 of INDEX" in html and "Buy $50.00 of OTHER" in html
     assert "The plan names 2 symbols" in html
     assert "Confirm" not in html
 
@@ -473,8 +473,8 @@ def test_the_method_page_shows_this_months_buys_and_confirm(
 ) -> None:
     html = text(owner_client.get(method_url(plan.account)))
     assert "This month's buys" in html
-    assert "Buy 100.00 of INDEX" in html
-    assert "Practice budget, the app's own number: 1000.00, spent 0.00, left 1000.00." in html
+    assert "Buy $100.00 of INDEX" in html
+    assert "Practice budget, the app's own number: $1,000.00, spent $0.00, left $1,000.00." in html
     assert f"Alpaca paper ({PAPER_HOST}). {LIVE_LINE}" in html
     assert '<button type="submit">Confirm</button>' in html
     assert SECRET not in html and KEY_ID not in html
@@ -580,7 +580,7 @@ def test_a_vendor_refusal_is_a_message_and_buys_nothing(
     assert JournalEntry.objects.count() == 0
     [order] = PaperOrder.objects.all()
     assert (order.status, order.placed) == ("staged", False)
-    assert "Buy 100.00 of INDEX: not placed. Alpaca answered 403" in html
+    assert "Buy $100.00 of INDEX: not placed. Alpaca answered 403" in html
     del fake.fail["POST /v2/orders"]
     owner_client.post(paper_url(plan.account, "confirm/"))
     assert PaperOrder.objects.get().placed and JournalEntry.objects.count() == 1
@@ -720,8 +720,8 @@ def test_the_paper_page_shows_alpacas_positions_and_cash_beside_the_practice_bud
     orders.confirm(plan, DAY, alpaca.paper_client())
     html = text(owner_client.get(paper_url(plan.account)))
     assert f"Alpaca paper ({PAPER_HOST}). {LIVE_LINE}" in html
-    assert "<dt>Budget</dt><dd>1000.00</dd>" in html and "<dt>Spent</dt><dd>100.00</dd>" in html
-    assert "<dt>Cash</dt><dd>1234.56</dd>" in html
+    assert "<dt>Budget</dt><dd>$1,000.00</dd>" in html and "<dt>Spent</dt><dd>$100.00</dd>" in html
+    assert "<dt>Cash</dt><dd>$1,234.56</dd>" in html
     assert '<th scope="row">INDEX</th>' in html and "100.75" in html
     assert "order-1" in html
     assert "does not simulate dividends" in html

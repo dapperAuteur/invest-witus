@@ -548,11 +548,11 @@ def test_the_owner_sees_each_line_valued_with_the_closes_date(
     old = (today - timedelta(days=STALE_AFTER_DAYS + 3)).isoformat()
     assert rows_in(html) == [
         ("Symbol", "Shares", "Close", "As of", "Source", "Value"),
-        ("CASH", "500.00", "1.00", "2026-10-25", "statement", "500.00"),
-        ("INDEX", "2.50", "101.23", fresh, "tiingo", "253.08"),
-        ("NONE", "1.00", "no price yet"),
-        ("OTHER", "10.00", "20.005", f"{old} stale", "csv", "200.05"),
-        ("Total of the priced lines", "953.13"),
+        ("CASH", "500", "$1.00", "2026-10-25", "statement", "$500.00"),
+        ("INDEX", "2.5", "$101.23", fresh, "tiingo", "$253.08"),
+        ("NONE", "1", "no price yet"),
+        ("OTHER", "10", "$20.01", f"{old} stale", "csv", "$200.05"),
+        ("Total of the priced lines", "$953.13"),
     ]
     assert "Statement as of 2026-10-25" in html
     assert "No price yet for NONE" in html

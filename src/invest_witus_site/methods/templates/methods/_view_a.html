@@ -4,7 +4,7 @@
 {% if plan %}
 <section class="card" aria-labelledby="next-heading">
   <h2 id="next-heading">Next</h2>
-  <p>{% if review.next_action.status == "due" %}Due now: buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, the end of this month's window.{% else %}Buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} between {{ review.next_action.opens|date:"Y-m-d" }} and {{ review.next_action.closes|date:"Y-m-d" }}. Nothing to do before then.{% endif %}</p>
+  <p>{% if review.next_action.status == "due" %}Due now: buy {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, the end of this month's window.{% else %}Buy {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }} between {{ review.next_action.opens|date:"Y-m-d" }} and {{ review.next_action.closes|date:"Y-m-d" }}. Nothing to do before then.{% endif %}</p>
 </section>
 
 <section aria-labelledby="status-heading">
@@ -16,7 +16,7 @@
 <section aria-labelledby="plan-heading">
   <h2 id="plan-heading">My plan</h2>
   <p>{{ review.method.summary }}</p>
-  <p>{{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
+  <p>{{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
   <h3>The rules</h3>
   {% include "methods/_rules.html" with rules=review.rules %}
 </section>

@@ -4,7 +4,7 @@
 {# is the lab notebook. No points, no streaks: a rule is on when the plan names the method. #}
 {% if plan %}
 <p class="lead">You are running <strong>{{ review.method.name }}</strong>. {{ review.method.summary }}</p>
-<p>Your plan: {{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
+<p>Your plan: {{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
 <h2>The rules, and what to re-read</h2>
 <p>Each rule comes from one lesson. A rule the review flagged names how often, and its lesson is the place to go back to before the next window.</p>
 <ol class="rules">
@@ -13,7 +13,7 @@
   {% endfor %}
 </ol>
 <h2>This month's lab</h2>
-<p>{% if review.next_action.status == "due" %}The window is open: buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, then log it below.{% else %}The next window is {{ review.next_action.opens|date:"Y-m-d" }} to {{ review.next_action.closes|date:"Y-m-d" }}: {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }}. Until then, read.{% endif %} {{ review.months_done }} of {{ review.months_due }} scheduled buy{{ review.months_due|pluralize }} made through {{ review.through|date:"Y-m-d" }}.</p>
+<p>{% if review.next_action.status == "due" %}The window is open: buy {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, then log it below.{% else %}The next window is {{ review.next_action.opens|date:"Y-m-d" }} to {{ review.next_action.closes|date:"Y-m-d" }}: {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }}. Until then, read.{% endif %} {{ review.months_done }} of {{ review.months_due }} scheduled buy{{ review.months_due|pluralize }} made through {{ review.through|date:"Y-m-d" }}.</p>
 {% include "methods/_findings.html" %}
 <h2>Lab notebook</h2>
 {% include "methods/_entries.html" with caption="Every trade logged for this account, in date order" %}

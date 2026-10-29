@@ -374,7 +374,7 @@ def test_the_pull_fetches_a_watched_symbol_and_the_page_shows_its_close(
     assert tables_in(html) == [
         [
             ("Symbol", "Note", "Close", "As of", "Source", "Remove"),
-            ("FUNDX", "", "12.34", yesterday, "csv", "Remove FUNDX"),
+            ("FUNDX", "", "$12.34", yesterday, "csv", "Remove FUNDX"),
         ]
     ]
     assert "Prices arrive after the nightly pull" not in html
@@ -409,7 +409,7 @@ def test_the_page_shows_each_close_with_its_date_or_says_prices_arrive_after_the
             (
                 "FUNDX",
                 "from the lesson",
-                "12.34",
+                "$12.34",
                 (today - timedelta(days=1)).isoformat(),
                 "csv",
                 "Remove FUNDX",
@@ -418,7 +418,7 @@ def test_the_page_shows_each_close_with_its_date_or_says_prices_arrive_after_the
             (
                 "OTHER",
                 "from the lesson",
-                "20.005",
+                "$20.01",
                 f"{old.isoformat()} stale",
                 "tiingo",
                 "Remove OTHER",

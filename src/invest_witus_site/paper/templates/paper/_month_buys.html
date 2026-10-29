@@ -6,10 +6,10 @@
   <p class="band">Alpaca paper ({{ paper.host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
   <ul>
     {% for buy in paper.stage.buys %}
-    <li>Buy {{ buy.notional|plain_number }} of {{ buy.symbol }}{% if buy.placed %}: placed, {{ buy.order.status }}{% elif buy.order.message %}: not placed. {{ buy.order.message }}{% endif %}</li>
+    <li>Buy {{ buy.notional|money }} of {{ buy.symbol }}{% if buy.placed %}: placed, {{ buy.order.status }}{% elif buy.order.message %}: not placed. {{ buy.order.message }}{% endif %}</li>
     {% endfor %}
   </ul>
-  <p>Practice budget, the app's own number: {% if paper.stage.budget is not None %}{{ paper.stage.budget|plain_number }}, spent {{ paper.stage.spent|plain_number }}, left {{ paper.stage.left|plain_number }}{% else %}not set{% endif %}.</p>
+  <p>Practice budget, the app's own number: {% if paper.stage.budget is not None %}{{ paper.stage.budget|money }}, spent {{ paper.stage.spent|money }}, left {{ paper.stage.left|money }}{% else %}not set{% endif %}.</p>
   {% if paper.error %}
   <p class="error">Alpaca did not answer, so nothing can be placed now. {{ paper.error }}</p>
   {% elif paper.stage.refusal %}

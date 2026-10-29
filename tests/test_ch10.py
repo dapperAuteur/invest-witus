@@ -418,7 +418,7 @@ def test_the_owner_starts_a_method_from_the_form(
     assert client.session[SESSION_KEY] == "a" and VIEW_HEADINGS["a"] in html
     assert "You are on plan" in html and "0 of 0 scheduled buys made" in html
     window_end = start.replace(day=7).isoformat()
-    assert f"Buy 100.00 of INDEX, OTHER between {start.isoformat()} and {window_end}." in html
+    assert f"Buy $100.00 of INDEX, OTHER between {start.isoformat()} and {window_end}." in html
     assert html.count("lesson coming") == 5
 
 
@@ -467,7 +467,7 @@ def test_the_page_shows_a_planted_break_with_its_rule_text_and_lesson_coming(
     assert "<strong>2026-02</strong> Bought on day 12; the window is days 1 to 7." in html
     assert f"Rule: {WINDOW_RULE}" in html and "lesson coming" in html
     assert "2 of 2 scheduled buys made through 2026-02-28" in html
-    assert "Buy 100.00 of INDEX between 2026-03-01 and 2026-03-07." in html
+    assert "Buy $100.00 of INDEX between 2026-03-01 and 2026-03-07." in html
     assert 'href="http' not in html.split("Rule:")[1].split("</li>")[0], "no invented lesson URL"
 
 
@@ -498,8 +498,8 @@ def test_view_b_tables_every_month_with_amounts_and_shares(
     assert [row[1] for row in checks[1:]] == ["pass", "fail", "pass", "pass", "pass"]
     assert months == [
         ("Month", "Window closes", "Status", "Buys", "Amount", "Shares", "Rules flagged"),
-        ("2026-01", "2026-01-07", "done", "1", "100.00", "0.50", "none"),
-        ("2026-02", "2026-02-07", "done", "1", "100.00", "not recorded", "buy-in-window"),
+        ("2026-01", "2026-01-07", "done", "1", "$100.00", "0.5", "none"),
+        ("2026-02", "2026-02-07", "done", "1", "$100.00", "not recorded", "buy-in-window"),
     ]
     assert findings[1] == (
         "2026-02-12",
@@ -507,8 +507,8 @@ def test_view_b_tables_every_month_with_amounts_and_shares(
         "Bought on day 12; the window is days 1 to 7.",
         "lesson coming",
     )
-    assert entries[1] == ("2026-01-02", "Buy", "INDEX", "100.00", "0.50", "first buy")
-    assert entries[2] == ("2026-02-12", "Buy", "INDEX", "100.00", "not recorded", "")
+    assert entries[1] == ("2026-01-02", "Buy", "INDEX", "$100.00", "0.5", "first buy")
+    assert entries[2] == ("2026-02-12", "Buy", "INDEX", "$100.00", "not recorded", "")
     assert "Paper (practice) (Example Broker)" in html and "version 1 (index-dca)" in html
 
 

@@ -22,7 +22,7 @@
         <th scope="row">{{ row.item.symbol }}</th>
         <td>{{ row.item.note }}</td>
         {% if row.quote %}
-        <td class="num">{{ row.quote.close|plain_number }}</td>
+        <td class="num">{{ row.quote.close|money }}</td>
         <td>{{ row.quote.as_of|date:"Y-m-d" }}{% if row.stale %} <span class="stale">stale</span>{% endif %}</td>
         <td>{{ row.quote.source }}</td>
         {% else %}
