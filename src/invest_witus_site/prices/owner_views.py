@@ -22,7 +22,7 @@ from invest_witus_site.prices import manual
 from invest_witus_site.prices.models import ManualRun
 from invest_witus_site.prices.pull import DAYS_BACK, pull
 from invest_witus_site.prices.sources import PriceSourceError, source_from_settings
-from invest_witus_site.watchlist.models import WatchItem
+from invest_witus_site.watchlist.models import WatchItem, parse_symbols
 
 
 def run_fetch_now(request: HttpRequest) -> None:
@@ -111,12 +111,34 @@ def fetch_history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
     return back
 
 
+def run_history_many(request: HttpRequest, symbols: list[str], choice: str) -> None:
+    """Get history for several symbols over the range `choice`, its report as messages: the
+    50-request budget, the time limit and each symbol's 10-minute guard live in
+    `manual.fetch_history_many`. Shared by Fetch history for selected or all and, since
+    2026-10-29, by the add form's "Fetch their history now"."""
+    today = timezone.localdate()
+    since = manual.history_since(choice, today)
+    if since is None:
+        labels = ", ".join(label.lower() for label, _ in manual.HISTORY_RANGES.values())
+        messages.error(request, f"Pick a range: {labels}.")
+        return
+    result = manual.fetch_history_many(source_from_settings(), symbols, since, today)
+    successes, errors, infos = manual.many_messages(result, manual.HISTORY_RANGES[choice][0])
+    for line in successes:
+        messages.success(request, line)
+    for line in errors:
+        messages.error(request, line)
+    for line in infos:
+        messages.info(request, line)
+
+
 @login_required
 @require_POST
 def fetch_history_many(request: HttpRequest, pk: int) -> HttpResponse:
-    """Fetch history for selected (`which=selected` with the ticked `symbols`) or for all
-    (`which=all`) of this account's watched symbols, over one range, back to the account page.
-    A ticked symbol not on this account's list is named and left out."""
+    """Fetch history for selected (`which=selected` with the ticked `symbols`, or a typed list
+    in `typed` split like the add form's box, or both) or for all (`which=all`) of this
+    account's watched symbols, over one range, back to the account page. A symbol not on this
+    account's list, and a typed token outside the symbol rule, is named and left out."""
     account = get_object_or_404(Account, pk=pk, owner=request.user)
     back = redirect("account-detail", pk=account.pk)
     watched = list(
@@ -130,6 +152,11 @@ def fetch_history_many(request: HttpRequest, pk: int) -> HttpResponse:
         asked = {
             value.strip().upper() for value in request.POST.getlist("symbols") if value.strip()
         }
+        typed = parse_symbols(request.POST.get("typed", ""))
+        asked.update(typed.symbols)
+        if typed.refused:
+            reasons = "; ".join(f"{token} ({reason})" for token, reason in typed.refused)
+            messages.error(request, f"Refused: {reasons}.")
         symbols = [symbol for symbol in watched if symbol in asked]
         if asked - set(watched):
             messages.error(
@@ -137,21 +164,10 @@ def fetch_history_many(request: HttpRequest, pk: int) -> HttpResponse:
                 f"Not on this watch list, so left out: {', '.join(sorted(asked - set(watched)))}.",
             )
     if not symbols:
-        messages.error(request, "Tick at least one symbol, or press Fetch history for all.")
+        messages.error(
+            request,
+            "Tick or type at least one symbol on this list, or press Fetch history for all.",
+        )
         return back
-    choice = request.POST.get("range", "")
-    today = timezone.localdate()
-    since = manual.history_since(choice, today)
-    if since is None:
-        labels = ", ".join(label.lower() for label, _ in manual.HISTORY_RANGES.values())
-        messages.error(request, f"Pick a range: {labels}.")
-        return back
-    result = manual.fetch_history_many(source_from_settings(), symbols, since, today)
-    successes, errors, infos = manual.many_messages(result, manual.HISTORY_RANGES[choice][0])
-    for line in successes:
-        messages.success(request, line)
-    for line in errors:
-        messages.error(request, line)
-    for line in infos:
-        messages.info(request, line)
+    run_history_many(request, symbols, request.POST.get("range", ""))
     return back

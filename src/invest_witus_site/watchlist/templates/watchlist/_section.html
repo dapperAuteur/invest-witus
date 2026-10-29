@@ -51,10 +51,12 @@
     <select name="range" id="bulk-history-range">
       {% for value, label in history_ranges %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
     </select>
+    <label for="bulk-history-typed">Or type symbols</label>
+    <input type="text" name="typed" id="bulk-history-typed" class="typed-symbols" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="bulk-history-help">
     <button type="submit" name="which" value="selected">Fetch history for selected</button>
     <button type="submit" name="which" value="all">Fetch history for all</button>
   </form>
-  <p class="small muted">Get history for several symbols in one press: tick symbols in the History column, or press for all. One request per symbol, at most 50, within four minutes; a symbol fetched in the last 10 minutes is skipped and named.</p>
+  <p class="small muted" id="bulk-history-help">Get history for several symbols in one press: tick symbols in the History column or type them, separated by commas or spaces (only symbols on this list), or press for all. One request per symbol, at most 50, within four minutes; a symbol fetched in the last 10 minutes is skipped and named.</p>
   <p><a href="{% url 'compare' account.pk %}?symbols={% for row in watch.rows|slice:":6" %}{{ row.item.symbol }}{% if not forloop.last %},{% endif %}{% endfor %}">Compare these symbols on one chart</a></p>
   {% if watch.unpriced %}
   <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. Press <strong>Fetch prices now</strong> to ask for them without waiting. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
@@ -76,6 +78,12 @@
       <label for="{{ watch_form.note.id_for_label }}">Note (optional)</label>
       {{ watch_form.note }}
       {{ watch_form.note.errors }}
+    </div>
+    <div class="field add-history">
+      <label class="check-label" for="{{ watch_form.fetch_history.id_for_label }}">{{ watch_form.fetch_history }} Fetch their history now</label>
+      <label for="{{ watch_form.history_range.id_for_label }}">History range</label>
+      {{ watch_form.history_range }}
+      <p class="small muted">Ticked, the symbols this adds are fetched right away, one request each, like Fetch history for selected. Unticked, their prices arrive with the nightly pull or Fetch prices now.</p>
     </div>
     <button type="submit">Add to the watch list</button>
   </form>
