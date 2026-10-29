@@ -65,6 +65,7 @@ In the order a new owner meets them. Each row links the guide section and the re
 | 7 | The FAQ and "Report a bad actor" | [The FAQ and Report a bad actor](using-invest-witus.md#the-faq-and-report-a-bad-actor) | [Script 7](recording-scripts.md#script-7-the-faq-and-reporting-a-bad-actor) |
 | 8 | Skip a month, close it, and export the logbook | [The journal and the monthly close](using-invest-witus.md#the-journal-and-the-monthly-close-chapter-12) | [Script 8](recording-scripts.md#script-8-skip-a-month-close-it-and-export-the-logbook) |
 | 9 | Report a problem or ask a question | [Report a problem or ask a question](using-invest-witus.md#report-a-problem-or-ask-a-question-chapter-13) | [Script 9](recording-scripts.md#script-9-report-a-problem-or-ask-a-question) |
+| 10 | Start 12-1 momentum and read the ranking | [A second method: 12-1 momentum](using-invest-witus.md#a-second-method-12-1-momentum-chapter-14) | [Script 10](recording-scripts.md#script-10-start-12-1-momentum-and-read-the-ranking) |
 
 What the app will not do is its own section: [What the app will not do](using-invest-witus.md#what-the-app-will-not-do).
 

@@ -224,6 +224,14 @@ its review row points at that version. A skip is recorded only with a reason, an
 explained by skips reads "explained". Changing the method of a running plan is still a new plan; decisions log,
 rows 103 to 112.*
 
+*Chapter 14 (2026-10-29): method 2 is built as the monthly top N in equal parts, `momentum-12-1`, seven rules in its
+own TOML file checked by a second rule set registered per method; ranked on stored adjusted closes from the end of
+the month 13 months back to the end of the month 2 months back; the plan's amount is each month's money split
+across that month's top N; the wash-sale warning is a warning before a buy of a symbol sold within 30 days, not a
+rule. Confirm on paper buys the top N; sells are listed and placed by hand. The pictures are the ranked bars, the
+shaded window and the watch list's badge, each with "How to read this". Deferred: placing sells, equal weight on
+the value held, the method's expected range; decisions log, rows 142 to 148.*
+
 ### 7.2 Three views, all built, with a toggle
 
 From [`research/01`](research/01-ux-benchmarks-and-three-directions.md) and the mockup

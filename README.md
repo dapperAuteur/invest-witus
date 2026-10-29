@@ -162,6 +162,21 @@ and per person, counted in the database; a honeypot; CSRF. The names are `INBOX_
 and `INBOX_INGEST_SECRET` (`.env.example`); without them reports are kept in the admin and nothing is sent. The
 walk-through is [chapter 13](docs/chapters/13-the-in-app-reporter.md), section 13.10.
 
+## A second method: 12-1 momentum
+
+Chapter 14 adds the second method, `momentum-12-1`: each month, rank your own candidates by their 12-1 return (the
+change in adjusted close from the end of the month 13 months back to the end of the month 2 months back, so the
+latest full month is left out), and put the month's amount into the top N in equal parts; sell a holding once it
+leaves the top N. Seven rules in `src/invest_witus/methods/momentum_12_1.toml`, each checked by
+`invest_witus/adherence/momentum.py`, every lesson "lesson coming". Start it from the same form with **Top N to
+hold**; the candidates join the watch list so the nightly pull stores their closes (a candidate needs a little over
+a year of history to be ranked; **Get 5 years of history** fetches it). The method page shows the ranking as bars
+with a table, the watch list a 12-1 column, a watched symbol's chart the window shaded with the excluded month, each
+with a "How to read this" note, for the owner of an account running momentum only. On a paper account Confirm buys
+the top N in equal parts; sells are listed, not placed, and a buy of a symbol sold within 30 days carries a
+wash-sale warning. The walk-through is [chapter 14](docs/chapters/14-a-second-method-12-1-momentum.md), section
+14.12.
+
 ## Post drafts to WitUS Outbox
 
 Not a chapter. The site owner's **Draft a post** in the admin sends a short post (the launch, once, or a
