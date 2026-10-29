@@ -214,8 +214,9 @@ numbers ready to type (top of this file).
 
 **Closing line:** "Two statements, one table of what changed, nothing overwritten."
 
-**Retake notes.** The line under the form says the app "fetches no prices yet (chapter 08)"; it is older than
-the prices chapter and still true of this page, so do not read it aloud as a claim about the app. Pause on the
+**Retake notes.** The line under the form says the comparison "does not use stored prices" (since 2026-10-29;
+takes recorded before then show the older "fetches no prices yet (chapter 08)", which was out of date: retake
+the frame or cut it). Do not read either aloud as a claim about the app. Pause on the
 table for three seconds before the voice starts; it is the densest frame in the set.
 
 ---

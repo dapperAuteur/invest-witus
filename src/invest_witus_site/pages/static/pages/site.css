@@ -253,3 +253,18 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 }
 .history-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
 .pick-label { display: inline-flex; align-items: center; min-height: 2.25rem; min-width: 2.25rem; justify-content: center; }
+/* Chart ranges (2026-10-29, decision 140): the presets, a From and To pair that wraps on a phone, and the pages of
+   a day-by-day table. */
+.range-presets { margin: 0.5rem 0; line-height: 2.25; }
+.range-form { margin: 0.5rem 0 1rem; }
+.range-dates { margin-bottom: 0.5rem; }
+.range-dates-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.range-dates-row > div { flex: 1 1 10rem; min-width: 0; max-width: 14rem; }
+.range-dates input[type="date"] { width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
+.pager { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; margin: 0.75rem 0; }
+.pager a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+/* The add form's "Fetch their history now" and the typed list for Fetch history for selected (2026-10-29). */
+.add-history .check-label { display: flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; }
+.add-history .check-label input { width: 1.25rem; height: 1.25rem; min-height: auto; }
+.add-history select { min-height: 2.75rem; padding: 0 0.5rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
+.typed-symbols { min-height: 2.25rem; padding: 0 0.5rem; max-width: 100%; width: 12rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }

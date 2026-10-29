@@ -1,0 +1,9 @@
+{# Pages of a day-by-day table (2026-10-29, decision 140), with `page` (a Django Page) and `base_query`, the #}
+{# query string that keeps the symbols and the range. Nothing when one page holds every row. #}
+{% if page.paginator.num_pages > 1 %}
+<nav class="pager small" aria-label="{{ label }} pages">
+  <span>Rows {{ page.start_index }} to {{ page.end_index }} of {{ page.paginator.count }}, page {{ page.number }} of {{ page.paginator.num_pages }}.</span>
+  {% if page.has_previous %}<a href="?{{ base_query }}&amp;page=1{{ anchor }}">Newest</a> <a href="?{{ base_query }}&amp;page={{ page.previous_page_number }}{{ anchor }}" rel="prev">Newer</a>{% endif %}
+  {% if page.has_next %}<a href="?{{ base_query }}&amp;page={{ page.next_page_number }}{{ anchor }}" rel="next">Older</a> <a href="?{{ base_query }}&amp;page={{ page.paginator.num_pages }}{{ anchor }}">Oldest</a>{% endif %}
+</nav>
+{% endif %}

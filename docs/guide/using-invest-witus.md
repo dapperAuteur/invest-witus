@@ -184,8 +184,10 @@ date; a second statement on the same date is refused.
 3. Under **Change between two statements**, the two newest are chosen. Pick any pair with **From** and **To**
    and press **Compare**. Picked backwards, the page sorts them: the earlier date is always From.
 
-**What you should see.** A line "From <date> to <date>. Shares and cost basis only; the app fetches no prices
-yet (chapter 08)." (The sentence is older than the prices chapter; the page is right that it shows no prices.)
+**What you should see.** A line "From <date> to <date>. Shares and cost basis only, as the statements print
+them; this comparison does not use stored prices, which are on the account page and each watched symbol's history
+page." (Until 2026-10-29 it said the app "fetches no prices yet (chapter 08)", which was older than the prices
+chapter.)
 Then a table with one row per symbol on either statement, in symbol order: **Symbol**, **Shares before**,
 **Shares after**, **Shares change**, **Cost basis before**, **Cost basis after**, **Cost basis change**.
 Changes carry a sign (`+1.500000`, `-400.00`). A symbol missing from one statement counts as zero shares and
@@ -353,11 +355,18 @@ button: a symbol reaches a plan only when you add it to the plan's universe.
 2. In **Symbols**, type one or more symbols, separated by commas or spaces. The help under the box gives the
    rule: "Letters, digits, a dot and a hyphen; up to twelve characters each." **Note (optional)** is a short
    reason, kept on the rows added now.
-3. Press **Add to the watch list**.
+3. **Fetch their history now** is ticked, with **History range** at **1 year** (since 2026-10-29). Leave it to
+   fetch the new symbols' closes in the same press, or pick another range; untick it to let prices arrive with
+   the nightly pull or **Fetch prices now**, as before.
+4. Press **Add to the watch list**.
 
 **What you should see.** The page reloads with a notice at the top of the page: "Added to the watch list:
 FUNDX." A symbol already on the list is reported as "Already on the watch list: FUNDX." and a token outside the
-rule as "Refused: <token> (<reason>)." while the valid ones are still added. The table has **Symbol**, **Note**,
+rule as "Refused: <token> (<reason>)." while the valid ones are still added. With **Fetch their history now**
+ticked, the symbols just added (not the ones already watched) are fetched like **Fetch history for selected**
+(below, under Get history): one line per symbol, `OTHER, 1 year: 251 days added, 0 updated; earliest close
+stored 2025-10-29.`, a symbol fetched in the last 10 minutes skipped and named, at most 50 requests and four
+minutes. The table has **Symbol**, **Note**,
 **Close**, **As of**, **Source** and a **Remove** button in each row. A new symbol reads **no price yet** until
 the nightly pull has run, and the note under the table says so: "Prices arrive after the nightly pull: no close
 is stored yet for FUNDX. A symbol the price source does not know stays unpriced; the pull's log names it." The
@@ -386,15 +395,17 @@ account page is where they are kept.
 ## A watched symbol's price history
 
 **What it is for.** The closes the app has stored for one watched symbol, as a chart and as a table, over the
-last 30, 90 or 365 days. Like every price, it is shown to the signed-in owner only.
+last 30, 90 or 365 days, 5 or 10 years, everything stored, or dates you pick. Like every price, it is shown to
+the signed-in owner only.
 
 **Open it.** On the account page, in the **Watch list** table, press a symbol. The address is
 `/accounts/<id>/watch/<SYMBOL>/`.
 
 **What you should see.** The symbol as the heading, the note under it, then **As of** the newest stored close with
 its price and source; **stale** beside it when that close is more than five days old, as on the account page.
-Then **30 days · 90 days · 365 days** (90 is where it opens), a link **Compare FUNDX with other symbols**, and
-the chart:
+Then the range: **30 days · 90 days · 365 days · 5 years · 10 years · All** (90 is where it opens; the current
+one is in bold), and under it **Or pick dates** with **From** and **To** and a **Show these dates** button (see
+**Pick a range** below). Then a link **Compare FUNDX with other symbols**, which keeps the range, and the chart:
 
 - **The title**, `FUNDX, last 90 days`, and under it what the line is (`Adjusted close, US dollars.` or
   `Close, US dollars.`), `Daily closes from Tiingo` (or `CSV files` on a laptop), and **as of** the last day
@@ -411,8 +422,10 @@ the chart:
   (`Split 4-for-1`, `Dividend $0.57`).
 
 Under it, the same days as a table, newest first: **Date**, **Close**, **Adjusted close**, **Change** and
-**Change %** (from the stored day before, on the line's basis), **Split or dividend**, **Source**. On a phone the
-table scrolls sideways inside its own box; the page does not. A screen reader reads the chart's title (the
+**Change %** (from the stored day before, on the line's basis), **Split or dividend**, **Source**. A range of more
+than 100 stored days shows 100 rows a page, with `Rows 1 to 100 of 1,255, page 1 of 13.` and **Newest**,
+**Newer**, **Older** and **Oldest** links under the table. On a phone the table scrolls sideways inside its own
+box; the page does not. A screen reader reads the chart's title (the
 symbol, the range, how many closes, the low and the high) and then the tables.
 
 **Hover detail.** Move the pointer over the chart: a dashed line and a dot follow the nearest day, and the box
@@ -423,11 +436,30 @@ go to the first and last day; a screen reader announces each day. That is all th
 intraday prices and no volume. With JavaScript off there is no box, and the table under the chart has the same
 values.
 
+**Pick a range (2026-10-29).**
+
+1. Press **5 years**, **10 years** or **All** for a longer view (the address gets `?days=5y`, `?days=10y` or
+   `?days=all`). **All** is every close stored for the symbol; press **Get history** with **All available** first
+   if you want the vendor's whole history.
+2. Or, under **Or pick dates**, set **From** and **To** and press **Show these dates** (the address gets
+   `?from=2020-01-02&to=2024-12-31`). The calendar only offers days between the oldest and newest stored close;
+   the line under the boxes names them. Both dates set the chart and the table. To go back to a preset, press it.
+
+The title says the range (`FUNDX, last 5 years`, `FUNDX, all stored days`, `FUNDX, 2020-01-02 to 2024-12-31`).
+**Long ranges stay fast.** Over 1,000 stored days the chart draws 1,000 of them: an even spread plus the first
+and last day, the lowest and highest, and every split or dividend. A line under the chart says so (`This range
+has 6,953 stored days. So the chart stays fast, it draws 1,000 of them ...`), and pointing at the chart reads the
+drawn days. The table under it still lists every day, 100 a page.
+
 **What can go wrong.**
 
+- `Pick both a From date and a To date, or one of the ranges above.`, `From (2024-12-31) must be before To
+  (2020-01-02).`, `From is not a date in the form YYYY-MM-DD` or `Pick dates within the stored closes, 1999-03-10
+  to 2026-10-28; ... is not.`: the dates were refused. The page shows the reason at the top, `Showing the last 90
+  days instead.`, and keeps what you typed in the boxes so you can fix it.
 - "No close stored yet.": the symbol was added since the last nightly run. The next run fetches its year, or
   press **Get history** on the same page.
-- "No closes stored in the last 30 days.": the newest close is older than the range; the **As of** line says
+- "No closes stored in the last 30 days." (or "from <date> to <date>"): the newest close is older than the range; the **As of** line says
   when it is from. Pick a longer range, or check the pull's `failed` list for the symbol.
 - `Adjusted closes are missing for N of M days in this range, so the chart uses the unadjusted close`: the
   days were stored before 2026-10-29. Press **Get history** with **All available** once; see the next section.
@@ -479,7 +511,9 @@ The address is `/accounts/<id>/compare/?symbols=FUNDX,INDEX&days=365`.
 **Use it.**
 
 1. Under **Symbols, up to 6**, tick the symbols: the account's watch list and its holdings (not cash).
-2. Pick a **Range**: 30, 90 or 365 days (365 is where it opens).
+2. Pick a **Range**: 30, 90 or 365 days (365 is where it opens), 5 years, 10 years or All; or set **From** and
+   **To** under **Or pick dates**, which win over the Range (since 2026-10-29). The calendar offers the days
+   between the oldest and newest stored close of the symbols ticked.
 3. Press **Compare**.
 
 **What you should see.** The title (`FUNDX, INDEX: last 365 days`), a line saying each line is its symbol's
@@ -488,7 +522,10 @@ with a different color **and** a different dash pattern (solid, dashed, dotted, 
 dash-dot-dot), so the lines can be told apart without color; the y axis titled `Value, with each line's first day
 in the range at 100`; split and dividend letters as on the history page. Under the chart, a table per symbol:
 **Uses** (adjusted close or close), **First day**, **Start**, **Last day**, **End** in dollars, and **Change** in
-percent. **Every day's values** opens a table of each day's rebased value and close per symbol.
+percent. **Every day's values** opens a table of each day's rebased value and close per symbol, 100 days a page
+when the range is longer, with the same **Newest** to **Oldest** links. Each line is rebased on its first stored
+day inside the range you chose, so a custom range starts every line at 100 on (or just after) your **From**
+date. Over 1,000 stored days the chart is thinned as on the history page, and says so.
 
 **Hover detail.** As on the history page; the box lists every symbol that day: its rebased value
 (`113.63 (start = 100)`), close, adjusted close, change from the day before, and any split or dividend. A symbol
@@ -499,6 +536,7 @@ with no close that day says so.
 - `Not on this account's watch list or holdings, so left out: NOPE.` Only this account's symbols can be compared.
 - `Up to 6 symbols at once; left out: ...` The first six in the order asked are charted.
 - `No closes stored in the last 365 days for ...` Press **Get history** for it, or wait for the nightly pull.
+- A refused **From** and **To** pair: the same messages as on the history page, with the default range shown.
 - `The lines start on different days`: one symbol's stored history begins inside the range; each line is rebased
   on its own first day, listed in the table.
 - A 404: the account is not yours.
@@ -549,14 +587,15 @@ not say how far back a single request may reach, so the message tells you what c
 **What you should see.** `FUNDX, 10 years asked (from 2016-10-29): 2,512 days added, 0 updated, 3 unchanged.
 Earliest close returned: 2016-10-31; earliest close now stored: 2016-10-31.` **Earliest close returned** is
 the oldest day the source sent: for **All available**, that is how deep the vendor's history for the symbol
-goes. The history page's chart still offers 30, 90 and 365 days; the older closes are in the admin under
-**Prices**, **Daily closes**. Since 2026-10-29 a re-fetch of days already stored counts them as **updated** when
+goes. The history page's **5 years**, **10 years**, **All** and **From** and **To** show the older closes (since
+2026-10-29); they are also in the admin under **Prices**, **Daily closes**. Since 2026-10-29 a re-fetch of days already stored counts them as **updated** when
 it brings their adjusted close, split factor and dividend for the first time.
 
 **Several symbols at once: Fetch history for selected and Fetch history for all.**
 
-1. On an account page, in the **Watch list** table, tick the box at the start of each symbol's **History** cell
-   (or tick none and use **for all**).
+1. On an account page, in the **Watch list** table, tick the box at the start of each symbol's **History** cell,
+   or type symbols in **Or type symbols** under the table, separated by commas or spaces (`FUNDX, OTHER` or
+   `FUNDX OTHER`), or both (or tick none and use **for all**).
 2. Under the table, pick the **History range**: 1 year, 5 years, 10 years or All available.
 3. Press **Fetch history for selected** or **Fetch history for all** (every symbol on this account's watch list).
 
@@ -565,9 +604,10 @@ than four minutes. You see one line per symbol: `FUNDX, 5 years: 1,255 days adde
 stored 2021-10-29.` Then, if any: `Skipped, fetched less than 10 minutes ago; each can run again at the time
 shown: OTHER (at 2026-10-29 14:05 UTC).` and, when the run stopped early, `Stopped by the 50-request limit for
 one run. The rest: press again in 60 minutes: S50, S51.` (60 minutes after the request limit or Tiingo's 429,
-because the free plan counts requests per hour; 1 minute after the time limit). A ticked symbol that is not on
-this account's list is named and left out; pressing **for selected** with nothing ticked says `Tick at least one
-symbol, or press Fetch history for all.`
+because the free plan counts requests per hour; 1 minute after the time limit). A ticked or typed symbol that is
+not on this account's list is named and left out (`Not on this watch list, so left out: INDEX.`), a typed token
+outside the symbol rule is named as `Refused: <token> (<reason>).`, and pressing **for selected** with nothing on
+this list ticked or typed says `Tick or type at least one symbol on this list, or press Fetch history for all.`
 
 **What can go wrong.**
 
