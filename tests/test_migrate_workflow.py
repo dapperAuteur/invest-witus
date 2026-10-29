@@ -3,7 +3,9 @@ closed without it, and never needs the site's real secret key."""
 
 from pathlib import Path
 
-WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "migrate-production.yml"
+WORKFLOW = (
+    Path(__file__).resolve().parent.parent / ".github" / "workflows" / "migrate-production.yml"
+)
 
 
 def text() -> str:
