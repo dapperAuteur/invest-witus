@@ -25,18 +25,18 @@ Nothing here logs more than the source, the form type and the HTTP status: never
 signature, the signed text or the body (the contract's third rule).
 """
 
-import hashlib
-import hmac
 import json
 import logging
-import re
 import time
 from dataclasses import dataclass, field
 from typing import Literal, cast
-from urllib.parse import urlsplit
 
 import httpx
 from django.conf import settings
+
+# The signature and the checks every WitUS receiver shares, in one module since the Outbox client
+# arrived (`invest_witus_site/signing.py`); imported here by name, so `inbox.sign` still works.
+from invest_witus_site.signing import MIN_SECRET_LENGTH, SLUG, sign, url_allowed
 
 log = logging.getLogger(__name__)
 
@@ -47,9 +47,6 @@ transport: httpx.BaseTransport | None = None
 # Short on purpose: a report is saved before it is sent, and the person who wrote it is waiting
 # for the thank-you page. A send that takes longer is retried by the nightly job.
 TIMEOUT_SECONDS = 5.0
-MIN_SECRET_LENGTH = 32
-SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
-LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
 
 Priority = Literal["normal", "high"]
 
@@ -119,9 +116,7 @@ def load_config() -> InboxConfig:
     missing = [name for name, value in names.items() if not value]
     if missing:
         raise InboxNotConfigured(f"WitUS Inbox is off: {', '.join(missing)} not set.")
-    parts = urlsplit(url)
-    local = parts.scheme == "http" and parts.hostname in LOCAL_HOSTS
-    if not (parts.scheme == "https" and parts.hostname) and not local:
+    if not url_allowed(url):
         raise InboxNotConfigured(
             "WitUS Inbox is off: INBOX_INGEST_URL must be an https:// URL "
             "(http:// only for localhost)."
@@ -144,14 +139,6 @@ def configured() -> bool:
     except InboxNotConfigured:
         return False
     return True
-
-
-def sign(secret: str, timestamp: int, raw: bytes) -> str:
-    """The header value: `sha256=` and the hex HMAC-SHA256 of `"{timestamp}.{raw}"`. The dot is
-    literal, and `raw` is used as bytes, so nothing is decoded or re-encoded on the way."""
-    message = f"{timestamp}.".encode("ascii") + raw
-    digest = hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
-    return f"sha256={digest}"
 
 
 def send(config: InboxConfig, submission: Submission, timestamp: int | None = None) -> str:

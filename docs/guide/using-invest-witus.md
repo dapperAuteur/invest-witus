@@ -587,6 +587,30 @@ column under **Report a bad actor**. It works signed in or out.
   **Waitlist copies to Inbox** lists each new waitlist signup's copy the same way. On the laptop,
   `uv run --env-file .env python manage.py reports` prints the reports not marked Done.
 
+## Draft a post for WitUS Outbox (2026-10-29)
+
+For the site owner only. When you want to tell people something about Invest.WitUS (that it is live, or a
+milestone you choose), write it here and it lands in WitUS Outbox as a draft, where you approve it. The app
+never writes a post by itself and never posts anything: Outbox does, after you approve it there.
+
+- **Where.** Admin, **Posts to WitUS Outbox**, **Post drafts for WitUS Outbox**, **Draft a post**. Staff accounts
+  that are not the superuser do not see it.
+- **The form.** **Occasion**: *Invest.WitUS is live (the launch, once)* or *A milestone you choose*. **Text**: at
+  most 280 characters, one text for every platform. **Platforms**: LinkedIn, X (Twitter) and Bluesky, all ticked;
+  untick any you do not want. Press **Save**.
+- **What you should see.** "Outbox: 3 of 3 sent." and the draft's page with one row per platform: **In Outbox**,
+  Outbox's id, and Outbox's own status for it (*draft*). Then open Outbox and find the drafts under this app's
+  source: edit, schedule, approve or reject each one there. The saved text is read-only here; change it in Outbox.
+- **What is refused.** Anything from your accounts: an amount (`$`, dollars), a percentage, a share count, a
+  cashtag (`$` and a symbol), or any symbol you hold, watch, plan, journal or have a price for. The form names
+  what it found; reword it. A second launch draft is refused too ("There is a launch draft already"); use a
+  milestone.
+- **When Outbox is switched off** (the usual state until the owner turns it on, and always on a laptop): the rows
+  read **Off, will retry** with the reason, and nothing is sent. Once `OUTBOX_TRIGGER_ENABLED` is `true` on the
+  site, the nightly job sends them, or select the draft and choose **Send again to WitUS Outbox**.
+- **If Outbox did not answer**, the row reads **Failed, will retry** with the reason, and the nightly job or
+  **Send again** tries it later. Sending again never makes a second draft in Outbox.
+
 ## What the app will not do
 
 - **Advise.** It recommends no security and never says which to buy. Every rule it checks (later chapters)
@@ -600,6 +624,8 @@ column under **Report a bad actor**. It works signed in or out.
   behind a checklist and separate keys.
 - **Admit other users yet.** The waitlist is a list; approving an entry changes its status and sends nothing.
   Other learners come after the legal gate, with the course, for education only.
+- **Post to social networks.** The owner's **Draft a post** sends a draft to WitUS Outbox, where the owner
+  approves it; nothing from an account is ever in it, and no event in the app writes a post.
 - **Send email.** Nothing in this phase emails anyone; the contact page is a mailto link. Since chapter 13, new
   waitlist signups and reports are copied to WitUS Inbox, the operator's inbox, which sends nothing to you.
 - **Import a CSV statement.** Statements are typed into the admin; the column-mapped import is a later phase.
@@ -624,6 +650,9 @@ Still to come, each its own chapter: 12-1 momentum (14), signed events to Centen
 | Cron answers 503 | `CRON_SECRET` not in the running deployment | Redeploy |
 | A report reads **Off, will retry** in the admin | The three `INBOX_` names are not all set on this deployment | Set them and redeploy; the nightly job sends the waiting rows |
 | A report reads **Failed, will retry** with a 401 | Inbox does not know this source or secret, or the clock is off | Check the slug in Inbox's `INGEST_SOURCES`, redeploy Inbox, compare the secrets; then **Send again** |
+| A post draft reads **Off, will retry** | `OUTBOX_TRIGGER_ENABLED` is not exactly `true`, or an `OUTBOX_` name is missing | Expected until you turn it on; set them and redeploy, then **Send again** |
+| A post draft reads **Failed, will retry** with a 401 | Outbox does not know this source or secret, or the clock is off | Check the slug in Outbox's `INGEST_SOURCES`, redeploy Outbox, compare the secrets; then **Send again** |
+| A post draft reads **Blocked, not sent** | The text named something from your accounts, or it was not written by the superuser | Write a new draft without it |
 | Cron answers 403 | Wrong bearer | Check the variable's value for stray spaces or quotes |
 | `CSRF verification failed` on a form | The origin is not trusted | `DJANGO_CSRF_TRUSTED_ORIGINS` must name `https://invest.witus.online` |
 | `DisallowedHost` | The host is not allowed | `DJANGO_ALLOWED_HOSTS`, or Vercel's system variables are off |

@@ -150,6 +150,16 @@ and per person, counted in the database; a honeypot; CSRF. The names are `INBOX_
 and `INBOX_INGEST_SECRET` (`.env.example`); without them reports are kept in the admin and nothing is sent. The
 walk-through is [chapter 13](docs/chapters/13-the-in-app-reporter.md), section 13.10.
 
+## Post drafts to WitUS Outbox
+
+Not a chapter. The site owner's **Draft a post** in the admin sends a short post (the launch, once, or a
+milestone) to WitUS Outbox as a draft per platform, where the owner approves it; the app posts nothing itself and
+no event writes a post. It follows Outbox's `examples/INTEGRATE.md` in Python: the same signature as Inbox (now
+in `invest_witus_site/signing.py`), off unless `OUTBOX_TRIGGER_ENABLED` is exactly `true`, superuser only, and a
+guard that refuses any amount, percentage, share count, cashtag or symbol from the owner's accounts. Saved first,
+retried nightly and by **Send again**. Details: [doc 02, section 10](docs/02-ecosystem-integration.md) and the
+[runbook](docs/05-operations.md).
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"

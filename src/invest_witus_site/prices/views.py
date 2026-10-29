@@ -1,5 +1,6 @@
 """`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron, since chapter 11 the
-paper order check after it, and since chapter 13 the retry of what WitUS Inbox has not taken.
+paper order check after it, since chapter 13 the retry of what WitUS Inbox has not taken, and
+since 2026-10-29 the retry of post drafts WitUS Outbox has not taken.
 
 Vercel sends the project's `CRON_SECRET` as `Authorization: Bearer <value>` with every cron
 request (its docs, read October 28, 2026). The route compares that header with the setting in
@@ -17,6 +18,8 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from invest_witus_site.outbox.client import configured as outbox_configured
+from invest_witus_site.outbox.delivery import send_unsent as send_unsent_posts
 from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_client
 from invest_witus_site.paper.orders import sync_orders
 from invest_witus_site.prices.pull import DAYS_BACK, pull, symbol_universe
@@ -57,6 +60,10 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
     # configured. Without it the body is unchanged, as with the Alpaca step above.
     if inbox_configured():
         body["inbox"] = send_unsent().as_dict()
+    # WitUS Outbox: every post draft it has not taken, once its kill switch is on and its three
+    # names are set. Off, the body is unchanged.
+    if outbox_configured():
+        body["outbox"] = send_unsent_posts().as_dict()
     # Which schedule fired, when more than one cron shares a path; empty for a call by hand.
     body["schedule"] = request.headers.get("x-vercel-cron-schedule", "")
     log.info("cron: pull-prices %s", body)

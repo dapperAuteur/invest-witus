@@ -110,6 +110,8 @@ INSTALLED_APPS = [
     "invest_witus_site.paper",
     # The in-app reporter (chapter 13): reports and waitlist copies, saved, then sent to Inbox.
     "invest_witus_site.reports",
+    # WitUS Outbox (2026-10-29): the owner's post drafts, saved, then sent to Outbox for review.
+    "invest_witus_site.outbox",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -312,6 +314,15 @@ if _alpaca_base_url and _alpaca_base_url.rstrip("/") != "https://paper-api.alpac
 INBOX_INGEST_URL = os.environ.get("INBOX_INGEST_URL", "")
 INBOX_SOURCE_SLUG = os.environ.get("INBOX_SOURCE_SLUG", "")
 INBOX_INGEST_SECRET = os.environ.get("INBOX_INGEST_SECRET", "")
+# WitUS Outbox (2026-10-29, after Outbox's examples/INTEGRATE.md): where the owner's post drafts
+# go for review before anything is posted. OUTBOX_TRIGGER_ENABLED is the guide's kill switch and
+# must be exactly "true" for anything to be sent; anything else, or unset, is off. The other three
+# work as Inbox's: Outbox's ingest URL, this app's slug in Outbox's INGEST_SOURCES, and the same
+# secret Outbox holds for that slug (at least 32 characters). No defaults, as above.
+OUTBOX_TRIGGER_ENABLED = os.environ.get("OUTBOX_TRIGGER_ENABLED", "")
+OUTBOX_INGEST_URL = os.environ.get("OUTBOX_INGEST_URL", "")
+OUTBOX_SOURCE_SLUG = os.environ.get("OUTBOX_SOURCE_SLUG", "")
+OUTBOX_INGEST_SECRET = os.environ.get("OUTBOX_INGEST_SECRET", "")
 # The deployed commit, which Vercel sets on every deployment (its system environment variables
 # page, read October 29, 2026); empty on a laptop. A report carries it beside the version.
 GIT_COMMIT_SHA = os.environ.get("VERCEL_GIT_COMMIT_SHA", "")

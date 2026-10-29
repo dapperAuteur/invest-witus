@@ -13,6 +13,7 @@ from the dashboards named; this file never holds one.
 | `TIINGO_API_KEY`, `CRON_SECRET` | same page | the nightly pull and its cron route |
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | same page; made in Alpaca's paper dashboard, API Keys, Generate New Key | Confirm, the paper page and the order sync (chapter 11) |
 | `INBOX_INGEST_URL`, `INBOX_SOURCE_SLUG`, `INBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-inbox project | the in-app reporter and the waitlist's copy to WitUS Inbox (chapter 13) |
+| `OUTBOX_TRIGGER_ENABLED`, `OUTBOX_INGEST_URL`, `OUTBOX_SOURCE_SLUG`, `OUTBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-outbox project | **Draft a post** and its copies to WitUS Outbox |
 | the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
 
 Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
@@ -144,6 +145,34 @@ Nothing to run after a deploy: migration `reports/0001` is applied by the migrat
   `{"slug":"<INBOX_SOURCE_SLUG>","hmac_secret":"<secret>"}` appended to `INGEST_SOURCES` on the witus-inbox Vercel
   project for that environment (keep the other entries), redeploy Inbox, set the same secret here as
   `INBOX_INGEST_SECRET`, redeploy this app, then **Send again** on any waiting rows.
+
+## Post drafts to WitUS Outbox
+
+Nothing to run after a deploy: migration `outbox/0001` is applied by the migrate workflow on merge.
+
+- **Draft a post** (admin, **Posts to WitUS Outbox**, **Post drafts for WitUS Outbox**, superuser only) saves the
+  text, makes one row per ticked platform and sends each to Outbox as a draft at once, 5-second timeout. The
+  message says how many Outbox took. Approve, edit, schedule or reject them in Outbox; nothing is posted from here.
+- **Off by default.** Nothing is sent unless `OUTBOX_TRIGGER_ENABLED` is exactly `true` and the three `OUTBOX_`
+  names are set. Off, each row reads **Off, will retry** with the reason. To stop everything at once, set the
+  switch to anything else (or delete it) on the Vercel project and redeploy: rows wait here.
+- **The retry is automatic.** The nightly cron sends every row Outbox has not taken, after the Inbox step, oldest
+  first, at most 25 a night, once the switch is on; its JSON gains an `outbox` object (`checked`, `sent`, `failed`,
+  `stopped`). A timeout or a 5xx stops that night's run; a 4xx is recorded on its row and the rest go on. A resend
+  is harmless: Outbox answers a repeated `external_ref` with the row it already has.
+- **The manual fallback is "Send again".** Admin, **Post drafts for WitUS Outbox**, select the drafts, action
+  **Send again to WitUS Outbox**, **Go**. Rows already in Outbox and blocked rows are left alone.
+- By hand on the laptop against the local database: `uv run --env-file .env python manage.py send_outbox`. With the
+  switch off in `.env` it prints `Stopped: WitUS Outbox is off: ...` and sends nothing.
+- **Blocked, not sent:** the text named a symbol the app records, an amount, a percentage, a share count or a
+  cashtag, or the draft was not written by a superuser. Blocked rows are never retried; write a new draft.
+- **Failed, will retry** with a 401: the slug is not in Outbox's `INGEST_SOURCES` for that environment, Outbox was
+  not redeployed after its list changed, the two secrets differ, or the clock is more than five minutes off.
+  Outbox's function log says `[ingest] unknown source` or `[ingest] hmac verify failed`.
+- Registering this app with Outbox, or rotating the secret: one `openssl rand -hex 32` per environment, the entry
+  `{"slug":"<OUTBOX_SOURCE_SLUG>","hmac_secret":"<secret>","workspace_name":"<Ocoya workspace name>"}` appended to
+  `INGEST_SOURCES` on the witus-outbox Vercel project for that environment (keep the other entries), redeploy
+  Outbox, set the same secret here as `OUTBOX_INGEST_SECRET`, redeploy this app, then **Send again**.
 
 ## The laptop copy
 
