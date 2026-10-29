@@ -25,7 +25,7 @@ def pick(
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin[Account]):
-    list_display = ("name", "broker", "kind", "currency", "owner", "statements")
+    list_display = ("name", "broker", "kind", "alpaca", "currency", "owner", "statements")
     list_filter = ("kind",)
     search_fields = ("name", "broker")
     readonly_fields = ("created_at",)

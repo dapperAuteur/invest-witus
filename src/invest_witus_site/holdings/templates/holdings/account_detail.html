@@ -57,6 +57,13 @@
     <p>No method yet on this account. <a href="{% url 'method-page' account.pk %}?view=c">Read the rules and start one.</a></p>
     {% endif %}
   </section>
+  {# Alpaca paper (chapter 11): the link to Alpaca's positions, cash and orders, for the site owner. #}
+  {% if account.is_alpaca_paper and user.is_superuser %}
+  <section aria-labelledby="paper-line-heading">
+    <h2 id="paper-line-heading">Alpaca paper</h2>
+    <p><a href="{% url 'paper-account' account.pk %}">Positions, cash and orders on Alpaca paper</a>. Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+  </section>
+  {% endif %}
   {# The watch list (chapter 09): the symbols followed here, the latest close beside each, the add form. #}
   {% include "watchlist/_section.html" %}
   <p><a href="{% url 'account-list' %}">All accounts</a></p>

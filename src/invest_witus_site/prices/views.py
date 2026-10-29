@@ -1,4 +1,5 @@
-"""`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron.
+"""`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron, and since chapter 11
+the paper order check after it.
 
 Vercel sends the project's `CRON_SECRET` as `Authorization: Bearer <value>` with every cron
 request (its docs, read October 28, 2026). The route compares that header with the setting in
@@ -16,6 +17,8 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_client
+from invest_witus_site.paper.orders import sync_orders
 from invest_witus_site.prices.pull import DAYS_BACK, pull, symbol_universe
 from invest_witus_site.prices.sources import source_from_settings
 
@@ -41,6 +44,13 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
         source_from_settings(), symbol_universe(), today - timedelta(days=DAYS_BACK), today
     )
     body = result.as_dict()
+    # Chapter 11: then the paper orders, once the owner's Alpaca paper keys are set. Without them
+    # the body is chapter 08's, unchanged. A failure is reported in the body; the prices stand.
+    if keys_configured():
+        try:
+            body["orders"] = sync_orders(paper_client()).as_dict()
+        except AlpacaError as error:
+            body["orders"] = {"error": error.message}
     # Which schedule fired, when more than one cron shares a path; empty for a call by hand.
     body["schedule"] = request.headers.get("x-vercel-cron-schedule", "")
     log.info("cron: pull-prices %s", body)

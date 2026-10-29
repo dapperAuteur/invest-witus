@@ -22,6 +22,7 @@ from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.engine import build_review, rule_lines
 from invest_witus_site.methods.forms import JournalEntryForm, StartMethodForm
 from invest_witus_site.methods.models import JournalEntry, MethodPlan
+from invest_witus_site.paper.orders import alpaca_allowed, paper_section
 
 # The three views, by letter, as the research and the PRD name them. The order is the switch's.
 VIEWS = {
@@ -87,6 +88,13 @@ def render_method_page(
         "views": [(key, label) for key, (label, _) in VIEWS.items()],
         "through": through,
         "through_query": f"&through={through.isoformat()}" if through != today else "",
+        # Chapter 11: this month's buys and the Confirm button, on an account linked to Alpaca
+        # paper only. One request to Alpaca (the clock); `None` everywhere else.
+        "paper": (
+            paper_section(plan)
+            if plan is not None and alpaca_allowed(request.user, account)
+            else None
+        ),
     }
     return render(request, "methods/method_page.html", context)
 

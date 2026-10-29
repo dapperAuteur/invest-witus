@@ -97,6 +97,16 @@ class MethodPlan(models.Model):
     )
     active: models.BooleanField[bool, bool] = models.BooleanField(default=True)
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
+    # Chapter 11: the practice money the plan may spend, kept by the app. Alpaca's paper balance
+    # cannot be set (research 05), so the plan's budget is this number, not Alpaca's cash.
+    practice_budget: models.DecimalField[Decimal | None, Decimal | None] = models.DecimalField(
+        max_digits=14,
+        decimal_places=MONEY_PLACES,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(ONE_CENT)],
+        help_text="Practice money this plan may spend on a paper account. Empty: not set.",
+    )
 
     class Meta:
         ordering = ["account", "-started_on", "-pk"]
@@ -121,10 +131,13 @@ class MethodPlan(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Normalize before the row is written, as every table in this app does: the amount to
         cents, the symbols through chapter 09's rule, a float refused, an unknown method refused."""
-        if isinstance(self.amount, float):
-            raise TypeError(f"amount must be a Decimal, not a float ({self.amount!r})")
+        for field in ("amount", "practice_budget"):
+            if isinstance(getattr(self, field), float):
+                raise TypeError(f"{field} must be a Decimal, not a float")
         validate_method_id(self.method_id)
         self.amount = to_money(self.amount)
+        if self.practice_budget is not None:
+            self.practice_budget = to_money(self.practice_budget)
         self.symbols = join_symbols(self.symbols)
         super().save(*args, **kwargs)
 

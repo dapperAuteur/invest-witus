@@ -1,0 +1,29 @@
+{% load holdings_extras %}
+{# This month's buys (chapter 11), on the method page of an account linked to Alpaca paper. Included by #}
+{# methods/method_page.html with `account` and `paper` (a PaperSection: the staged buys, the clock, an error). #}
+<section class="card" aria-labelledby="buys-heading">
+  <h2 id="buys-heading">This month's buys</h2>
+  <p class="band">Alpaca paper ({{ paper.host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+  <ul>
+    {% for buy in paper.stage.buys %}
+    <li>Buy {{ buy.notional|plain_number }} of {{ buy.symbol }}{% if buy.placed %}: placed, {{ buy.order.status }}{% elif buy.order.message %}: not placed. {{ buy.order.message }}{% endif %}</li>
+    {% endfor %}
+  </ul>
+  <p>Practice budget, the app's own number: {% if paper.stage.budget is not None %}{{ paper.stage.budget|plain_number }}, spent {{ paper.stage.spent|plain_number }}, left {{ paper.stage.left|plain_number }}{% else %}not set{% endif %}.</p>
+  {% if paper.error %}
+  <p class="error">Alpaca did not answer, so nothing can be placed now. {{ paper.error }}</p>
+  {% elif paper.stage.refusal %}
+  <p>{{ paper.stage.refusal }}</p>
+  {% elif paper.stage.can_confirm %}
+  {% if not paper.clock.is_open %}
+  <p>The market is closed. Alpaca queues a day order placed now for the next open, {{ paper.clock.next_open|date:"Y-m-d H:i e" }}.{% if paper.queues_past_window %} That open is after this month's window closes on {{ paper.stage.window_closes|date:"Y-m-d" }}; the journal records the day you confirm, and the fill's day goes in its note.{% endif %}</p>
+  {% endif %}
+  <form method="post" action="{% url 'paper-confirm' account.pk %}">
+    {% csrf_token %}
+    <button type="submit">{% if paper.clock.is_open %}Confirm{% else %}Confirm: queue for the open{% endif %}</button>
+  </form>
+  <p class="small muted">One market order per symbol for the dollar amount, good for the day, on Alpaca's paper account. Each order goes in the journal at once; the nightly check fills in the shares.</p>
+  {% else %}
+  <p>This month's buys are placed. The nightly check copies the fills into the journal. <a href="{% url 'paper-account' account.pk %}">See the orders</a>.</p>
+  {% endif %}
+</section>
