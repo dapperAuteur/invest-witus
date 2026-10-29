@@ -140,3 +140,34 @@ class DailyClose(models.Model):
         for row in newest:
             picks |= Q(symbol=row["symbol"], date=row["latest"])
         return {row.symbol: row.quote() for row in cls.objects.filter(picks)}
+
+
+class Backfill(models.Model):
+    """A symbol whose history the pull has already asked for, and how far back (2026-10-29).
+
+    The first pull of a symbol asks for a year of closes in its one request instead of the
+    nightly week, then writes a row here. A symbol without a row, or with one that does not
+    reach back far enough, gets the year on its next pull: one held or watched before this
+    table existed included. A refused or skipped request writes no row, so the next night tries
+    again. Deleting a row in the admin asks for the year again.
+    """
+
+    symbol: models.CharField[str, str] = models.CharField(max_length=20, unique=True)
+    since: models.DateField[datetime.date, datetime.date] = models.DateField(
+        help_text="The first day the backfill request asked for."
+    )
+    done_at: models.DateTimeField[datetime.datetime, datetime.datetime] = models.DateTimeField(
+        help_text="When the source answered it."
+    )
+
+    class Meta:
+        ordering = ["symbol"]
+        verbose_name = "price backfill"
+        verbose_name_plural = "price backfills"
+
+    def __str__(self) -> str:
+        return f"{self.symbol} since {self.since:%Y-%m-%d}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.symbol = self.symbol.strip().upper()
+        super().save(*args, **kwargs)

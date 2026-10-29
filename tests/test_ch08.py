@@ -403,11 +403,12 @@ def test_the_command_pulls_the_held_symbols_and_runs_twice_without_harm(
     out, err = StringIO(), StringIO()
     call_command("pull_prices", "--since", since, stdout=out, stderr=err)
     assert "Source csv" in out.getvalue() and "3 symbol(s), 3 request(s)" in out.getvalue()
-    assert "Inserted 3, updated 0, unchanged 0." in out.getvalue()
+    # INDEX's first pull reaches back a year (2026-10-29), so its older row is stored too.
+    assert "Inserted 4, updated 0, unchanged 0." in out.getvalue()
     assert "Failed NONE: no file NONE.csv" in err.getvalue()
     out = StringIO()
     call_command("pull_prices", "--since", since, stdout=out, stderr=StringIO())
-    assert "Inserted 0, updated 0, unchanged 3." in out.getvalue()
+    assert "Inserted 0, updated 0, unchanged 3." in out.getvalue(), "the year is asked for once"
 
 
 @pytest.mark.django_db
@@ -466,15 +467,18 @@ def test_the_cron_route_pulls_the_last_seven_days_and_answers_counts(
         "until": today.isoformat(),
         "symbols": ["INDEX", "NONE", "OTHER"],
         "requests": 3,
-        "inserted": 3,
+        "inserted": 4,  # with INDEX's older row: a first pull reaches back a year
         "updated": 0,
         "unchanged": 0,
         "failed": {"NONE": f"no file NONE.csv in {csv_folder}"},
         "skipped": [],
+        "backfilled": ["INDEX", "OTHER"],
         "schedule": "0 6 * * *",
     }
     again = client.get(CRON, headers={"Authorization": f"Bearer {SECRET}"}).json()
-    assert (again["inserted"], again["unchanged"], again["schedule"]) == (0, 3, "")
+    assert (again["inserted"], again["unchanged"], again["schedule"]) == (0, 3, ""), (
+        "the second run asks for the week only"
+    )
 
 
 @pytest.mark.django_db

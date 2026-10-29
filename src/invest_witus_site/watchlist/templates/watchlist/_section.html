@@ -19,7 +19,7 @@
     <tbody>
       {% for row in watch.rows %}
       <tr>
-        <th scope="row">{{ row.item.symbol }}</th>
+        <th scope="row"><a href="{% url 'watch-history' account.pk row.item.symbol %}">{{ row.item.symbol }}</a></th>
         <td>{{ row.item.note }}</td>
         {% if row.quote %}
         <td class="num">{{ row.quote.close|money }}</td>
