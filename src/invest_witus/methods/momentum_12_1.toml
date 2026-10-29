@@ -1,0 +1,45 @@
+# 12-1 momentum, monthly top N in equal parts, written as rules the app checks (chapter 14).
+# The Learn.WitUS lesson and the code read this same file. A rule's `lesson` is the URL of the
+# lesson that teaches it; leave it empty until that lesson is published. Never guess a URL.
+# The ideas behind the method are cited in chapter 14 (Gray & Vogel, 2016); nothing here is copied.
+
+id = "momentum-12-1"
+name = "12-1 momentum, monthly top N in equal parts"
+version = 1
+summary = "Each month, rank your own candidates by their return over the past year without its latest month, put the month's amount into the top N in equal parts, and sell a holding once it leaves the top N."
+lesson = ""
+
+[[rules]]
+id = "candidates-only"
+text = "Rank and buy only the candidates your plan names: the list is chosen before the ranking, never after it."
+lesson = ""
+
+[[rules]]
+id = "rank-by-12-1"
+text = "Rank the candidates by their 12-1 return: the change in adjusted close from the end of the month 13 months back to the end of the month 2 months back, so the latest full month is left out. A candidate without a close in both of those months (12 months of history or more) is not ranked and not bought."
+lesson = ""
+
+[[rules]]
+id = "hold-top-n"
+text = "Hold the top N: at each rebalance, buy every candidate ranked in the top N and none ranked below. With fewer than N ranked, hold those."
+lesson = ""
+
+[[rules]]
+id = "equal-weight"
+text = "Split the month's amount equally across the symbols you buy, to the cent: the amount divided by N, or by the number ranked when fewer than N are."
+lesson = ""
+
+[[rules]]
+id = "sell-what-leaves"
+text = "Sell the whole holding of a symbol at the first rebalance after it leaves the top N, and sell nothing that is still in it."
+lesson = ""
+
+[[rules]]
+id = "rebalance-each-month"
+text = "Rebalance once in every month of the plan."
+lesson = ""
+
+[[rules]]
+id = "trade-only-at-review"
+text = "Trade only at the monthly rebalance, within the plan's window at the start of the month, not when the news makes you feel ready."
+lesson = ""

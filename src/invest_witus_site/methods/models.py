@@ -16,6 +16,10 @@ becoming a new row, a *version*, that points at the one it replaced, so every mo
 the numbers in force that month. And each month whose window has closed gets a `MonthlyReview`,
 closed by the owner with a short written review; a closed month's entries are read-only until the
 review is reopened with a reason, and every close and reopen is kept as a `ReviewEvent`.
+
+Chapter 14 adds a second method, 12-1 momentum, with one more number on the plan: `top_n`, how
+many of the ranked candidates to hold. The candidates are the plan's `symbols`, and `amount` is the
+month's money, split equally across the top N. An index plan leaves `top_n` empty.
 """
 
 import re
@@ -44,6 +48,8 @@ MIN_WINDOW_DAYS = 1
 MAX_WINDOW_DAYS = 28
 # The smallest amount a plan or an entry can carry: one cent. The form says so beside the box.
 ONE_CENT = Decimal("0.01")
+# Chapter 14: the method whose plan carries a top N. The id is the TOML file's.
+MOMENTUM = "momentum-12-1"
 
 
 def validate_method_id(value: str) -> None:
@@ -147,6 +153,17 @@ class MethodPlan(models.Model):
     end_reason: models.TextField[str, str] = models.TextField(
         blank=True, default="", db_default="", help_text="Why the plan was ended."
     )
+    # Chapter 14: how many of the ranked candidates a 12-1 momentum plan holds. Nullable, so the
+    # column is additive (old rows and the previous release's inserts are NULL), and an index
+    # plan, which holds every fund it names, leaves it empty.
+    top_n: models.PositiveSmallIntegerField[int | None, int | None] = (
+        models.PositiveSmallIntegerField(
+            null=True,
+            blank=True,
+            validators=[MinValueValidator(1)],
+            help_text="12-1 momentum only: how many of the ranked candidates to hold.",
+        )
+    )
 
     class Meta:
         ordering = ["account", "-started_on", "-pk"]
@@ -191,6 +208,10 @@ class MethodPlan(models.Model):
 
     def symbol_list(self) -> list[str]:
         return self.symbols.split()
+
+    @property
+    def is_momentum(self) -> bool:
+        return self.method_id == MOMENTUM
 
     def to_plan(self) -> Plan:
         """Chapter 03's `Plan`, so `review` runs unchanged."""
