@@ -1,6 +1,7 @@
 """The add form: one or many symbols in one box, and an optional note for all of them. Since
-2026-10-29 also "Fetch their history now" (on in a new form) and its range: when ticked, the
-symbols the submission added are fetched in the same request, like Fetch history for selected."""
+2026-10-29 (decision 141) also "Fetch their history now" (on in a new form) and its range: when
+ticked, the symbols the submission added are fetched in the same request, like Fetch history for
+selected."""
 
 from django import forms
 from django.core.exceptions import ValidationError

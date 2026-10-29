@@ -253,7 +253,7 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 }
 .history-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
 .pick-label { display: inline-flex; align-items: center; min-height: 2.25rem; min-width: 2.25rem; justify-content: center; }
-/* Chart ranges (2026-10-29, decision 135): the presets, a From and To pair that wraps on a phone, and the pages of
+/* Chart ranges (2026-10-29, decision 140): the presets, a From and To pair that wraps on a phone, and the pages of
    a day-by-day table. */
 .range-presets { margin: 0.5rem 0; line-height: 2.25; }
 .range-form { margin: 0.5rem 0 1rem; }

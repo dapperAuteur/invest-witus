@@ -1,7 +1,7 @@
 """Two POST views on the signed-in owner's account page: add one or many symbols, remove one.
 Since 2026-10-29, two GET views too: a watched symbol's stored closes, and the compare page, up to
 six of the account's symbols on one chart rebased to 100. Both open on 30, 90 or 365 days and
-offer 5 years, 10 years, All and a From and To pair (decision 135); a bad pair is a 400 with the
+offer 5 years, 10 years, All and a From and To pair (decision 140); a bad pair is a 400 with the
 reason on the page and the default range under it. Their day-by-day tables show 100 rows a page.
 
 Both check ownership the way chapter 08's pages do: the account comes from

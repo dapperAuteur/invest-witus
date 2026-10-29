@@ -14,7 +14,7 @@ Everything is computed here, in Decimal, and drawn by the template `prices/_char
 - **The hover data** is the same numbers already formatted with `money`, so the owner pages'
   small script only picks a day and shows text the server wrote; the table carries the same text
   without the script.
-- **Long ranges are thinned for drawing** (decision 135): over `MAX_POINTS` stored dates, the
+- **Long ranges are thinned for drawing** (decision 140): over `MAX_POINTS` stored dates, the
   chart draws an even spread of them plus the first, the last, each line's lowest and highest
   day and every split or dividend day; the hover data follows the drawn dates; the tables under
   the chart keep every day.
@@ -54,7 +54,7 @@ Y_TICKS = 4
 # A tick label this close to an edge is aligned to it instead of centered, so it never hangs past
 # the plot (and never makes the page scroll sideways on a phone).
 EDGE_PERCENT = Decimal(12)
-# Above this many dates a chart draws a thinned set (decision 135): 27 years of closes is about
+# Above this many dates a chart draws a thinned set (decision 140): 27 years of closes is about
 # 6,800 days, which a phone draws slowly and the hover data would carry for nothing.
 MAX_POINTS = 1000
 

@@ -4,7 +4,7 @@ The chart itself is built in `charts.py` (2026-10-29): server-rendered SVG with 
 hover data, and the closes as a table under it, so the picture is never the only way to read
 them.
 
-Since 2026-10-29 (decision 135) the pages offer longer presets (5 years, 10 years, All) beside
+Since 2026-10-29 (decision 140) the pages offer longer presets (5 years, 10 years, All) beside
 the 30, 90 and 365 days they open on, and a From and To date pair (`?from=YYYY-MM-DD&to=...`)
 that sets the chart and the table together. `chosen_range` reads them; a bad pair is a
 `RangeError` whose words the page prints, never a 500.

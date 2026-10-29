@@ -1,4 +1,4 @@
-"""Chart ranges (2026-10-29, decision 135): the presets 30, 90 and 365 days plus 5 years, 10 years
+"""Chart ranges (2026-10-29, decision 140): the presets 30, 90 and 365 days plus 5 years, 10 years
 and All; a From and To pair, checked; long ranges thinned for drawing; the day tables paged.
 
 Rows are written straight into the table: no request leaves the process, and the symbols are
