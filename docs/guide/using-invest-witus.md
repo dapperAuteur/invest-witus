@@ -729,6 +729,14 @@ Written for the app at `v13`. The link **Report a problem or ask a question** is
 last link in the list; on a phone, signed in, it is behind **Menu**) and in the footer, in the **Partners & Legal**
 column under **Report a bad actor**. It works signed in or out.
 
+- **The Help bubble (2026-10-30).** A round **Help** button sits in the bottom right corner of every page except the
+  form itself, on a phone too, clear of the header and its **Menu** button. Signed out it is a link: it opens the
+  form's page (the public pages run no JavaScript). Signed in it opens the same form in a panel over the page: the
+  first choice is ready for the keyboard, **Close**, **Escape** or a tap outside the panel closes it, and the
+  keyboard returns to **Help**. **What page were you on?** is filled in with the page under the panel. **Send**
+  goes to the same thank-you page; **Open the full form** opens the form's page instead. With JavaScript off, or in
+  a browser without panels, the bubble stays a link. The header and footer links stay as well.
+
 - **The form.** Pick what it is about: **Something is broken (a bug)**, **An idea for the app (a feature)** or
   **A question**. Write **Your message**; leave out passwords and keys. **What page were you on?** is filled in
   from the page you came from, without anything after a `?`; change or clear it. Signed out, **Your email** is
