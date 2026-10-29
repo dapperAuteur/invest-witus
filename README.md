@@ -92,6 +92,16 @@ stored. Every watched symbol joins the nightly pull's universe inside chapter 08
 the cron fetch it with the held ones. There is no buy button: watching places no order. The walk-through is
 [chapter 09](docs/chapters/09-the-watch-list.md), section 09.8.
 
+Since 2026-10-29 each watched symbol has a history page (`/accounts/<id>/watch/<SYMBOL>/?days=30|90|365`): a
+server-drawn chart with a title, dollar and date axes, a key, split and dividend markers, the source and the
+"as of" date, and the same days as a table; the adjusted close when every day in the range has one, else the
+close, labelled. `/accounts/<id>/compare/?symbols=A,B,C&days=365` puts up to six of the account's watched or held
+symbols on one chart, each rebased to 100 at its first day in the range. On those two pages only, a small script
+(`prices/static/prices/chart.js`, no library) reads out the day nearest the pointer or the arrow keys; public
+pages carry no script. The Watch list section can fetch history for several symbols in one press. The statements
+comparison in the admin notes a stored split between the two dates. How to use them:
+[the user guide](docs/guide/using-invest-witus.md).
+
 ## The method engine and the three views
 
 Chapter 10 puts the product's core on the web: a `methods` app whose `MethodPlan` row is chapter 03's `Plan`

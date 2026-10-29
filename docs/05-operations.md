@@ -107,6 +107,20 @@ Use the WitUS account's email so chapter 07 links the two on the first sign-in. 
   `backfilled`. To ask for a symbol's year again, delete its **Price backfills** row; to reach further back
   than a year, press **Get history** beside the symbol (or, as the fallback, `pull_prices --symbols A --since
   YYYY-MM-DD`).
+- Adjusted closes, splits and dividends (2026-10-29, decisions 120, 123 and 124): migration
+  `prices/0004_daily_close_adjustments` adds `adj_close`, `split_factor` and `div_cash` to the closes table
+  (nullable, database default NULL, additive), applied by the migrate workflow on merge. Every pull and every
+  Get history stores them from then on. Rows stored before have none, so once after the merge press **Fetch
+  history for all** with **All available** in each account's **Watch list** section (or Get history per symbol;
+  a held symbol that is not watched can be refilled the same way after adding it to the watch list, or by
+  `pull_prices --symbols A --since 1900-01-01`). The message counts the refilled days as **updated**. Until a
+  symbol is refilled, its chart uses the unadjusted close and says so. When a later nightly week brings a new
+  split or dividend, `DailyClose.upsert` rescales the stored adjusted closes the week did not cover by the same
+  ratio; the pull's log line ends with `rescaled N` when that happens.
+- **Fetch history for selected** and **Fetch history for all** (2026-10-29, decision 125), under the Watch list
+  table, run Get history for several watched symbols in one press: one request each, at most 50, the one-second
+  pause, the 240-second limit, a symbol inside its 10-minute guard skipped and named, and `The rest: press
+  again in N minutes: ...` when the budget, a 429 or the time stopped it.
 
 ## Paper orders (chapter 11)
 
