@@ -31,9 +31,10 @@
       </ul>
       <div class="menu-always">
         {% if user.is_authenticated %}
-          {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form. #}
+          {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form, and while the #}
+          {# WitUS client is on, the secondary "Sign out of WitUS everywhere" with its help text. #}
           <span class="who muted">{{ display_name }}</span>
-          {% include "accounts/_sign_out_form.html" %}
+          {% include "accounts/_sign_out_form.html" with place="header" %}
         {% else %}
           {# While a visitor is signed out, this link's accessible name is exactly "Sign in" on every page. #}
           {# Never rename it (shared UI rule, 2026-10-16): the smoke test in tests/test_ch04.py fails if it changes. #}

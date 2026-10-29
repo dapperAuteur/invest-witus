@@ -97,8 +97,12 @@ before shipping chapter 13.
   `aud`, `exp` and `nonce` checked. Research 04's Authlib was not used: it takes its allowed algorithms from
   the discovery document, which lists RS256 too.
 - Routes: `/auth/witus/login/` (name `sign-in`), `/auth/witus/callback/` (what the registry holds),
-  `/auth/witus/logout/` (POST; ends the Django session, then sends the browser to `end_session_endpoint` with
-  `client_id` and `post_logout_redirect_uri` = the site root, which the registry registers by default).
+  `/auth/witus/logout/` (name `sign-out`, POST; ends the Django session only and goes home, never to the
+  provider), and `/auth/witus/sign-out-everywhere/` (name `sign-out-everywhere`, POST; ends the Django session
+  first, then sends the browser to `end_session_endpoint` with `client_id` and `post_logout_redirect_uri` = the
+  site root, which the registry registers by default). The header and footer show "Sign out" always and the
+  secondary "Sign out of WitUS everywhere", with its help text, while the client is on (BAM, 2026-10-29,
+  witus task 128 option (b); decision 152).
 - Rows key off the WitUS user id (`sub`), never the email: `accounts.WitusIdentity` (one-to-one to
   `auth.User`); the owner's superuser links once by verified email; `Account.witus_user_id` is filled.
 

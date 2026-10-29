@@ -37,6 +37,11 @@ ISSUER = "https://idp.test"
 CLIENT_ID = "witus-invest"
 CLIENT_SECRET = "test-only-client-secret"
 LOGIN, CALLBACK, LOGOUT = "/auth/witus/login/", "/auth/witus/callback/", "/auth/witus/logout/"
+EVERYWHERE = "/auth/witus/sign-out-everywhere/"
+HELP_TEXT = (
+    "Also signs you out of WitUS. Other WitUS apps you are signed in to stay signed in until you"
+    " sign out of them."
+)
 # The person the fake provider vouches for. The app lower-cases the email and keys on `sub`.
 PERSON: dict[str, Any] = {
     "sub": "usr_0123456789abcdefghij",
@@ -233,6 +238,7 @@ def controls_in(html: str, tag: str) -> list[tuple[str, str, str]]:
 
 SIGN_IN = ("link", LOGIN, "Sign in")
 SIGN_OUT = ("button", LOGOUT, "Sign out")
+SIGN_OUT_EVERYWHERE = ("button", EVERYWHERE, "Sign out of WitUS everywhere")
 
 
 def fresh_settings(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]) -> ModuleType:
@@ -530,39 +536,91 @@ def test_the_owner_signed_in_at_the_admin_sees_sign_out_and_the_admin_link(
 
 
 @pytest.mark.django_db
-def test_logout_clears_the_session_and_sends_the_browser_to_the_provider(
+def test_sign_out_ends_only_this_apps_session_and_never_visits_the_provider(
     client: Client, idp: FakeIdp
 ) -> None:
+    """BAM, 2026-10-29, witus task 128 option (b): "Sign out" leaves this app only, even with an
+    end-session endpoint configured; the WitUS session and other apps stay signed in."""
     sign_in(client, idp)
     response = client.post(LOGOUT)
-    assert response.status_code == 302
-    url = urlsplit(response["Location"])
-    assert f"{url.scheme}://{url.netloc}{url.path}" == f"{idp.base}/oauth2/endsession"
-    query = {key: values[0] for key, values in parse_qs(url.query).items()}
-    assert query == {"client_id": CLIENT_ID, "post_logout_redirect_uri": "http://testserver/"}
+    assert response.status_code == 302 and response["Location"] == "/"
+    assert "endsession" not in response["Location"]
+    assert "/api/idp/oauth2/endsession" not in idp.paths
     assert client.get("/").wsgi_request.user.is_anonymous
     assert SIGN_IN in controls_in(client.get("/").content.decode(), "header")
 
 
 @pytest.mark.django_db
-def test_logout_goes_home_when_the_provider_has_no_end_session_endpoint(
+def test_sign_out_everywhere_ends_the_local_session_then_sends_the_browser_to_the_provider(
+    client: Client, idp: FakeIdp
+) -> None:
+    sign_in(client, idp)
+    session_key = client.session.session_key
+    response = client.post(EVERYWHERE)
+    assert response.status_code == 302
+    url = urlsplit(response["Location"])
+    assert f"{url.scheme}://{url.netloc}{url.path}" == f"{idp.base}/oauth2/endsession"
+    query = {key: values[0] for key, values in parse_qs(url.query).items()}
+    assert query == {"client_id": CLIENT_ID, "post_logout_redirect_uri": "http://testserver/"}
+    assert "post_logout_redirect_uri=http%3A%2F%2Ftestserver%2F" in url.query
+    # Ended before the browser leaves: the redirect response already carries no session, so a
+    # provider that never answers cannot leave this app signed in.
+    assert response.wsgi_request.user.is_anonymous
+    assert client.session.session_key != session_key
+    assert client.get("/").wsgi_request.user.is_anonymous
+
+
+@pytest.mark.django_db
+def test_sign_out_everywhere_goes_home_when_the_provider_has_no_end_session_endpoint(
     client: Client, idp: FakeIdp
 ) -> None:
     idp.end_session = False
     sign_in(client, idp)
-    response = client.post(LOGOUT)
+    response = client.post(EVERYWHERE)
     assert response.status_code == 302 and response["Location"] == "/"
     assert client.get("/").wsgi_request.user.is_anonymous
 
 
 @pytest.mark.django_db
-def test_logout_is_a_post_and_goes_home_with_the_client_off(
+def test_both_sign_outs_are_posts_and_go_home_with_the_client_off(
     client: Client, admin_client: Client
 ) -> None:
     assert client.get(LOGOUT).status_code == 405
+    assert client.get(EVERYWHERE).status_code == 405
     response = admin_client.post(LOGOUT)
     assert response.status_code == 302 and response["Location"] == "/"
     assert admin_client.get("/").wsgi_request.user.is_anonymous
+    admin_client.force_login(User.objects.get(username="admin"))
+    response = admin_client.post(EVERYWHERE)
+    assert response.status_code == 302 and response["Location"] == "/"
+    assert admin_client.get("/").wsgi_request.user.is_anonymous
+
+
+@pytest.mark.django_db
+def test_the_everywhere_control_shows_with_its_help_text_only_while_the_client_is_on(
+    client: Client, idp: FakeIdp
+) -> None:
+    sign_in(client, idp)
+    html = client.get("/").content.decode()
+    for place in ("header", "footer"):
+        controls = controls_in(html, place)
+        assert SIGN_OUT in controls, "the plain control keeps its exact name"
+        assert SIGN_OUT_EVERYWHERE in controls
+        assert ("button", LOGOUT, "Sign out of WitUS") not in controls, "the old label is gone"
+        help_id = f"sign-out-everywhere-help-{place}"
+        block = element(html, place)
+        assert f'aria-describedby="{help_id}">Sign out of WitUS everywhere</button>' in block
+        assert f'id="{help_id}">{HELP_TEXT}</p>' in block
+
+
+@pytest.mark.django_db
+def test_the_everywhere_control_is_absent_while_the_client_is_off(admin_client: Client) -> None:
+    html = admin_client.get("/").content.decode()
+    for place in ("header", "footer"):
+        controls = controls_in(html, place)
+        assert SIGN_OUT in controls
+        assert SIGN_OUT_EVERYWHERE not in controls
+    assert HELP_TEXT not in html
 
 
 # --- The pieces on their own ----------------------------------------------------------------

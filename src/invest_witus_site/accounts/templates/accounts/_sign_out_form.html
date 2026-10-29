@@ -1,8 +1,21 @@
 {# The "Sign out" control, shown in the header and the footer while someone is signed in. A POST, #}
 {# not a link: Django's own LogoutView dropped GET in 5.0, because a link can be followed by a #}
 {# prefetch or a cross-site image tag, and a sign-out should happen only when the person asked. #}
-{# The accessible name is exactly "Sign out"; never rename it (PRD 7.9). #}
+{# The accessible name is exactly "Sign out"; never rename it (PRD 7.9). It ends this app's #}
+{# session only (BAM, 2026-10-29, witus task 128 option (b)). #}
+{# `place` ("header" or "footer") keeps the help text's id unique when both copies are on a page. #}
 <form method="post" action="{% url 'sign-out' %}" class="sign-out">
   {% csrf_token %}
   <button type="submit">Sign out</button>
 </form>
+{% if sign_out_everywhere %}
+{# The second, secondary control, only while the WitUS client is on: ends this app's session, #}
+{# then the WitUS session at the provider. Other WitUS apps stay signed in, as the text says. #}
+<div class="sign-out-everywhere">
+  <form method="post" action="{% url 'sign-out-everywhere' %}">
+    {% csrf_token %}
+    <button type="submit" class="secondary" aria-describedby="sign-out-everywhere-help-{{ place|default:'page' }}">Sign out of WitUS everywhere</button>
+  </form>
+  <p class="muted small" id="sign-out-everywhere-help-{{ place|default:'page' }}">Also signs you out of WitUS. Other WitUS apps you are signed in to stay signed in until you sign out of them.</p>
+</div>
+{% endif %}

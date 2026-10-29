@@ -127,8 +127,9 @@ window or on another screen; the inbox is never on camera.
    admin shows only for me, the owner."
 5. **[SCREEN]** Click **Sign out**. Hold as the page returns to the home page with **Sign in** back in the
    header.
-   **VOICE:** "Sign out is a button, not a link, so nothing can sign me out by accident. It ends the app's
-   session and the provider's, and lands me back here."
+   **VOICE:** "Sign out is a button, not a link, so nothing can sign me out by accident. It ends this app's
+   session and lands me back here. I'm still signed in to WitUS; the button beside it, Sign out of WitUS
+   everywhere, would end that too."
 
 **Closing line:** "One account. Two states of the header. That's the whole sign-in."
 

@@ -38,8 +38,15 @@ owner, the link **Open the admin**. The header now reads **FAQ**, **Waitlist**, 
 no name.
 
 **Sign out.** Press **Sign out** in the header or the footer. It is a button, not a link, so a prefetch or a
-stray image tag can never sign you out. The app ends its session, passes through the provider's sign-out, and
-returns you to the home page with **Sign in** back in the header.
+stray image tag can never sign you out. It ends this app's session only and returns you to the home page with
+**Sign in** back in the header. You stay signed in to WitUS, so the next **Sign in** goes straight through
+without a WitUS login page.
+
+**Sign out of WitUS everywhere.** Beside **Sign out** (in the header and the footer, while Sign in with WitUS
+is switched on) is a second, outlined button. It ends this app's session first, then passes through the WitUS
+sign-out at accounts.witus.online and returns you to the home page. The text under it says what it does:
+"Also signs you out of WitUS. Other WitUS apps you are signed in to stay signed in until you sign out of
+them." The next **Sign in** shows the WitUS login page.
 
 **What can go wrong.**
 

@@ -492,7 +492,8 @@ OIDC against the ecosystem identity provider, with Authlib's Django client (rese
 registration steps in doc 02. *Built in chapter 07 (2026-10-28) without Authlib: httpx and PyJWT, EdDSA only;
 decisions log rows 62 to 69.*
 
-Acceptance: sign-in, callback, sign-out (including global sign-out return) work on the production domain; a user
+Acceptance: sign-in, callback, sign-out (this app only) and "Sign out of WitUS everywhere" (the provider's
+sign-out and return; decision 152) work on the production domain; a user
 row is created on first sign-in and matched by `sub` after; no local passwords except the Django admin superuser
 for operations.
 

@@ -1,4 +1,5 @@
-"""The three views of Sign in with WitUS: out to the provider, back from it, and out of the app.
+"""The views of Sign in with WitUS: out to the provider, back from it, out of the app, and out of
+the app and WitUS together.
 
 Each one reads the client's configuration when the request arrives. With no client secret the
 feature is off: the sign-in route shows chapter 04's stub page, and nothing else here runs.
@@ -84,7 +85,21 @@ def callback(request: HttpRequest) -> HttpResponse:
 
 @require_POST
 def logout(request: HttpRequest) -> HttpResponse:
-    """End the Django session, then let the provider end its own and send the browser home."""
+    """The "Sign out" button: end this app's Django session and go home. It never visits the
+    provider, so the WitUS session and every other WitUS app stay signed in (BAM, 2026-10-29,
+    witus task 128 option (b)). Ending WitUS too is `logout_everywhere`, a separate control."""
+    auth_logout(request)
+    return redirect("home")
+
+
+@require_POST
+def logout_everywhere(request: HttpRequest) -> HttpResponse:
+    """The "Sign out of WitUS everywhere" button: end the Django session first, then send the
+    browser to the provider's end-session endpoint so the WitUS session ends too, returning to the
+    site root. The order is the safety property: the local session is gone before the browser
+    leaves, so a provider that is down or slow can never leave this app signed in. Other WitUS
+    apps keep their own sessions until the person signs out of them (BAM, 2026-10-29, witus task
+    128 option (b)). With the client off, or no provider to ask, it is the plain sign-out: home."""
     cfg = oidc.config()
     auth_logout(request)
     if not cfg.enabled:
@@ -92,7 +107,7 @@ def logout(request: HttpRequest) -> HttpResponse:
     try:
         prov = oidc.provider(cfg)
     except oidc.OidcError as error:
-        log.error("sign out of WitUS: provider unavailable: %s", error)
+        log.error("sign out of WitUS everywhere: provider unavailable: %s", error)
         return redirect("home")
     url = oidc.end_session_url(cfg, prov, request.build_absolute_uri(reverse("home")))
     return redirect(url or reverse("home"))
