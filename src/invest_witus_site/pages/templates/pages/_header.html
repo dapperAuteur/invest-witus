@@ -13,6 +13,8 @@
         {# Signed in (chapter 07): the person's name, then the "Sign out" control, a form. #}
         {# Chapter 08: the link to their accounts, valued, on this branch only; no public page links it. #}
         <a href="{% url 'account-list' %}">Accounts</a>
+        {# The Alpaca paper page, for the owner of the account linked to it (`paper_account_id`). #}
+        {% if paper_account_id %}<a href="{% url 'paper-account' paper_account_id %}">Paper account</a>{% endif %}
         <span class="who muted">{{ display_name }}</span>
         {% include "accounts/_sign_out_form.html" %}
       {% else %}

@@ -126,7 +126,9 @@ the kind; it holds no balances, because those come from statements.
 **What you should see.** The **Accounts** list with the columns **Name**, **Broker**, **Kind**, **Currency**,
 **Owner** and **Statements**; the new row's Statements column reads **0 statements**. On the public site, signed
 in, **Accounts** in the header lists the same account under **Your accounts** with its broker and kind, and its
-page says **No statement yet.** with the link **Enter the first one in the admin.**
+page says **No statement yet.** with the link **Enter the first one in the admin.** The account linked to Alpaca
+paper (see [Alpaca paper](#alpaca-paper-chapter-11)) also shows **Paper account** on its row, and **Paper
+account** appears in the header beside **Accounts** on every page while you are signed in as the site owner.
 
 **What can go wrong.**
 
@@ -220,7 +222,7 @@ than five days is marked stale". Then a table: **Symbol**, **Shares**, **Close**
 
 - A priced line shows the close, the close's date under **As of**, and the source: `tiingo` on production,
   `csv` on a laptop.
-- A cash line (kind **Cash**) shows a close of `1.00`, the statement's own date, and `statement` as the source.
+- A cash line (kind **Cash**) shows a close of `$1.00`, the statement's own date, and `statement` as the source.
 - **stale** appears beside a date more than five calendar days before today. Five covers a weekend and a
   holiday; longer than that means the pull has not run or the source has not answered for that symbol.
 - A line with no stored close reads **no price yet** across the row, and a note under the table names those
@@ -229,6 +231,13 @@ than five days is marked stale". Then a table: **Symbol**, **Shares**, **Close**
 - The total adds the priced lines only.
 
 **All accounts** returns to the list. No public page shows a price or links to these pages.
+
+**How numbers read (2026-10-29).** Every amount of money on the signed-in pages (closes, values, totals, plan
+amounts, budgets, spent, cash, buying power, equity, prices and order amounts) is US dollars to the cent with a
+`$` and thousands commas: `$1,234.56`, a negative `-$1,234.56`. A close stored with more places than cents, such
+as `20.005`, shows rounded half up (`$20.01`); the value beside it is still worked out from the stored close.
+Share counts (shares, quantities, shares filled) show commas and up to six places with the trailing zeros
+dropped: `1,234.5`, `0.123456`, `10`.
 
 **What can go wrong.**
 
@@ -255,6 +264,12 @@ continue; a rate limit stops the run and lists the symbols not reached. A run ma
 one-second pause between symbols, inside Tiingo's free plan (50 requests an hour, 1,000 a day, 500 unique
 symbols a month, "Internal Use Only", which is why values are shown to the signed-in owner and no one else).
 
+**A year on the first night (2026-10-29).** The first time the pull meets a symbol, held or watched, it asks for
+the last 365 days instead of seven, in the same single request, and notes the symbol under **Prices**, **Price
+backfills**. Symbols the pull already knew before this change get their year on the next run. A run still
+makes at most 50 requests; a symbol that did not fit, or that the source refused, asks for its year again the
+next night. Delete a **Price backfills** row to ask for that symbol's year again.
+
 **When it runs.** Vercel's cron calls `GET /api/cron/pull-prices/` once a day at 06:00 UTC (`vercel.json`,
 `0 6 * * *`), which is 01:00 or 02:00 in Indiana depending on the season, after Tiingo's mutual fund NAV time.
 Vercel sends `Authorization: Bearer <CRON_SECRET>` with the request; the route answers 403 to anything else
@@ -274,8 +289,8 @@ Or from a shell, with the secret in the shell for one command and never in a fil
 
 **What you should see.** HTTP 200 and JSON with `source` (`tiingo`), `since` and `until` (the seven-day window),
 `symbols` (the universe), `requests`, `inserted`, `updated`, `unchanged`, `failed` (a map of symbol to reason),
-`skipped` (symbols not reached) and `schedule` (the cron expression when Vercel fired it, empty for a call by
-hand). Run it again: `inserted` 0 and `unchanged` the same number. In the admin, under **Prices**, **Daily
+`skipped` (symbols not reached), `backfilled` (symbols whose year was fetched this run) and `schedule` (the
+cron expression when Vercel fired it, empty for a call by hand). Run it again: `inserted` 0 and `unchanged` the same number. In the admin, under **Prices**, **Daily
 closes** lists what was stored: **Symbol**, **Date**, **Close**, **Source**, **Fetched at**, with a search box
 and a **By source** filter. Deleting a row there makes the next run fetch that day again. The next morning,
 **Cron Jobs** shows the scheduled run after 06:00 UTC.
@@ -356,6 +371,30 @@ account page is where they are kept.
 - The PRD (section 7.5) also describes "the change since you added it"; the chapter shows no such column. The
   guide follows the code.
 
+## A watched symbol's price history
+
+**What it is for.** The closes the app has stored for one watched symbol, as a line and as a table, over the
+last 30, 90 or 365 days. Like every price, it is shown to the signed-in owner only.
+
+**Open it.** On the account page, in the **Watch list** table, press a symbol. The address is
+`/accounts/<id>/watch/<SYMBOL>/`.
+
+**What you should see.** The symbol as the heading, the note under it, then **As of** the newest stored close with
+its price and source; **stale** beside it when that close is more than five days old, as on the account page.
+Then **30 days · 90 days · 365 days** (90 is where it opens) and a line chart of the closes, oldest on the left,
+a dot on the newest, with the low, the high and the dates under it. Under the chart, the same closes as a table,
+**Date**, **Close** and **Source**, newest first. The chart draws no more than the table holds: a screen reader
+reads the chart's title (the symbol, the range, how many closes, the low and the high) and then the table.
+
+**What can go wrong.**
+
+- "No close stored yet.": the symbol was added since the last nightly run. The next run fetches its year.
+- "No closes stored in the last 30 days.": the newest close is older than the range; the **As of** line says
+  when it is from. Pick a longer range, or check the pull's `failed` list for the symbol.
+- Only a week of closes on a symbol watched before 2026-10-29: the year arrives with the next nightly run; until
+  then the chart shows what is stored.
+- A 404: the symbol is not on this account's watch list, or the account is not yours.
+
 ## The FAQ and Report a bad actor
 
 **What it is for.** The FAQ answers the questions a careful person asks about any investing app, this one
@@ -410,7 +449,11 @@ practice money the plan may spend (Alpaca's paper balance cannot be set, so the 
   budget spent and left, and **Confirm** inside the buy window. One click places one market order per symbol for
   the dollar amount on Alpaca paper and writes it into the journal. A second click sends nothing. With the market
   closed the button reads "Confirm: queue for the open". If Confirm is missing, the box says why in one sentence.
-- **The paper page** (`/accounts/<id>/paper/`, linked from the account page) shows Alpaca's cash, buying power,
+- **The paper page** (`/accounts/<id>/paper/`) is **Paper account** in the header, beside **Accounts**, on every
+  page while you are signed in; it is also linked from that account's row under **Your accounts** and from the
+  account page. The header link is there only for the site owner (a superuser) who has an account linked to
+  Alpaca paper, the same rule the page itself uses; signed out, or without a linked account, there is no link.
+  The page shows Alpaca's cash, buying power,
   equity and positions beside the budget, every order the app placed with its status, and **Check orders now**,
   which copies fills into the journal. The nightly job does the same.
 - Paper only: the band at the top says "Paper money. Live trading needs the checklist in a later chapter and

@@ -7,7 +7,7 @@
 <dl class="status" aria-label="Status">
   <dt>Environment</dt><dd>{{ account.get_kind_display }} ({{ account.broker }})</dd>
   <dt>Method</dt><dd>{{ review.method.name }}, version {{ review.method.version }} ({{ review.method.id }})</dd>
-  <dt>Plan</dt><dd>{{ plan.amount|plain_number }} into {{ plan.symbols }}, days 1 to {{ plan.buy_window_days }}, since {{ plan.started_on|date:"Y-m-d" }}</dd>
+  <dt>Plan</dt><dd>{{ plan.amount|money }} into {{ plan.symbols }}, days 1 to {{ plan.buy_window_days }}, since {{ plan.started_on|date:"Y-m-d" }}</dd>
   <dt>Reviewed through</dt><dd>{{ review.through|date:"Y-m-d" }}</dd>
   <dt>Months</dt><dd>{{ review.months_done }} done of {{ review.months_due }} due</dd>
   <dt>Findings</dt><dd>{{ review.findings|length }}</dd>
@@ -58,8 +58,8 @@
       <td>{{ row.window_closes|date:"Y-m-d" }}</td>
       <td>{{ row.status }}</td>
       <td class="num">{{ row.buys }}</td>
-      <td class="num">{{ row.amount|plain_number }}</td>
-      <td class="num">{% if row.shares is not None %}{{ row.shares|plain_number }}{% elif row.buys %}<span class="muted">not recorded</span>{% endif %}</td>
+      <td class="num">{{ row.amount|money }}</td>
+      <td class="num">{% if row.shares is not None %}{{ row.shares|quantity }}{% elif row.buys %}<span class="muted">not recorded</span>{% endif %}</td>
       <td>{% if row.rule_ids %}{{ row.rule_ids|join:", " }}{% else %}<span class="muted">none</span>{% endif %}</td>
     </tr>
     {% endfor %}
