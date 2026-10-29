@@ -12,6 +12,9 @@
     {% for line in plot.lines %}
     <li><svg class="swatch" viewBox="0 0 36 10" width="36" height="10" aria-hidden="true" focusable="false"><line x1="1" y1="5" x2="35" y2="5" stroke="{{ line.color }}" stroke-width="3"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %}/></svg>{{ line.symbol }} <span class="muted">({{ line.basis }}, {{ line.pattern }} line)</span></li>
     {% endfor %}
+    {% for shaded in plot.bands %}
+    <li><span class="band-key band-key-{{ shaded.kind }}" aria-hidden="true"></span>{{ shaded.label }}, {{ shaded.first|date:"Y-m-d" }} to {{ shaded.last|date:"Y-m-d" }}</li>
+    {% endfor %}
     {% for kind, letter, words in plot.marker_kinds %}
     <li><span class="marker-key marker-{{ kind }}" aria-hidden="true">{{ letter }}</span>{{ words }}</li>
     {% endfor %}
@@ -24,13 +27,15 @@
     <div class="chart-plot" data-chart="chart-data" data-readout="chart-readout">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-labelledby="chart-title chart-desc" data-points="{{ plot.count }}">
         <title id="chart-title">{{ plot.svg_title }}</title>
-        <desc id="chart-desc">{% if plot.rebase %}One line per symbol, oldest day on the left, each rebased to 100 on its first day in the range.{% else %}A line of the stored {{ plot.bases }}, oldest on the left.{% endif %}{% if plot.markers %} Letters on the line mark splits (S) and dividends (D).{% endif %} The tables below list every value in the chart.</desc>
+        <desc id="chart-desc">{% if plot.rebase %}One line per symbol, oldest day on the left, each rebased to 100 on its first day in the range.{% else %}A line of the stored {{ plot.bases }}, oldest on the left.{% endif %}{% if plot.markers %} Letters on the line mark splits (S) and dividends (D).{% endif %}{% for shaded in plot.bands %} Shaded: {{ shaded.label }}, {{ shaded.first|date:"Y-m-d" }} to {{ shaded.last|date:"Y-m-d" }}.{% endfor %} The tables below list every value in the chart.</desc>
+        {% for shaded in plot.bands %}<rect class="chart-band-{{ shaded.kind }}" x="{{ shaded.x }}" y="0" width="{{ shaded.width }}" height="100" vector-effect="non-scaling-stroke"/>{% endfor %}
         {% for tick in plot.y_ticks %}<line class="grid" x1="0" x2="100" y1="{{ tick.at }}" y2="{{ tick.at }}" vector-effect="non-scaling-stroke"/>{% endfor %}
         {% for tick in plot.x_ticks %}<line class="grid" x1="{{ tick.at }}" x2="{{ tick.at }}" y1="0" y2="100" vector-effect="non-scaling-stroke"/>{% endfor %}
         {% for line in plot.lines %}
         <polyline points="{{ line.points }}" fill="none" stroke="{{ line.color }}" stroke-width="2"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %} stroke-linejoin="round" vector-effect="non-scaling-stroke" data-symbol="{{ line.symbol }}"/>
         {% endfor %}
       </svg>
+      {% for shaded in plot.bands %}<span class="chart-band-label" style="left: {{ shaded.x }}%" aria-hidden="true">{{ shaded.label }}</span>{% endfor %}
       {% for line in plot.lines %}<span class="chart-end" style="left: {{ line.end_x }}%; top: {{ line.end_y }}%; background: {{ line.color }}" aria-hidden="true"></span>{% endfor %}
       {% for marker in plot.markers %}<span class="chart-marker marker-{{ marker.kind }}" style="left: {{ marker.x }}%; top: {{ marker.y }}%; border-color: {{ marker.color }}" title="{{ marker.symbol }} {{ marker.day|date:'Y-m-d' }}: {{ marker.text }}" aria-hidden="true">{{ marker.letter }}</span>{% endfor %}
     </div>

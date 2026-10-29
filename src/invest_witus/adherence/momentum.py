@@ -48,6 +48,17 @@ def equal_part(amount: Decimal, count: int) -> Decimal:
     return amount / count
 
 
+def equal_parts(amount: Decimal, symbols: list[str]) -> list[tuple[str, Decimal]]:
+    """The amount in equal parts to the cent, one per symbol in rank order; the cents that do not
+    divide go one each to the first symbols, so the parts add up exactly: 100.00 over three is
+    33.34, 33.33 and 33.33 (chapter 11's split, which the paper orders use)."""
+    if not symbols:
+        return []
+    cents = int(to_money(amount) / CENT)
+    each, left_over = divmod(cents, len(symbols))
+    return [(s, (each + (1 if i < left_over else 0)) * CENT) for i, s in enumerate(symbols)]
+
+
 def ordinal(number: int) -> str:
     endings = {1: "st", 2: "nd", 3: "rd"}
     suffix = "th" if 10 <= number % 100 <= 20 else endings.get(number % 10, "th")

@@ -16,6 +16,10 @@ Three jobs, in the order they happen:
    the shares filled, the amount, and no entry at all for an order that ended with nothing filled.
 
 Nothing here runs without the owner's click except the sync, which only reads.
+
+Chapter 14: a 12-1 momentum plan stages a buy for each of this month's top N, the plan's amount in
+equal parts in rank order, through the same ids, Confirm and sync. Only buys: a holding that left
+the top N is listed on the method page to be sold by hand (decision 146).
 """
 
 from dataclasses import dataclass, field
@@ -30,6 +34,7 @@ from invest_witus.money import CENT, to_money, to_shares
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.holdings.templatetags.holdings_extras import money
 from invest_witus_site.methods.models import SKIP, JournalEntry, MethodPlan
+from invest_witus_site.methods.momentum import plan_ranking
 from invest_witus_site.paper.alpaca import (
     PAPER_HOST,
     AlpacaError,
@@ -155,9 +160,18 @@ def staged(plan: MethodPlan, month: str, symbol: str, notional: Decimal) -> Stag
     return StagedBuy(symbol, notional, cid, latest, attempt)
 
 
+def month_symbols(plan: MethodPlan, day: date) -> list[str]:
+    """What the month buys: every symbol an index plan names; a momentum plan's top N for the
+    month's ranking, in rank order (chapter 14), which is empty while nothing is ranked."""
+    if plan.is_momentum:
+        return plan_ranking(plan, (day.year, day.month)).top
+    return plan.symbol_list()
+
+
 def month_buys(plan: MethodPlan, day: date) -> MonthBuys:
     month = month_of(day)
-    parts = split_amount(plan.amount, plan.symbol_list())
+    symbols = month_symbols(plan, day)
+    parts = split_amount(plan.amount, symbols) if symbols else []
     buys = [staged(plan, month, symbol, notional) for symbol, notional in parts]
     window_closes = date(day.year, day.month, plan.buy_window_days)
     spent = practice_spent(plan)
@@ -192,7 +206,12 @@ def refusal_for(
             f"This month's window closed on {window_closes:%Y-%m-%d}. The method has no catching "
             "up: the next window opens on the 1st."
         )
-    if len(buys) > 1:
+    if plan.is_momentum and not buys:
+        return (
+            f"No candidate is ranked for {month_of(day)}: none has a close stored in both months "
+            "of its 12-1 window, so there is nothing to buy."
+        )
+    if not plan.is_momentum and len(buys) > 1:
         return (
             f"The plan names {len(buys)} symbols. This method's rules count one buy of the plan's "
             "amount each month, so split orders would show as findings; the app places a month's "

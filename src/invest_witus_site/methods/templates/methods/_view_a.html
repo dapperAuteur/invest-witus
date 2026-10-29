@@ -4,7 +4,11 @@
 {% if plan %}
 <section class="card" aria-labelledby="next-heading">
   <h2 id="next-heading">Next</h2>
+  {% if review.momentum %}
+  <p>{% if not review.next_action.symbols %}No candidate is ranked for {{ review.next_action.label }} yet, so there is nothing to buy; see the ranking above.{% elif review.next_action.status == "due" %}Due now: rebalance by {{ review.next_action.closes|date:"Y-m-d" }}, the end of this month's window. Put {{ review.next_action.amount|money }} in equal parts into {{ review.next_action.symbols|join:", " }}, and sell what left the top {{ plan.top_n }}.{% else %}Rebalance between {{ review.next_action.opens|date:"Y-m-d" }} and {{ review.next_action.closes|date:"Y-m-d" }}: {{ review.next_action.amount|money }} in equal parts into that month's top {{ plan.top_n }}, {{ review.next_action.symbols|join:", " }} on today's closes. Nothing to do before then.{% endif %}</p>
+  {% else %}
   <p>{% if review.next_action.status == "due" %}Due now: buy {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, the end of this month's window.{% else %}Buy {{ review.next_action.amount|money }} of {{ review.next_action.symbols|join:", " }} between {{ review.next_action.opens|date:"Y-m-d" }} and {{ review.next_action.closes|date:"Y-m-d" }}. Nothing to do before then.{% endif %}</p>
+  {% endif %}
 </section>
 
 {% if review_to_close %}{% include "methods/_close_month.html" %}{% endif %}
@@ -18,7 +22,7 @@
 <section aria-labelledby="plan-heading">
   <h2 id="plan-heading">My plan</h2>
   <p>{{ review.method.summary }}</p>
-  <p>{{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
+  <p>{% if plan.is_momentum %}{{ plan.amount|money }} a month, in equal parts, into the top {{ plan.top_n }} of {{ plan.symbols }}{% else %}{{ plan.amount|money }} into {{ plan.symbols }}{% endif %} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
   {% include "methods/_versions.html" %}
   <h3>The rules</h3>
   {% include "methods/_rules.html" with rules=review.rules %}

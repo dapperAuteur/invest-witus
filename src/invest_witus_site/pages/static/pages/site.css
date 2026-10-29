@@ -268,3 +268,29 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 .add-history .check-label input { width: 1.25rem; height: 1.25rem; min-height: auto; }
 .add-history select { min-height: 2.75rem; padding: 0 0.5rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
 .typed-symbols { min-height: 2.25rem; padding: 0 0.5rem; max-width: 100%; width: 12rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
+/* 12-1 momentum (chapter 14): the ranked bars, the shaded window on a history chart, the watch list's badge and
+   the "How to read this" notes. A rise and a fall differ by side of the zero line, sign and word, not only by
+   color; a bar outside the top N is drawn as an outline, a bar inside it filled. */
+.rank-chart { margin: 1.5rem 0; }
+.rank-bars { list-style: none; margin: 0.5rem 0; padding: 0; }
+.rank-bar { display: grid; grid-template-columns: minmax(6.5rem, 9rem) minmax(0, 1fr) minmax(5.5rem, 7rem); align-items: center; gap: 0.5rem; min-height: 2rem; font-size: 0.875rem; }
+.rank-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-value { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.rank-track { width: 100%; height: 1.25rem; display: block; overflow: visible; }
+.rank-track .zero { stroke: var(--muted); stroke-width: 1; }
+.rank-track rect { stroke-width: 2; }
+.rank-track .bar-up { fill: #56b4e9; stroke: #56b4e9; }
+.rank-track .bar-down { fill: #e69f00; stroke: #e69f00; }
+.rank-track .bar-flat { fill: var(--muted); stroke: var(--muted); }
+.rank-track .bar-out { fill: none; }
+.top-mark { display: inline-block; margin-left: 0.25rem; padding: 0 0.3rem; border: 1px solid var(--text); border-radius: 0.2rem; font-size: 0.7rem; }
+.how-to-read { border-left: 3px solid var(--accent); padding: 0.25rem 0 0.25rem 0.75rem; margin: 0.75rem 0; font-size: 0.875rem; }
+.chart-plot .chart-band-window { fill: #56b4e9; fill-opacity: 0.18; }
+.chart-plot .chart-band-excluded { fill: #94a3b8; fill-opacity: 0.08; stroke: #94a3b8; stroke-dasharray: 3 3; stroke-width: 1; }
+.chart-band-label { position: absolute; top: 0.25rem; padding: 0 0.25rem; font-size: 0.7rem; color: var(--text); background: var(--bg); white-space: nowrap; pointer-events: none; }
+.band-key { display: inline-block; width: 1.5rem; height: 0.75rem; border: 1px solid var(--muted); }
+.band-key-window { background: rgba(86, 180, 233, 0.35); }
+.band-key-excluded { background: rgba(148, 163, 184, 0.12); border-style: dashed; }
+.momentum-badge { display: inline-block; padding: 0 0.35rem; border: 1px solid currentColor; border-radius: 0.2rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.momentum-up { color: #56b4e9; }
+.momentum-down { color: #e69f00; }

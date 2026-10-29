@@ -14,6 +14,7 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from invest_witus.adherence.journal import Action
+from invest_witus.adherence.momentum import equal_parts
 from invest_witus.methods.momentum_12_1 import (
     Month,
     Place,
@@ -163,6 +164,7 @@ class Rebalance:
     buys: list[str]
     sells: list[str]
     warnings: list[str]
+    parts: list[tuple[str, Decimal]] = field(default_factory=list[tuple[str, Decimal]])
 
 
 def held_symbols(account: Account, since: date, before: date) -> set[str]:
@@ -209,7 +211,8 @@ def rebalance(plan: MethodPlan, ranking: Ranking, day: date) -> Rebalance:
     held = held_symbols(plan.account, plan.chain_start(), first)
     top = ranking.top
     sells = sorted(held - set(top)) if ranking.ranked else []
-    return Rebalance(month, top, sells, wash_sale_warnings(plan.account, top, day))
+    warnings = wash_sale_warnings(plan.account, top, day)
+    return Rebalance(month, top, sells, warnings, equal_parts(plan.amount, top))
 
 
 # --- What the method page shows -------------------------------------------------------------------
@@ -234,6 +237,18 @@ class MomentumView:
     @property
     def window(self) -> Window:
         return self.ranking.window
+
+    @property
+    def start(self) -> str:
+        return month_text(self.window.start)
+
+    @property
+    def end(self) -> str:
+        return month_text(self.window.end)
+
+    @property
+    def excluded(self) -> str:
+        return month_text(self.window.excluded)
 
     @property
     def unranked_symbols(self) -> list[str]:
@@ -267,3 +282,81 @@ def ensure_watched(account: Account, symbols: list[str]) -> list[str]:
     """Put each candidate on the account's watch list, so the nightly pull stores its closes,
     and return the symbols that were added (the ones already watched are left as they were)."""
     return WatchItem.add_many(account, symbols, note=WATCH_NOTE).added
+
+
+@dataclass(frozen=True, slots=True)
+class Badge:
+    """A watched symbol's 12-1 return as the watch list prints it: an arrow, a word and the
+    number, so up and down never rest on color alone; or the words "not ranked" and why."""
+
+    symbol: str
+    direction: str
+    text: str
+    reason: str = ""
+
+
+def badges_for(symbols: list[str], today: date) -> dict[str, Badge]:
+    badges: dict[str, Badge] = {}
+    for symbol, result in scores_for(symbols, today).items():
+        if isinstance(result, Unranked):
+            badges[symbol] = Badge(symbol, "none", "not ranked", result.reason)
+            continue
+        change = result.change
+        direction = "up" if change > 0 else ("down" if change < 0 else "flat")
+        arrow = {"up": "▲", "down": "▼", "flat": "◆"}[direction]
+        badges[symbol] = Badge(symbol, direction, f"{arrow} {direction} {percent_text(change)}")
+    return badges
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryWindow:
+    """This month's 12-1 window for one symbol, as dates a chart can shade, with its score."""
+
+    window: Window
+    result: Score | Unranked
+    first: date
+    last: date
+    excluded_first: date
+    excluded_last: date
+
+    @property
+    def start(self) -> str:
+        return month_text(self.window.start)
+
+    @property
+    def end(self) -> str:
+        return month_text(self.window.end)
+
+    @property
+    def excluded(self) -> str:
+        return month_text(self.window.excluded)
+
+    @property
+    def month(self) -> str:
+        return month_text(self.window.rebalance)
+
+    @property
+    def score(self) -> Score | None:
+        return self.result if isinstance(self.result, Score) else None
+
+    @property
+    def change_text(self) -> str:
+        return percent_text(self.result.change) if isinstance(self.result, Score) else ""
+
+
+def last_day(month: Month) -> date:
+    following = (month[0] + 1, 1) if month[1] == 12 else (month[0], month[1] + 1)
+    return date(following[0], following[1], 1) - timedelta(days=1)
+
+
+def history_window(symbol: str, today: date) -> HistoryWindow:
+    """The window for a rebalance this month: shaded from the start close's day (or the end of
+    the start month, without one) to the end close's day, and the excluded month in full."""
+    window = Window.for_month(today.year, today.month)
+    result = scores_for([symbol], today)[symbol]
+    if isinstance(result, Score):
+        first, last = result.start_day, result.end_day
+    else:
+        first, last = last_day(window.start), last_day(window.end)
+    excluded_first = date(window.excluded[0], window.excluded[1], 1)
+    return HistoryWindow(window, result, first, last, excluded_first, last_day(window.excluded))

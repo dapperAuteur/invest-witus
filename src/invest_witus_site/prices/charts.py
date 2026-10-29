@@ -382,6 +382,19 @@ def line_days(series: SeriesInput, rebase: bool) -> tuple[str, int, list[DayRow]
     return basis, missing, days
 
 
+@dataclass(frozen=True, slots=True)
+class Band:
+    """A shaded stretch of the chart (chapter 14): `kind` "window" or "excluded", its words, its
+    days, and where it sits, in percent of the plot's width."""
+
+    kind: str
+    label: str
+    first: date
+    last: date
+    x: Decimal
+    width: Decimal
+
+
 @dataclass
 class Plot:
     """Everything the chart partial draws, and the data the hover script reads."""
@@ -401,6 +414,8 @@ class Plot:
     markers: list[Marker] = field(default_factory=list[Marker])
     # Every stored date in the range; `dates` is the drawn ones, the same list unless thinned.
     all_dates: list[date] = field(default_factory=list[date])
+    # Chapter 14: shaded stretches, such as a 12-1 window; none unless a page adds them.
+    bands: list[Band] = field(default_factory=list[Band])
 
     @property
     def thinned(self) -> bool:
@@ -588,3 +603,16 @@ def build_plot(
         markers=markers,
         all_dates=all_dates,
     )
+
+
+def band(plot: Plot, kind: str, label: str, first: date, last: date) -> Band | None:
+    """A shaded stretch from `first` to `last`, clipped to the plot's stored days; None when the
+    stretch falls wholly outside them, so a chart of 30 days never shades a year it cannot show."""
+    start, end = plot.all_dates[0], plot.all_dates[-1]
+    first, last = max(first, start), min(last, end)
+    if first > last:
+        return None
+    span = (end - start).days
+    x = x_position(first, start, span)
+    width = max(x_position(last, start, span) - x, Decimal("0.5"))
+    return Band(kind, label, first, last, min(x, HUNDRED - width), width)

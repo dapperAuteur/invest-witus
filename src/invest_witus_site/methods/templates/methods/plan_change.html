@@ -5,7 +5,7 @@
 <section class="container" aria-labelledby="change-heading">
   <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="change-heading">Change or end the plan</h1>
-  <p>Version {{ plan.version }}: {{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
+  <p>Version {{ plan.version }}: {% if plan.is_momentum %}{{ plan.amount|money }} a month, in equal parts, into the top {{ plan.top_n }} of {{ plan.symbols }}{% else %}{{ plan.amount|money }} into {{ plan.symbols }}{% endif %} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
   <p>A change makes a new version that starts on the first day of a month. The months before it stay judged by the numbers that were in force then, and this version stays in the history with its dates. Ending the plan stops the reviews from today; its months, reviews and journal stay. Either way, write why: the reason is kept with the date.</p>
   <form method="post" action="{% url 'method-change' account.pk %}" class="method-form" novalidate>
     {% csrf_token %}

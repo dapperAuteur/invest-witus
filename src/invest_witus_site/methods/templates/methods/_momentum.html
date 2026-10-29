@@ -1,0 +1,81 @@
+{% load holdings_extras %}
+{# 12-1 momentum (chapter 14), on the method page of an account that runs it, above the view. Included by #}
+{# methods/method_page.html with `account` and `momentum` (a MomentumView). The ranked bars are drawn on the server #}
+{# and the table under them is their text alternative; no script. Owner only, as the whole page is. #}
+<section class="card" aria-labelledby="ranking-heading">
+  <h2 id="ranking-heading">The ranking for {{ momentum.month }}</h2>
+  <p>The 12-1 return of each candidate: from the last close of {{ momentum.start }} to the last close of {{ momentum.end }}, on adjusted closes. {{ momentum.excluded }}, the latest full month, is left out. Your plan holds the top {{ momentum.top_n }}.</p>
+  {% if momentum.unadjusted %}<p class="small">{{ momentum.unadjusted }} stored close{{ momentum.unadjusted|pluralize }} had no adjusted close, so the plain close was used for {{ momentum.unadjusted|pluralize:"it,them" }}; a split inside the window would then read as a fall. Get history with 5 years fills the adjusted closes.</p>{% endif %}
+  {% if momentum.chart %}
+  <figure class="rank-chart" aria-labelledby="rank-title">
+    <figcaption>
+      <p class="chart-title" id="rank-title">12-1 return by candidate, highest first, for the {{ momentum.month }} rebalance</p>
+      <p class="small muted">A filled bar is in the top {{ momentum.top_n }}; an outlined bar is not. Bars right of the line rose over the window, bars left of it fell.</p>
+    </figcaption>
+    <ol class="rank-bars">
+      {% for bar in momentum.chart.bars %}
+      <li class="rank-bar">
+        <span class="rank-label">{{ bar.place.rank }}. {{ bar.symbol }}{% if bar.place.top %}<span class="top-mark">top {{ momentum.top_n }}</span>{% endif %}</span>
+        <svg class="rank-track" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><title>{{ bar.symbol }}: {{ bar.text }}, ranked {{ bar.place.rank }}</title><rect class="bar-{{ bar.direction }}{% if not bar.place.top %} bar-out{% endif %}" x="{{ bar.x }}" y="1.5" width="{{ bar.width }}" height="7" vector-effect="non-scaling-stroke"/><line class="zero" x1="{{ momentum.chart.zero_x }}" x2="{{ momentum.chart.zero_x }}" y1="0" y2="10" vector-effect="non-scaling-stroke"/></svg>
+        <span class="rank-value">{{ bar.text }} {{ bar.direction }}{% if bar.place.tied %}, tied{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </figure>
+  <p class="how-to-read"><strong>How to read this.</strong> Each bar is one candidate's change in price over the eleven months of its window, with dividends and splits counted through the adjusted close. The longest bar to the right ranked first. The method holds the filled bars, in equal parts, until a later ranking pushes one out. A high rank is a fact about the past year, not a forecast. <span class="muted">Lesson coming.</span></p>
+  <div class="table-scroll" role="region" aria-labelledby="ranking-caption" tabindex="0">
+  <table class="holdings">
+    <caption id="ranking-caption">The same ranking as a table, with the two closes each return is computed from</caption>
+    <thead>
+      <tr>
+        <th scope="col">Rank</th>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">12-1 return</th>
+        <th scope="col">From</th>
+        <th scope="col">To</th>
+        <th scope="col">Top {{ momentum.top_n }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bar in momentum.chart.bars %}
+      <tr>
+        <th scope="row">{{ bar.place.rank }}</th>
+        <td>{{ bar.symbol }}</td>
+        <td class="num">{{ bar.text }}{% if bar.place.tied %} (tied){% endif %}</td>
+        <td>{{ bar.place.score.start_day|date:"Y-m-d" }}, {{ bar.place.score.start_close|money }}</td>
+        <td>{{ bar.place.score.end_day|date:"Y-m-d" }}, {{ bar.place.score.end_close|money }}</td>
+        <td>{% if bar.place.top %}yes{% else %}no{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>No candidate can be ranked yet: none has a close stored in both months of the window.</p>
+  {% endif %}
+  {% if momentum.ranking.unranked %}
+  <h3>Not ranked</h3>
+  <ul>
+    {% for item in momentum.ranking.unranked %}<li>{{ item.symbol }}: {{ item.reason }}.</li>{% endfor %}
+  </ul>
+  <form method="post" action="{% url 'watch-fetch-history-many' account.pk %}" class="history-form">
+    {% csrf_token %}
+    <input type="hidden" name="typed" value="{{ momentum.unranked_symbols|join:' ' }}">
+    <input type="hidden" name="range" value="5y">
+    <button type="submit" name="which" value="selected">Get 5 years of history for {{ momentum.unranked_symbols|join:", " }}</button>
+  </form>
+  <p class="small muted">A candidate needs a close in both months of the window, about 13 months of history; the nightly pull's first fetch of a new symbol stores one year. The button asks the price source once per symbol and goes back to the account page.</p>
+  {% endif %}
+  <h3>This month's rebalance</h3>
+  {% if momentum.rebalance.buys %}
+  <ul>
+    {% for symbol, part in momentum.rebalance.parts %}<li>Buy {{ part|money }} of {{ symbol }}</li>{% endfor %}
+    {% for symbol in momentum.rebalance.sells %}<li>Sell all of {{ symbol }}: it left the top {{ momentum.top_n }}</li>{% endfor %}
+  </ul>
+  {% if momentum.rebalance.sells %}<p class="small">The app does not place sells yet. On a paper account, sell in Alpaca's paper dashboard; anywhere else, at your broker. Then log the sale here with its amount, inside the window.</p>{% endif %}
+  {% for warning in momentum.rebalance.warnings %}<p class="error" role="note">Wash-sale warning. {{ warning }}</p>{% endfor %}
+  {% else %}
+  <p>Nothing to buy until a candidate is ranked.</p>
+  {% endif %}
+  <p class="small muted">The ranking is arithmetic on your own candidates, the list you wrote before it was computed. It is not a recommendation. Information, not advice.</p>
+</section>

@@ -138,6 +138,7 @@ def start_method(request: HttpRequest, pk: int) -> HttpResponse:
         return render_method_page(request, account, start_form=form, force_view="c")
     plan = form.start()
     messages.success(request, f"Started {plan.method().name} on {account.name}.")
+    watched_message(request, form.watched)
     request.session[SESSION_KEY] = "a"
     return redirect("method-page", pk=account.pk)
 
@@ -155,6 +156,17 @@ def log_entry(request: HttpRequest, pk: int) -> HttpResponse:
     return redirect("method-page", pk=account.pk)
 
 
+def watched_message(request: HttpRequest, added: list[str]) -> None:
+    """Chapter 14: say which candidates a momentum plan put on the watch list, and why."""
+    if added:
+        messages.info(
+            request,
+            "Added to the watch list, so the nightly pull stores their closes: "
+            f"{', '.join(added)}. A candidate needs a year of closes or more to be ranked; "
+            "Get history fetches them now.",
+        )
+
+
 # --- Chapter 12: change or end the plan -----------------------------------------------------------
 
 
@@ -170,6 +182,7 @@ def change_plan(request: HttpRequest, pk: int) -> HttpResponse:
     form = PlanChangeForm(plan, today, request.POST if request.method == "POST" else None)
     if request.method == "POST" and form.is_valid():
         written = form.apply()
+        watched_message(request, form.watched)
         if written.active:
             messages.success(
                 request,
