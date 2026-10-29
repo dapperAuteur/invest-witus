@@ -1,0 +1,12 @@
+{# A From and To pair for a chart page (2026-10-29, decision 135). Included inside a GET form; the dates are #}
+{# bounded by the stored closes (`span`), and the server checks them again: From before To, both within. #}
+<fieldset class="field range-dates">
+  <legend>Or pick dates</legend>
+  <div class="range-dates-row">
+    <div><label for="range-from">From</label>
+    <input type="date" id="range-from" name="from" value="{{ typed_from }}"{% if span.first %} min="{{ span.first|date:'Y-m-d' }}" max="{{ span.last|date:'Y-m-d' }}"{% endif %}{% if range_error %} aria-describedby="range-error"{% endif %}></div>
+    <div><label for="range-to">To</label>
+    <input type="date" id="range-to" name="to" value="{{ typed_to }}"{% if span.first %} min="{{ span.first|date:'Y-m-d' }}" max="{{ span.last|date:'Y-m-d' }}"{% endif %}{% if range_error %} aria-describedby="range-error"{% endif %}></div>
+  </div>
+  <p class="small muted">{% if span.first %}Closes are stored from {{ span.first|date:"Y-m-d" }} to {{ span.last|date:"Y-m-d" }}.{% else %}No closes are stored yet.{% endif %} Both dates set the chart and the table; leave them empty to use the range above.</p>
+</fieldset>

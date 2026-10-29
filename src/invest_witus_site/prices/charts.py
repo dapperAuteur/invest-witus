@@ -14,6 +14,10 @@ Everything is computed here, in Decimal, and drawn by the template `prices/_char
 - **The hover data** is the same numbers already formatted with `money`, so the owner pages'
   small script only picks a day and shows text the server wrote; the table carries the same text
   without the script.
+- **Long ranges are thinned for drawing** (decision 135): over `MAX_POINTS` stored dates, the
+  chart draws an even spread of them plus the first, the last, each line's lowest and highest
+  day and every split or dividend day; the hover data follows the drawn dates; the tables under
+  the chart keep every day.
 """
 
 from collections.abc import Callable, Sequence
@@ -50,6 +54,9 @@ Y_TICKS = 4
 # A tick label this close to an edge is aligned to it instead of centered, so it never hangs past
 # the plot (and never makes the page scroll sideways on a phone).
 EDGE_PERCENT = Decimal(12)
+# Above this many dates a chart draws a thinned set (decision 135): 27 years of closes is about
+# 6,800 days, which a phone draws slowly and the hover data would carry for nothing.
+MAX_POINTS = 1000
 
 SOURCE_NAMES = {"tiingo": "Tiingo", "csv": "CSV files"}
 
@@ -392,6 +399,16 @@ class Plot:
     high: Decimal
     sources: str
     markers: list[Marker] = field(default_factory=list[Marker])
+    # Every stored date in the range; `dates` is the drawn ones, the same list unless thinned.
+    all_dates: list[date] = field(default_factory=list[date])
+
+    @property
+    def thinned(self) -> bool:
+        return len(self.dates) < len(self.all_dates)
+
+    @property
+    def total_days(self) -> int:
+        return len(self.all_dates)
 
     @property
     def first(self) -> date:
@@ -403,7 +420,9 @@ class Plot:
 
     @property
     def count(self) -> int:
-        return sum(len(line.days) for line in self.lines)
+        """The points drawn, over every line."""
+        drawn = set(self.dates)
+        return sum(1 for line in self.lines for row in line.days if row.day in drawn)
 
     @property
     def y_width(self) -> int:
@@ -474,7 +493,7 @@ class Plot:
     def daily_rows(self) -> list[tuple[date, list[DayRow | None]]]:
         """Newest first: each date with each line's day, or None where a line has no close."""
         maps = [{row.day: row for row in line.days} for line in self.lines]
-        return [(day, [found.get(day) for found in maps]) for day in reversed(self.dates)]
+        return [(day, [found.get(day) for found in maps]) for day in reversed(self.all_dates)]
 
 
 def charted_value(row: DayRow, rebase: bool) -> Decimal:
@@ -488,9 +507,21 @@ def source_names(lines: Sequence[Line]) -> str:
     return " and ".join(names)
 
 
-def build_plot(series: Sequence[SeriesInput], title: str, rebase: bool) -> Plot | None:
+def thin(dates: list[date], keep: set[date], limit: int) -> list[date]:
+    """At most about `limit` of `dates` (sorted) for drawing: an even spread, plus the first, the
+    last and every day in `keep`. Within the limit, all of them."""
+    if len(dates) <= limit:
+        return dates
+    step = len(dates) / (limit - 1)
+    spread = {dates[min(len(dates) - 1, round(index * step))] for index in range(limit)}
+    return sorted(spread | {dates[0], dates[-1]} | (keep & set(dates)))
+
+
+def build_plot(
+    series: Sequence[SeriesInput], title: str, rebase: bool, max_points: int = MAX_POINTS
+) -> Plot | None:
     """One line per series that has a stored day, in the given order, styled by position. No
-    days at all, no plot."""
+    days at all, no plot. Over `max_points` dates the drawing is thinned (`thin`)."""
     lines: list[Line] = []
     for series_input in series:
         if not series_input.rows:
@@ -500,11 +531,17 @@ def build_plot(series: Sequence[SeriesInput], title: str, rebase: bool) -> Plot 
         lines.append(Line(series_input.symbol, basis, missing, color, dash, pattern, days))
     if not lines:
         return None
-    dates = sorted({row.day for line in lines for row in line.days})
-    first, last = dates[0], dates[-1]
+    all_dates = sorted({row.day for line in lines for row in line.days})
+    first, last = all_dates[0], all_dates[-1]
     span = (last - first).days
+    keep: set[date] = {row.day for line in lines for row in line.days if row.events}
+    for line in lines:
+        keep.add(min(line.days, key=lambda row: charted_value(row, rebase)).day)
+        keep.add(max(line.days, key=lambda row: charted_value(row, rebase)).day)
+    dates = thin(all_dates, keep, max_points)
+    drawn = set(dates)
     xs = [x_position(day, first, span) for day in dates]
-    x_of = dict(zip(dates, xs, strict=True))
+    x_of = {day: x_position(day, first, span) for day in all_dates}
     values = [charted_value(row, rebase) for line in lines for row in line.days]
     low, high = min(values), max(values)
     bottom, top, step = y_scale(low, high)
@@ -512,7 +549,9 @@ def build_plot(series: Sequence[SeriesInput], title: str, rebase: bool) -> Plot 
         for row in line.days:
             value = charted_value(row, rebase)
             line.ys[row.day] = place((top - value) * HUNDRED / (top - bottom))
-        line.points = " ".join(f"{x_of[row.day]},{line.ys[row.day]}" for row in line.days)
+        line.points = " ".join(
+            f"{x_of[row.day]},{line.ys[row.day]}" for row in line.days if row.day in drawn
+        )
         line.end_x = x_of[line.last.day]
     markers = sorted(
         (
@@ -547,4 +586,5 @@ def build_plot(series: Sequence[SeriesInput], title: str, rebase: bool) -> Plot 
         high=high,
         sources=source_names(lines),
         markers=markers,
+        all_dates=all_dates,
     )
