@@ -35,7 +35,7 @@
         <polyline points="{{ line.points }}" fill="none" stroke="{{ line.color }}" stroke-width="2"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %} stroke-linejoin="round" vector-effect="non-scaling-stroke" data-symbol="{{ line.symbol }}"/>
         {% endfor %}
       </svg>
-      {% for shaded in plot.bands %}<span class="chart-band-label" style="left: {{ shaded.x }}%" aria-hidden="true">{{ shaded.label }}</span>{% endfor %}
+      {% for shaded in plot.bands %}<span class="chart-band-label chart-band-label-{{ shaded.kind }}" style="left: {% if shaded.kind == "excluded" %}{{ shaded.end_x }}{% else %}{{ shaded.x }}{% endif %}%" aria-hidden="true">{{ shaded.label }}</span>{% endfor %}
       {% for line in plot.lines %}<span class="chart-end" style="left: {{ line.end_x }}%; top: {{ line.end_y }}%; background: {{ line.color }}" aria-hidden="true"></span>{% endfor %}
       {% for marker in plot.markers %}<span class="chart-marker marker-{{ marker.kind }}" style="left: {{ marker.x }}%; top: {{ marker.y }}%; border-color: {{ marker.color }}" title="{{ marker.symbol }} {{ marker.day|date:'Y-m-d' }}: {{ marker.text }}" aria-hidden="true">{{ marker.letter }}</span>{% endfor %}
     </div>

@@ -199,8 +199,9 @@ def wash_sale_warnings(account: Account, symbols: list[str], day: date) -> list[
         warnings.append(
             f"You sold {sale.symbol} on {sale.date:%Y-%m-%d}, {days} day{'' if days == 1 else 's'} "
             f"before {day:%Y-%m-%d}. If that sale was at a loss, buying {sale.symbol} again within "
-            f"{WASH_SALE_DAYS} days of it is a wash sale, and the loss cannot be deducted then "
-            "(IRS Publication 550). A paper account has no tax effect; a live one would."
+            f"{WASH_SALE_DAYS} days of it is a wash sale: the loss cannot be deducted then, and is "
+            "added to the cost of the new shares instead (IRS Publication 550). A paper account "
+            "has no tax effect; a live one would."
         )
     return warnings
 

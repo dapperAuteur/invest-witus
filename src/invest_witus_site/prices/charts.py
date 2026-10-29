@@ -394,6 +394,12 @@ class Band:
     x: Decimal
     width: Decimal
 
+    @property
+    def end_x(self) -> Decimal:
+        """The band's right edge: the excluded month's label ends here, so it never runs past
+        the plot on the right."""
+        return self.x + self.width
+
 
 @dataclass
 class Plot:

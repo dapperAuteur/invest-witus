@@ -288,6 +288,7 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 .chart-plot .chart-band-window { fill: #56b4e9; fill-opacity: 0.18; }
 .chart-plot .chart-band-excluded { fill: #94a3b8; fill-opacity: 0.08; stroke: #94a3b8; stroke-dasharray: 3 3; stroke-width: 1; }
 .chart-band-label { position: absolute; top: 0.25rem; padding: 0 0.25rem; font-size: 0.7rem; color: var(--text); background: var(--bg); white-space: nowrap; pointer-events: none; }
+.chart-band-label-excluded { top: 1.4rem; transform: translateX(-100%); }
 .band-key { display: inline-block; width: 1.5rem; height: 0.75rem; border: 1px solid var(--muted); }
 .band-key-window { background: rgba(86, 180, 233, 0.35); }
 .band-key-excluded { background: rgba(148, 163, 184, 0.12); border-style: dashed; }
