@@ -11,7 +11,7 @@
   {% if latest %}
   <p>As of {{ latest.as_of|date:"Y-m-d" }}: {{ latest.close|money }} ({{ latest.source }}){% if stale %} <span class="stale">stale</span> The newest stored close is more than {{ stale_after_days }} days old; the nightly pull has not stored a newer one.{% endif %}</p>
   {% else %}
-  <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night.</p>
+  <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night; <strong>Get history</strong> below fetches it now.</p>
   {% endif %}
   <nav aria-label="Range" class="small">
     {% for range in ranges %}

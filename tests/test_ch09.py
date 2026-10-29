@@ -360,7 +360,7 @@ def test_watched_symbols_join_the_universe_and_cash_stays_out(
 
 
 def history_cell(symbol: str) -> str:
-    """The text of a row's History cell: 2026-10-29's Get history form (decision 117)."""
+    """The text of a row's History cell: 2026-10-29's Get history form (decision 116)."""
     choices = "1 year5 years10 yearsAll available"
     return f"How far back to fetch {symbol} {choices} Get history for {symbol}"
 
@@ -379,7 +379,7 @@ def test_the_pull_fetches_a_watched_symbol_and_the_page_shows_its_close(
     yesterday = (timezone.localdate() - timedelta(days=1)).isoformat()
     assert tables_in(html) == [
         [
-            # The History column is 2026-10-29's Get history form, decision 117.
+            # The History column is 2026-10-29's Get history form, decision 116.
             ("Symbol", "Note", "Close", "As of", "Source", "History", "Remove"),
             ("FUNDX", "", "$12.34", yesterday, "csv", history_cell("FUNDX"), "Remove FUNDX"),
         ]

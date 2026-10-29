@@ -391,12 +391,76 @@ reads the chart's title (the symbol, the range, how many closes, the low and the
 
 **What can go wrong.**
 
-- "No close stored yet.": the symbol was added since the last nightly run. The next run fetches its year.
+- "No close stored yet.": the symbol was added since the last nightly run. The next run fetches its year, or
+  press **Get history** on the same page.
 - "No closes stored in the last 30 days.": the newest close is older than the range; the **As of** line says
   when it is from. Pick a longer range, or check the pull's `failed` list for the symbol.
 - Only a week of closes on a symbol watched before 2026-10-29: the year arrives with the next nightly run; until
   then the chart shows what is stored.
 - A 404: the symbol is not on this account's watch list, or the account is not yours.
+
+## Fetch prices now and Get history (2026-10-29)
+
+**What they are for.** Two buttons for the signed-in owner, so you do not wait for the nightly pull or open a
+terminal for `pull_prices --since <date> --symbols <list>`. **Fetch prices now** runs the nightly pull at once
+for your symbols. **Get history** fetches years of closes for one watched symbol. Like every price, what they
+store is shown to you only; no public page has either button.
+
+**Fetch prices now.**
+
+1. Open **Accounts** in the header, or an account's page. On **Your accounts** the button sits under the list; on
+   an account page it sits in the **Watch list** section, above the add form.
+2. Press **Fetch prices now**.
+
+It asks the price source for the last seven days of every symbol your accounts hold (cash excepted) or watch,
+and a year for a symbol it has never fetched, one request per symbol: at most 50 requests, a one-second pause
+between symbols, and no more than four minutes, so the page always answers. It is the same pull the cron runs,
+limited to your symbols.
+
+**What you should see.** The same page again, with the notices at the top:
+
+- `Fetched closes from tiingo for 3 symbols in 3 requests: 12 inserted, 0 updated, 4 unchanged, 1 refused,
+  2 backfilled, 0 skipped for budget.` **Inserted** is new days; **updated** a day whose close changed (a
+  vendor's correction); **unchanged** a day already stored; **refused** a symbol the source turned down;
+  **backfilled** a symbol fetched for its first year; **skipped for budget** a symbol the run did not reach.
+  Press it again after ten minutes: **inserted** 0 and the same days **unchanged**.
+- `Refused FUNDX: Tiingo answered 404: ...`, one line per refused symbol, with the vendor's reason.
+- `A year of closes, first time: FUNDX, INDEX.` when a symbol got its first year.
+- `Stopped by the 50-request limit for one run; not reached: ... The rest continue tonight.` The run stopped
+  early; the nightly pull reaches them. The reason may also read **Tiingo's hourly or daily limit** (the vendor
+  answered 429) or **the time one press may take**.
+- `Nothing to fetch: no account of yours holds or watches a symbol.` Add a statement or a watched symbol first.
+
+**Get history.**
+
+1. On an account page, in the **Watch list** table, find the symbol's **History** cell. (Or open the symbol's
+   history page; the **Get history** section is under the table.)
+2. Pick a range: **1 year**, **5 years**, **10 years** or **All available**.
+3. Press **Get history**.
+
+One request to the price source for that symbol and range. Days already stored are left alone, so pressing it
+twice adds nothing twice. Tiingo's free plan lists "30+ Years" of end-of-day history; its documentation does
+not say how far back a single request may reach, so the message tells you what came back.
+
+**What you should see.** `FUNDX, 10 years asked (from 2016-10-29): 2,512 days added, 0 updated, 3 unchanged.
+Earliest close returned: 2016-10-31; earliest close now stored: 2016-10-31.` **Earliest close returned** is
+the oldest day the source sent: for **All available**, that is how deep the vendor's history for the symbol
+goes. The history page's chart still offers 30, 90 and 365 days; the older closes are in the admin under
+**Prices**, **Daily closes**.
+
+**What can go wrong.**
+
+- `Prices were fetched less than 10 minutes ago. The next Fetch prices now can run at <time>.` or `FUNDX's
+  history was fetched less than 10 minutes ago. Get history can run for it again at <time>.` Each button runs
+  once every ten minutes (per owner for Fetch prices now, per symbol for Get history), so a held-down button
+  cannot spend the free plan's 50 requests an hour. Wait, or delete the row under **Prices**, **Manual price
+  runs** in the admin.
+- `FUNDX: Tiingo answered 404: ... Nothing was stored.` The source does not know the symbol. Check the spelling.
+- `FUNDX: Tiingo answered 429: the hourly or daily request limit is reached. Nothing was stored. Try again after
+  the hour.` The free plan's 50 requests an hour or 1,000 a day are spent; the nightly pull counts too.
+- `FUNDX, all available asked (from 1900-01-01): the source returned no closes.` The source has nothing for that
+  range.
+- `Source csv` in the message on production: the deployment started without `TIINGO_API_KEY`.
 
 ## The FAQ and Report a bad actor
 
@@ -530,7 +594,7 @@ CentenarianOS (15).
 | **Sign in did not complete** (`state`) | The session cookie did not survive | Try again in the same browser; on a laptop run with `--env-file .env` |
 | **Sign in did not complete** (`refused`) | The provider refused the token exchange | The two secrets differ, or the provider has not restarted since its secret was set |
 | Header shows `witus-<id>` instead of your name | Your WitUS identity made a new user | Re-point the identity's **User** in the admin |
-| **no price yet** on every line | The pull has not run, or ran without the Tiingo key | Run the cron once; check `source` in its JSON |
+| **no price yet** on every line | The pull has not run, or ran without the Tiingo key | Press **Fetch prices now**; check the source it names |
 | **no price yet** on one line | The source does not know that symbol | Fix the spelling in **Holdings**, or accept it |
 | **stale** beside a date | The close is more than five days old | Check the Cron Jobs page for the last run |
 | Cron answers 503 | `CRON_SECRET` not in the running deployment | Redeploy |
@@ -539,3 +603,4 @@ CentenarianOS (15).
 | `DisallowedHost` | The host is not allowed | `DJANGO_ALLOWED_HOSTS`, or Vercel's system variables are off |
 | "2026-03 is closed. Reopen its review, with a reason, to change it." | The entry's month is closed | Open the month's review and **Reopen** it with a reason |
 | "2026-03 has no buy and no skip with a reason." when closing | The month was missed and nothing says why | Log a **Skip** for that month with **Why**, then close it |
+| "... less than 10 minutes ago ... can run at <time>." | A price button ran in the last ten minutes | Wait until the time named, or delete its **Manual price runs** row in the admin |
