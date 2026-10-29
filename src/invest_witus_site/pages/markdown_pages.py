@@ -67,8 +67,37 @@ def render_markdown(text: str) -> str:
     return converter.convert(text)
 
 
+# An `<h3>` on a page: the FAQ writes every question as one. `toc` has already given it an id.
+H3 = re.compile(r'<h3 id="(?P<id>[^"]*)">(?P<text>.*?)</h3>\n?', re.S)
+# Where a question's answer ends: the next question or the next section heading.
+NEXT_HEADING = re.compile(r"(?=<h[23]\b)")
+
+
+def fold_questions(html: str) -> str:
+    """Wrap each `<h3>` question and its answer in `<details>`, so the page opens as a list of
+    questions and each one expands to its answer. The heading's id moves to the `<details>`
+    element, so `#some-question` links keep working and open nothing but the right block. The
+    `<h2>` sections stay as they are."""
+    parts = NEXT_HEADING.split(html)
+    out: list[str] = []
+    for part in parts:
+        m = H3.match(part)
+        if not m:
+            out.append(part)
+            continue
+        answer = part[m.end() :]
+        out.append(
+            f'<details class="faq-item" id="{m.group("id")}">'
+            f"<summary>{m.group('text')}</summary>\n{answer}</details>\n"
+        )
+    return "".join(out)
+
+
 def load_page(pages_dir: Path, slug: str) -> Page:
     """Read one of the pages in PAGES and render it. The title is the file's first `# ` heading."""
     text = (pages_dir / PAGES[slug]).read_text(encoding="utf-8")
     title = next((line[2:].strip() for line in text.splitlines() if line.startswith("# ")), slug)
-    return Page(title=title, html=render_markdown(text))
+    html = render_markdown(text)
+    if slug == "faq":
+        html = fold_questions(html)
+    return Page(title=title, html=html)
