@@ -3,6 +3,7 @@ this file under `accounts/<int:pk>/watch/`, and the `pk` captured there reaches 
 
 from django.urls import path
 
+from invest_witus_site.prices import owner_views
 from invest_witus_site.watchlist import views
 
 urlpatterns = [
@@ -10,4 +11,6 @@ urlpatterns = [
     path("<int:item_pk>/remove/", views.remove, name="watch-remove"),
     # A watched symbol's closes (2026-10-29). After the two fixed paths, so "add/" stays the form's.
     path("<str:symbol>/", views.history, name="watch-history"),
+    # Get history (2026-10-29): one request for a watched symbol's closes over a chosen range.
+    path("<str:symbol>/fetch-history/", owner_views.fetch_history, name="watch-fetch-history"),
 ]

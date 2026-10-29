@@ -1,0 +1,6 @@
+{# Fetch prices now (2026-10-29): the nightly pull for the signed-in owner's symbols, now. Included with `action`. #}
+<form method="post" action="{{ action }}" class="fetch-now">
+  {% csrf_token %}
+  <button type="submit">Fetch prices now</button>
+  <p class="small muted">The nightly pull, now: the last week of closes for every symbol your accounts hold or watch, at most 50 requests, once every 10 minutes. What does not fit continues tonight.</p>
+</form>

@@ -11,6 +11,8 @@
     {% endfor %}
   </ul>
   <p class="muted">Each page values the account's latest statement at the latest close the app has stored, with the close's date beside it. Information, not advice.</p>
+  {% url 'fetch-prices' as fetch_action %}
+  {% include "prices/_fetch_now.html" with action=fetch_action %}
   {% else %}
   <p>No accounts yet.{% if user.is_staff %} <a href="{% url 'admin:holdings_account_add' %}">Add one in the admin.</a>{% endif %}</p>
   {% endif %}

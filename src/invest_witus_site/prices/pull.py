@@ -15,7 +15,7 @@ symbols have had their year.
 
 import logging
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -69,6 +69,10 @@ class PullResult:
     skipped: list[str] = field(default_factory=list[str])
     # The symbols whose request this run reached back `BACKFILL_DAYS` for the first time.
     backfilled: list[str] = field(default_factory=list[str])
+    # Why `skipped` is not empty: "budget", "rate limit" or "time limit"; empty when every
+    # symbol was asked. The owner's button words its message from it (2026-10-29); the cron's
+    # JSON is unchanged.
+    stopped: str = ""
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -93,13 +97,21 @@ def pull(
     until: date,
     pause: float | None = None,
     budget: int = REQUESTS_PER_RUN,
+    time_limit: float | None = None,
+    clock: Callable[[], float] = time.monotonic,
 ) -> PullResult:
     """One request per symbol, in order; a refusal is recorded and the next symbol is tried. A
     rate limit stops the run, and the symbols not reached are listed as skipped. A symbol that
     has not had its backfill asks from `until - BACKFILL_DAYS` instead of `since`, in the same
-    single request; a skipped or refused one asks again on the next run."""
+    single request; a skipped or refused one asks again on the next run.
+
+    `time_limit`, in seconds, is checked before each request: once the run has used that long,
+    the symbols not reached are skipped like the budget's. The owner's **Fetch prices now**
+    button sets it so a run that waits on a slow vendor still answers inside the function's
+    maximum duration; the cron and the command leave it unset (2026-10-29)."""
     if pause is None:
         pause = PAUSE_SECONDS
+    started = clock()
     result = PullResult(source.name, since, until, list(symbols))
     backfill_since = until - timedelta(days=BACKFILL_DAYS)
     # A row that reaches back to this run's year counts; one written today still will tomorrow.
@@ -110,6 +122,11 @@ def pull(
     )
     for index, symbol in enumerate(result.symbols):
         if result.requests >= budget:
+            result.stopped = result.stopped or "budget"
+            result.skipped.append(symbol)
+            continue
+        if time_limit is not None and clock() - started >= time_limit:
+            result.stopped = result.stopped or "time limit"
             result.skipped.append(symbol)
             continue
         if result.requests > 0 and pause > 0:
@@ -123,6 +140,7 @@ def pull(
             log.warning("pull_prices: %s", error)
             if error.retry_later:
                 result.skipped.extend(result.symbols[index + 1 :])
+                result.stopped = "rate limit"
                 break
             continue
         counts = DailyClose.upsert(symbol, points, source.name)

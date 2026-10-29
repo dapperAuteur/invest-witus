@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from invest_witus_site.prices.models import Backfill, DailyClose
+from invest_witus_site.prices.models import Backfill, DailyClose, ManualRun
 
 
 @admin.register(DailyClose)
@@ -26,3 +26,13 @@ class BackfillAdmin(admin.ModelAdmin[Backfill]):
     list_display = ("symbol", "since", "done_at")
     search_fields = ("symbol",)
     readonly_fields = ("since", "done_at")
+
+
+@admin.register(ManualRun)
+class ManualRunAdmin(admin.ModelAdmin[ManualRun]):
+    """When each owner button last ran. Delete a row to lift its ten-minute guard."""
+
+    list_display = ("kind", "key", "ran_at")
+    list_filter = ("kind",)
+    search_fields = ("key",)
+    readonly_fields = ("kind", "key", "ran_at")

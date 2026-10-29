@@ -20,6 +20,7 @@ from invest_witus.valuation import STALE_AFTER_DAYS, is_stale
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.holdings.views import account_page
 from invest_witus_site.prices.history import RANGES, closes_since, line_chart, range_days
+from invest_witus_site.prices.manual import HISTORY_RANGES
 from invest_witus_site.prices.models import DailyClose
 from invest_witus_site.watchlist.forms import WatchForm
 from invest_witus_site.watchlist.models import WatchItem
@@ -81,5 +82,6 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
         "latest": latest,
         "stale": latest is not None and is_stale(latest, today),
         "stale_after_days": STALE_AFTER_DAYS,
+        "history_ranges": [(value, label) for value, (label, _) in HISTORY_RANGES.items()],
     }
     return render(request, "watchlist/history.html", context)

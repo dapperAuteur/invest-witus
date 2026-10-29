@@ -171,3 +171,42 @@ class Backfill(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.symbol = self.symbol.strip().upper()
         super().save(*args, **kwargs)
+
+
+class ManualRun(models.Model):
+    """When an owner's button last asked the price source for closes (2026-10-29), so a second
+    press inside the guard's ten minutes is refused instead of spending Tiingo's hourly
+    requests again.
+
+    One row per kind and key: **Fetch prices now** keys on the owner's user id, **Get history**
+    on the symbol. The row is the guard's memory because the site runs as Vercel functions that
+    share no memory between invocations; the database is the one thing every invocation sees.
+    The time is written when a run starts, not when it ends, so two presses at the same moment
+    cannot both run. Deleting a row in the admin lifts the guard for that key.
+    """
+
+    class Kind(models.TextChoices):
+        FETCH_NOW = "fetch-now", "Fetch prices now"
+        HISTORY = "history", "Get history"
+
+    kind: models.CharField[str, str] = models.CharField(max_length=20, choices=Kind.choices)
+    key: models.CharField[str, str] = models.CharField(
+        max_length=40,
+        help_text="The owner's id (Fetch prices now) or the symbol (Get history).",
+    )
+    ran_at: models.DateTimeField[datetime.datetime, datetime.datetime] = models.DateTimeField(
+        help_text="When the last run started."
+    )
+
+    class Meta:
+        ordering = ["-ran_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["kind", "key"], name="manual_run_once_per_kind_and_key"
+            ),
+        ]
+        verbose_name = "manual price run"
+        verbose_name_plural = "manual price runs"
+
+    def __str__(self) -> str:
+        return f"{self.Kind(self.kind).label} {self.key} at {self.ran_at:%Y-%m-%d %H:%M}"
