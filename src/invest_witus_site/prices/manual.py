@@ -1,0 +1,193 @@
+"""The owner's two price buttons (2026-10-29): **Fetch prices now** and **Get history**.
+
+BAM asked for a button instead of `manage.py pull_prices --since <date> --symbols <list>`, and for
+a way to fetch prices without waiting for the nightly cron. Both buttons run code the pull
+already has, for the signed-in owner only, behind a ten-minute guard each:
+
+- **Fetch prices now** is the nightly pull (`pull.pull`), for the symbols the owner's own
+  accounts hold or watch, inside the same 50-request budget and one-second pause, plus a time
+  limit so it answers inside Vercel's function maximum.
+- **Get history** is one request for one symbol over a chosen range (1, 5 or 10 years, or all
+  available), written with `DailyClose.upsert`, so a second press adds nothing.
+
+Tiingo's end-of-day page (https://www.tiingo.com/documentation/end-of-day, read 2026-10-29) shows
+historical prices as one request with `startDate` and `endDate` and names no limit on the range a
+request may span or on how far back it reaches; its metadata endpoint's `startDate` is "The
+earliest date we have price data available for the asset." The pricing page
+(https://www.tiingo.com/about/pricing, read the same day) lists "Historical: 30+ Years" for the
+free Starter plan. So the history button asks once and reports the earliest close it got back:
+the answer itself says how deep the history goes.
+"""
+
+import datetime
+from dataclasses import dataclass
+from datetime import date, timedelta
+
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+from django.db import IntegrityError, transaction
+from django.db.models import Min
+from django.utils import timezone
+
+from invest_witus_site.holdings.models import Holding
+from invest_witus_site.prices.models import Backfill, DailyClose, ManualRun, UpsertCount
+from invest_witus_site.prices.pull import BACKFILL_DAYS, REQUESTS_PER_RUN, PullResult
+from invest_witus_site.prices.sources import PriceSource
+from invest_witus_site.watchlist.models import WatchItem
+
+# How long a button waits before it runs again for the same owner (Fetch prices now) or the
+# same symbol (Get history). Ten minutes lets the owner retry after fixing a symbol without
+# letting a held-down button spend the free plan's 50 requests an hour (decision 70).
+GUARD_MINUTES = 10
+
+# The button's own ceiling on a run, in seconds. Vercel's Hobby maximum is 300 s per invocation
+# (chapter 06, decision 58). The check happens before each request and a request may wait up to
+# `sources.REQUEST_TIMEOUT_SECONDS` (20 s), so the slowest run still answers at about 260 s.
+# Fifty requests at about a second each, plus the one-second pause, take well under this.
+FETCH_TIME_LIMIT_SECONDS = 240.0
+
+# The history ranges, as the form's values, labels and years back. `None` is "all available":
+# Tiingo's page names no earliest date to ask for, so the request starts at `ALL_AVAILABLE_SINCE`,
+# a day before any listed market's daily data, and the earliest close that comes back is the
+# answer. One request either way.
+HISTORY_RANGES: dict[str, tuple[str, int | None]] = {
+    "1y": ("1 year", 1),
+    "5y": ("5 years", 5),
+    "10y": ("10 years", 10),
+    "all": ("All available", None),
+}
+DEFAULT_HISTORY_RANGE = "1y"
+ALL_AVAILABLE_SINCE = date(1900, 1, 1)
+
+STOP_REASONS = {
+    "budget": f"the {REQUESTS_PER_RUN}-request limit for one run",
+    "rate limit": "Tiingo's hourly or daily limit",
+    "time limit": "the time one press may take",
+}
+
+
+def claim(kind: str, key: str, now: datetime.datetime | None = None) -> datetime.datetime | None:
+    """Start a run for this kind and key, or refuse it. `None` means the run may go ahead (the
+    start time is already written); a datetime is when the next run may start.
+
+    The update only matches a row older than the guard, and a missing row is created inside its
+    own savepoint, so two presses at the same moment cannot both win: the second finds the fresh
+    row, or hits the unique constraint, and is refused."""
+    now = now or timezone.now()
+    guard = timedelta(minutes=GUARD_MINUTES)
+    if ManualRun.objects.filter(kind=kind, key=key, ran_at__lte=now - guard).update(ran_at=now):
+        return None
+    try:
+        with transaction.atomic():
+            ManualRun.objects.create(kind=kind, key=key, ran_at=now)
+    except IntegrityError:
+        return ManualRun.objects.get(kind=kind, key=key).ran_at + guard
+    return None
+
+
+def when(moment: datetime.datetime) -> str:
+    """A time for a message, in the site's time zone with its name."""
+    return f"{timezone.localtime(moment):%Y-%m-%d %H:%M %Z}"
+
+
+def owner_symbols(user: AbstractBaseUser | AnonymousUser) -> list[str]:
+    """Every symbol the user's own accounts hold (cash has no price) or watch, each once. A
+    signed-out visitor owns no account, so the answer is empty; the views require a sign-in."""
+    held = (
+        Holding.objects.filter(account__owner=user)
+        .exclude(kind=Holding.Kind.CASH)
+        .values_list("symbol", flat=True)
+    )
+    watched = WatchItem.objects.filter(account__owner=user).values_list("symbol", flat=True)
+    return sorted(set(held) | set(watched))
+
+
+def plural(count: int, word: str) -> str:
+    return f"{count:,} {word}{'' if count == 1 else 's'}"
+
+
+def fetch_messages(result: PullResult) -> tuple[str, list[str], list[str]]:
+    """What one Fetch prices now run did, as the counts line, the error lines (one per refused
+    symbol) and the info lines (the backfilled symbols, and the ones left for tonight)."""
+    counts = result.counts
+    summary = (
+        f"Fetched closes from {result.source} for {plural(len(result.symbols), 'symbol')} in "
+        f"{plural(result.requests, 'request')}: {counts.inserted:,} inserted, "
+        f"{counts.updated:,} updated, {counts.unchanged:,} unchanged, "
+        f"{len(result.failed):,} refused, {len(result.backfilled):,} backfilled, "
+        f"{len(result.skipped):,} skipped for budget."
+    )
+    errors = [f"Refused {symbol}: {problem}" for symbol, problem in result.failed.items()]
+    infos: list[str] = []
+    if result.backfilled:
+        infos.append(f"A year of closes, first time: {', '.join(result.backfilled)}.")
+    if result.skipped:
+        reason = STOP_REASONS.get(result.stopped, "the run's limits")
+        infos.append(
+            f"Stopped by {reason}; not reached: {', '.join(result.skipped)}. "
+            "The rest continue tonight."
+        )
+    return summary, errors, infos
+
+
+def years_before(day: date, years: int) -> date:
+    """The same calendar day `years` earlier; February 29 becomes February 28."""
+    try:
+        return day.replace(year=day.year - years)
+    except ValueError:
+        return day.replace(year=day.year - years, day=28)
+
+
+def history_since(choice: str, today: date) -> date | None:
+    """The `startDate` for a range choice, or `None` for a choice the form does not offer."""
+    if choice not in HISTORY_RANGES:
+        return None
+    years = HISTORY_RANGES[choice][1]
+    return ALL_AVAILABLE_SINCE if years is None else years_before(today, years)
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryResult:
+    """What one Get history request did."""
+
+    symbol: str
+    since: date
+    returned: int
+    first_returned: date | None
+    counts: UpsertCount
+    earliest_stored: date | None
+
+
+def fetch_history(source: PriceSource, symbol: str, since: date, until: date) -> HistoryResult:
+    """One request for `symbol` from `since` to `until`, written once per day. A source's
+    refusal raises `PriceSourceError` for the view to word. A range that reaches back past the
+    nightly backfill's year is recorded in `Backfill`, so the next night does not ask again."""
+    points = source.closes(symbol, since, until)
+    counts = DailyClose.upsert(symbol, points, source.name)
+    if points and since <= until - timedelta(days=BACKFILL_DAYS):
+        row = Backfill.objects.filter(symbol=symbol).first()
+        if row is None or row.since > since:
+            Backfill.objects.update_or_create(
+                symbol=symbol, defaults={"since": since, "done_at": timezone.now()}
+            )
+    earliest = DailyClose.objects.filter(symbol=symbol).aggregate(first=Min("date"))["first"]
+    first = min((point.day for point in points), default=None)
+    return HistoryResult(symbol, since, len(points), first, counts, earliest)
+
+
+def history_message(result: HistoryResult, label: str) -> str:
+    asked = f"{result.symbol}, {label.lower()} asked (from {result.since:%Y-%m-%d})"
+    if not result.returned:
+        stored = (
+            f" Earliest close stored: {result.earliest_stored:%Y-%m-%d}."
+            if result.earliest_stored
+            else ""
+        )
+        return f"{asked}: the source returned no closes.{stored}"
+    counts = result.counts
+    first = f"{result.first_returned:%Y-%m-%d}" if result.first_returned else "none"
+    earliest = f"{result.earliest_stored:%Y-%m-%d}" if result.earliest_stored else "none"
+    return (
+        f"{asked}: {plural(counts.inserted, 'day')} added, {counts.updated:,} updated, "
+        f"{counts.unchanged:,} unchanged. Earliest close returned: {first}; earliest close "
+        f"now stored: {earliest}."
+    )

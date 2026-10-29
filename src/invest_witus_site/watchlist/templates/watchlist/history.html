@@ -11,7 +11,7 @@
   {% if latest %}
   <p>As of {{ latest.as_of|date:"Y-m-d" }}: {{ latest.close|money }} ({{ latest.source }}){% if stale %} <span class="stale">stale</span> The newest stored close is more than {{ stale_after_days }} days old; the nightly pull has not stored a newer one.{% endif %}</p>
   {% else %}
-  <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night.</p>
+  <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night; <strong>Get history</strong> below fetches it now.</p>
   {% endif %}
   <nav aria-label="Range" class="small">
     {% for range in ranges %}
@@ -51,6 +51,11 @@
   {% else %}
   <p>No closes stored in the last {{ days }} days.</p>
   {% endif %}
+  <section class="get-history" aria-labelledby="get-history-heading">
+    <h2 id="get-history-heading">Get history</h2>
+    <p class="small muted">One request to the price source for {{ item.symbol }}'s closes over the range you pick; days already stored are left alone. The message says how many days were added and the earliest close now stored. Once every 10 minutes per symbol.</p>
+    {% include "prices/_history_form.html" with symbol=item.symbol return_to="history" %}
+  </section>
   <p class="small muted">Closes from the app's own table, written by the nightly pull; the vendor's free plan is for the owner's own use, so this page is the signed-in owner's only. Information, not advice.</p>
   <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
 </section>

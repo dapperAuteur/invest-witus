@@ -359,6 +359,12 @@ def test_watched_symbols_join_the_universe_and_cash_stays_out(
     assert symbol_universe() == ["FUNDX", "INDEX", "OTHER"]
 
 
+def history_cell(symbol: str) -> str:
+    """The text of a row's History cell: 2026-10-29's Get history form (decision 116)."""
+    choices = "1 year5 years10 yearsAll available"
+    return f"How far back to fetch {symbol} {choices} Get history for {symbol}"
+
+
 @pytest.mark.django_db
 def test_the_pull_fetches_a_watched_symbol_and_the_page_shows_its_close(
     client: Client, owner: User, account: Account, csv_folder: Path
@@ -373,8 +379,9 @@ def test_the_pull_fetches_a_watched_symbol_and_the_page_shows_its_close(
     yesterday = (timezone.localdate() - timedelta(days=1)).isoformat()
     assert tables_in(html) == [
         [
-            ("Symbol", "Note", "Close", "As of", "Source", "Remove"),
-            ("FUNDX", "", "$12.34", yesterday, "csv", "Remove FUNDX"),
+            # The History column is 2026-10-29's Get history form, decision 116.
+            ("Symbol", "Note", "Close", "As of", "Source", "History", "Remove"),
+            ("FUNDX", "", "$12.34", yesterday, "csv", history_cell("FUNDX"), "Remove FUNDX"),
         ]
     ]
     assert "Prices arrive after the nightly pull" not in html
@@ -405,22 +412,24 @@ def test_the_page_shows_each_close_with_its_date_or_says_prices_arrive_after_the
     html = response.content.decode()
     assert tables_in(html) == [
         [
-            ("Symbol", "Note", "Close", "As of", "Source", "Remove"),
+            ("Symbol", "Note", "Close", "As of", "Source", "History", "Remove"),
             (
                 "FUNDX",
                 "from the lesson",
                 "$12.34",
                 (today - timedelta(days=1)).isoformat(),
                 "csv",
+                history_cell("FUNDX"),
                 "Remove FUNDX",
             ),
-            ("NONE", "from the lesson", "no price yet", "Remove NONE"),
+            ("NONE", "from the lesson", "no price yet", history_cell("NONE"), "Remove NONE"),
             (
                 "OTHER",
                 "from the lesson",
                 "$20.01",
                 f"{old.isoformat()} stale",
                 "tiingo",
+                history_cell("OTHER"),
                 "Remove OTHER",
             ),
         ]

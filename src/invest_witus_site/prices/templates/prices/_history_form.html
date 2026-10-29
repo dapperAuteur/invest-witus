@@ -1,0 +1,11 @@
+{# Get history (2026-10-29): one request for one watched symbol's closes over a chosen range. Included with #}
+{# `account`, `symbol`, `return_to` ("account" or "history") and `history_ranges` (value, label pairs). #}
+<form method="post" action="{% url 'watch-fetch-history' account.pk symbol %}" class="history-form">
+  {% csrf_token %}
+  <input type="hidden" name="return_to" value="{{ return_to }}">
+  <label for="history-range-{{ symbol }}" class="sr-only">How far back to fetch {{ symbol }}</label>
+  <select name="range" id="history-range-{{ symbol }}">
+    {% for value, label in history_ranges %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="link-button">Get history<span class="sr-only"> for {{ symbol }}</span></button>
+</form>

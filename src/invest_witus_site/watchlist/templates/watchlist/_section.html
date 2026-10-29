@@ -1,6 +1,6 @@
 {% load holdings_extras %}
 {# The watch list section of the account page (chapter 09). Included by holdings/account_detail.html #}
-{# with `account`, `watch` (the rows with their quotes) and `watch_form`. #}
+{# with `account`, `watch` (the rows with their quotes), `watch_form` and `history_ranges` (2026-10-29). #}
 <section class="watch" aria-labelledby="watch-heading">
   <h2 id="watch-heading">Watch list</h2>
   {% if watch.rows %}
@@ -13,6 +13,7 @@
         <th scope="col" class="num">Close</th>
         <th scope="col">As of</th>
         <th scope="col">Source</th>
+        <th scope="col">History</th>
         <th scope="col"><span class="sr-only">Remove</span></th>
       </tr>
     </thead>
@@ -28,6 +29,7 @@
         {% else %}
         <td class="muted" colspan="3">no price yet</td>
         {% endif %}
+        <td>{% include "prices/_history_form.html" with symbol=row.item.symbol return_to="account" %}</td>
         <td>
           <form method="post" action="{% url 'watch-remove' account.pk row.item.pk %}">
             {% csrf_token %}
@@ -39,11 +41,13 @@
     </tbody>
   </table>
   {% if watch.unpriced %}
-  <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
+  <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. Press <strong>Fetch prices now</strong> to ask for them without waiting. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
   {% endif %}
   {% else %}
   <p>Nothing on the watch list yet.</p>
   {% endif %}
+  {% url 'account-fetch-prices' account.pk as fetch_action %}
+  {% include "prices/_fetch_now.html" with action=fetch_action %}
   <form method="post" action="{% url 'watch-add' account.pk %}" class="watch-form" novalidate>
     {% csrf_token %}
     <div class="field">
