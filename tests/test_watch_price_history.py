@@ -264,7 +264,7 @@ def test_the_chart_has_one_point_per_close_and_the_table_matches(
     assert points == sorted(points), "oldest on the left"
     assert points[0][1] > points[-1][1], "the higher close is drawn higher (smaller y)"
     # Since 2026-10-29 the plot's viewBox is 0 to 100 both ways, stretched to its box, with the
-    # axes as HTML beside it (decision 119).
+    # axes as HTML beside it (decision 133).
     assert '<svg viewBox="0 0 100 100"' in html and 'role="img"' in html
     assert '<title id="chart-title">FUNDX, last 30 days: 5 closes' in html
     assert "low $1,180.00, high $1,234.50" in html
@@ -272,7 +272,7 @@ def test_the_chart_has_one_point_per_close_and_the_table_matches(
     assert table_dates(html)[0] == (today() - timedelta(days=1)).isoformat(), "newest first"
     assert '<td class="num">$1,234.50</td>' in html
     assert f"As of {(today() - timedelta(days=1)).isoformat()}: $1,234.50 (csv)" in html
-    # Since 2026-10-29 the owner's chart pages carry the hover script (decision 122); public pages
+    # Since 2026-10-29 the owner's chart pages carry the hover script (decision 136); public pages
     # still carry none (the test below and chapter 06a's).
     assert '<script src="/static/prices/chart.js" defer></script>' in html
 

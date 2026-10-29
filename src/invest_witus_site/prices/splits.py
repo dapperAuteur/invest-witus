@@ -1,4 +1,4 @@
-"""Splits between two statements (2026-10-29, decision 124).
+"""Splits between two statements (2026-10-29, decision 138).
 
 A statement records shares as the broker printed them, so a 4-for-1 split between two statements
 shows as four times the shares, which reads like a big purchase. The stored `split_factor` (from

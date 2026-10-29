@@ -9,7 +9,7 @@ Since 2026-10-29 a row also keeps the vendor's adjusted close (`adj_close`), so 
 long range does not draw a split as a crash. An adjusted close is relative to the newest day the
 vendor knew when it answered: after a split or a dividend, every earlier day's adjusted close
 changes by the same factor. `upsert` keeps the stored ones on one footing by rescaling the days
-the answer did not cover (decision 120).
+the answer did not cover (decision 134).
 """
 
 import datetime
@@ -99,7 +99,7 @@ class DailyClose(models.Model):
         help_text="The close adjusted for splits and dividends (Tiingo's adjClose); empty when "
         "the source sent none.",
     )
-    # The day's corporate actions as the vendor reports them (decision 123): 1 and 0 on an
+    # The day's corporate actions as the vendor reports them (decision 137): 1 and 0 on an
     # ordinary day, None when the source sent nothing (a CSV file, or a row stored before).
     split_factor: models.DecimalField[Decimal | None, Decimal | None] = models.DecimalField(
         max_digits=18,

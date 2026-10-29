@@ -73,7 +73,7 @@ class AccountAdmin(admin.ModelAdmin[Account]):
             "snapshots": snapshots,
             "pair": pair,
             "changes": changes,
-            # A stored split between the two dates, as a note under the symbol (decision 124).
+            # A stored split between the two dates, as a note under the symbol (decision 138).
             "change_rows": split_notes(changes, pair[0].as_of, pair[1].as_of) if pair else [],
         }
         return TemplateResponse(request, "admin/holdings/account/snapshots.html", context)
