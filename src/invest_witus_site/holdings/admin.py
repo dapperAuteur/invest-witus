@@ -11,6 +11,7 @@ from django.urls import URLPattern, path, reverse
 from django.utils.html import format_html
 
 from invest_witus_site.holdings.models import Account, Holding, Snapshot, SnapshotLine
+from invest_witus_site.prices.splits import split_notes
 
 
 def pick(
@@ -50,7 +51,8 @@ class AccountAdmin(admin.ModelAdmin[Account]):
         """The account's statements by date, and the change between any two of them.
 
         With no choice made, the two newest are compared. Whichever two are chosen, the earlier
-        date is "from" and the later is "to".
+        date is "from" and the later is "to". A symbol with a stored split between the two dates
+        gets a note row under it (2026-10-29); the statements are not changed.
         """
         account = get_object_or_404(Account, pk=pk)
         if not self.has_view_permission(request, account):
@@ -63,13 +65,16 @@ class AccountAdmin(admin.ModelAdmin[Account]):
         pair: tuple[Snapshot, Snapshot] | None = None
         if earlier is not None and later is not None:
             pair = (earlier, later) if earlier.as_of <= later.as_of else (later, earlier)
+        changes = pair[1].changes_since(pair[0]) if pair else []
         context = {
             **self.admin_site.each_context(request),
             "title": f"Statements for {account}",
             "account": account,
             "snapshots": snapshots,
             "pair": pair,
-            "changes": pair[1].changes_since(pair[0]) if pair else [],
+            "changes": changes,
+            # A stored split between the two dates, as a note under the symbol (decision 133).
+            "change_rows": split_notes(changes, pair[0].as_of, pair[1].as_of) if pair else [],
         }
         return TemplateResponse(request, "admin/holdings/account/snapshots.html", context)
 

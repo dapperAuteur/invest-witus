@@ -53,6 +53,7 @@
 
   <p>From {{ pair.0.as_of|date:"Y-m-d" }} to {{ pair.1.as_of|date:"Y-m-d" }}. Shares and cost basis
     only; the app fetches no prices yet (chapter 08).</p>
+  <p>A split stored by the price pull between the two dates is noted under its symbol; the statements are shown as the broker printed them.</p>
   <table>
     <caption class="sr-only">Change per symbol between the two statements</caption>
     <thead>
@@ -67,7 +68,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for change in changes %}
+      {% for change, note in change_rows %}
       <tr>
         <th scope="row">{{ change.symbol }}</th>
         <td>{{ change.shares_before }}</td>
@@ -77,6 +78,12 @@
         <td>{{ change.cost_after|default_if_none:"not shown" }}</td>
         <td>{{ change.cost_change|signed }}</td>
       </tr>
+      {% if note %}
+      <tr class="split-note">
+        <td></td>
+        <td colspan="6">{{ change.symbol }}: {{ note }}</td>
+      </tr>
+      {% endif %}
       {% endfor %}
     </tbody>
   </table>

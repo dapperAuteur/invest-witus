@@ -192,6 +192,15 @@ Changes carry a sign (`+1.500000`, `-400.00`). A symbol missing from one stateme
 zero cost on that side. A cost basis the statement did not print reads **not shown**, and so does its change:
 no number beats a wrong one.
 
+**A split between the two statements (2026-10-29).** When the price pull has stored a split for a symbol after
+the From date and on or before the To date, a note row sits under that symbol: `FUNDX: A 4-for-1 split on
+2026-07-15 explains a share change of this size: 10 shares before it are 40 after it.` It ends with `That is the
+whole change.` when the statement's shares match, or `The statement shows 41; the other 1 came from buying,
+selling or reinvesting.` when they do not. A reverse split reads `1-for-10 reverse`. The statements themselves
+are not changed. The note needs the split stored: rows fetched before 2026-10-29 have no split factor until
+**Get history** is pressed for the symbol (see [Adjusted closes, splits and dividends](#adjusted-closes-splits-and-dividends-2026-10-29)).
+A split on the From date itself is already in that statement's shares, so it gets no note.
+
 **What can go wrong.**
 
 - "Snapshot with this Account and As of already exists" (or words to that effect): one statement per account
@@ -376,7 +385,7 @@ account page is where they are kept.
 
 ## A watched symbol's price history
 
-**What it is for.** The closes the app has stored for one watched symbol, as a line and as a table, over the
+**What it is for.** The closes the app has stored for one watched symbol, as a chart and as a table, over the
 last 30, 90 or 365 days. Like every price, it is shown to the signed-in owner only.
 
 **Open it.** On the account page, in the **Watch list** table, press a symbol. The address is
@@ -384,10 +393,35 @@ last 30, 90 or 365 days. Like every price, it is shown to the signed-in owner on
 
 **What you should see.** The symbol as the heading, the note under it, then **As of** the newest stored close with
 its price and source; **stale** beside it when that close is more than five days old, as on the account page.
-Then **30 days · 90 days · 365 days** (90 is where it opens) and a line chart of the closes, oldest on the left,
-a dot on the newest, with the low, the high and the dates under it. Under the chart, the same closes as a table,
-**Date**, **Close** and **Source**, newest first. The chart draws no more than the table holds: a screen reader
-reads the chart's title (the symbol, the range, how many closes, the low and the high) and then the table.
+Then **30 days · 90 days · 365 days** (90 is where it opens), a link **Compare FUNDX with other symbols**, and
+the chart:
+
+- **The title**, `FUNDX, last 90 days`, and under it what the line is (`Adjusted close, US dollars.` or
+  `Close, US dollars.`), `Daily closes from Tiingo` (or `CSV files` on a laptop), and **as of** the last day
+  in the chart.
+- **The key**: a short sample of the line with `FUNDX (adjusted close, solid line)`, and, when the range has
+  any, **S** Split and **D** Dividend (ex-date).
+- **The axes**: dollars up the left side at round steps (`$1,180`, `$1,200`, ...), titled
+  `Adjusted close, US dollars`; dates along the bottom, titled **Date**: Mondays over 30 days (`Oct 5`), month
+  starts over 90 or 365 days (`Nov 2025`, `Jan 2026`, `Mar`; on a phone every other label is hidden). The days
+  are spaced by the calendar, so a weekend is a small gap.
+- **The line**, oldest on the left, a dot on the newest close, and an **S** or a **D** on the line on each split
+  or dividend day.
+- **Splits and dividends**, a table under the chart when the range has any: **Date**, **Symbol**, **Event**
+  (`Split 4-for-1`, `Dividend $0.57`).
+
+Under it, the same days as a table, newest first: **Date**, **Close**, **Adjusted close**, **Change** and
+**Change %** (from the stored day before, on the line's basis), **Split or dividend**, **Source**. On a phone the
+table scrolls sideways inside its own box; the page does not. A screen reader reads the chart's title (the
+symbol, the range, how many closes, the low and the high) and then the tables.
+
+**Hover detail.** Move the pointer over the chart: a dashed line and a dot follow the nearest day, and the box
+under the chart shows that day: the date, the **close**, the **adjusted close**, the **change** from the stored
+day before in dollars and percent (`-$1.62 (-0.27%)`), and the split or dividend on that day if any. With the
+keyboard, press **Tab** until the chart is outlined, then **Left** and **Right** move a day, **Home** and **End**
+go to the first and last day; a screen reader announces each day. That is all the app stores per day: no
+intraday prices and no volume. With JavaScript off there is no box, and the table under the chart has the same
+values.
 
 **What can go wrong.**
 
@@ -395,9 +429,79 @@ reads the chart's title (the symbol, the range, how many closes, the low and the
   press **Get history** on the same page.
 - "No closes stored in the last 30 days.": the newest close is older than the range; the **As of** line says
   when it is from. Pick a longer range, or check the pull's `failed` list for the symbol.
+- `Adjusted closes are missing for N of M days in this range, so the chart uses the unadjusted close`: the
+  days were stored before 2026-10-29. Press **Get history** with **All available** once; see the next section.
+  Until then a split shows as a sudden drop on the line, and the key says `(close, solid line)`.
 - Only a week of closes on a symbol watched before 2026-10-29: the year arrives with the next nightly run; until
   then the chart shows what is stored.
 - A 404: the symbol is not on this account's watch list, or the account is not yours.
+
+## Adjusted closes, splits and dividends (2026-10-29)
+
+**What they are for.** A stored close is the price as it traded that day. When a fund splits 4-for-1, its close
+drops to a quarter overnight although nobody lost money, so over a long range the line shows a fake crash. The
+price source also sends an **adjusted close**: every earlier close restated for the splits and dividends since,
+so the line runs smooth and its change is the holder's actual return. Tiingo's end-of-day documentation (read
+2026-10-29) says the adjustment "follows the standard method set forth by" the Center for Research in Security
+Prices and "incorporates both split and dividend adjustments". The app now stores, per day, the close, the
+adjusted close, the **split factor** (`4` on the day of a 4-for-1 split, `1` on other days; Tiingo uses the same
+field for some distributions) and the **cash dividend** whose ex-date is that day (`0` on other days).
+
+**Which one a chart uses.** The adjusted close when every day in the range has one; otherwise the close, for the
+whole line, so a line never mixes the two. The key, the y-axis title and the compare table say which.
+
+**Fill the days stored before 2026-10-29, once.**
+
+1. Open an account's page. In the **Watch list** section, under the table, pick **All available** under
+   **History range**.
+2. Press **Fetch history for all**.
+3. Repeat on the next account if it watches other symbols. A held symbol that is not on any watch list: add it
+   to the watch list first.
+
+**What you should see.** One line per symbol: `FUNDX, all available: 0 days added, 6,953 updated; earliest
+close stored 1999-03-10.` **Updated** is the days that gained an adjusted close, a split factor and a dividend.
+The history page's key then says **adjusted close**, and splits and dividends appear on the chart.
+
+**After that, nothing to do.** Every nightly pull, Fetch prices now and Get history stores the three values. When
+a new split or dividend arrives in the nightly week, the vendor's earlier adjusted closes all move by one factor;
+the app moves the stored ones it did not refetch by the same factor, so the line stays continuous.
+
+## Compare symbols (2026-10-29)
+
+**What it is for.** Up to six of an account's symbols on one chart, to see which moved more over the same days.
+Each line is rebased to **100** on its first stored day in the range, so a $500 fund and a $20 stock compare
+fairly: a line at 110 is ten percent above where it started, whatever its price.
+
+**Open it.** On the account page, under the Watch list table, press **Compare these symbols on one chart** (the
+first six watched symbols are ticked), or on a symbol's history page press **Compare FUNDX with other symbols**.
+The address is `/accounts/<id>/compare/?symbols=FUNDX,INDEX&days=365`.
+
+**Use it.**
+
+1. Under **Symbols, up to 6**, tick the symbols: the account's watch list and its holdings (not cash).
+2. Pick a **Range**: 30, 90 or 365 days (365 is where it opens).
+3. Press **Compare**.
+
+**What you should see.** The title (`FUNDX, INDEX: last 365 days`), a line saying each line is its symbol's
+adjusted closes rebased so its first day is 100, the source and the as-of date; the key, one entry per symbol
+with a different color **and** a different dash pattern (solid, dashed, dotted, dash-dot, short dashes,
+dash-dot-dot), so the lines can be told apart without color; the y axis titled `Value, with each line's first day
+in the range at 100`; split and dividend letters as on the history page. Under the chart, a table per symbol:
+**Uses** (adjusted close or close), **First day**, **Start**, **Last day**, **End** in dollars, and **Change** in
+percent. **Every day's values** opens a table of each day's rebased value and close per symbol.
+
+**Hover detail.** As on the history page; the box lists every symbol that day: its rebased value
+(`113.63 (start = 100)`), close, adjusted close, change from the day before, and any split or dividend. A symbol
+with no close that day says so.
+
+**What can go wrong.**
+
+- `Not on this account's watch list or holdings, so left out: NOPE.` Only this account's symbols can be compared.
+- `Up to 6 symbols at once; left out: ...` The first six in the order asked are charted.
+- `No closes stored in the last 365 days for ...` Press **Get history** for it, or wait for the nightly pull.
+- `The lines start on different days`: one symbol's stored history begins inside the range; each line is rebased
+  on its own first day, listed in the table.
+- A 404: the account is not yours.
 
 ## Fetch prices now and Get history (2026-10-29)
 
@@ -446,7 +550,24 @@ not say how far back a single request may reach, so the message tells you what c
 Earliest close returned: 2016-10-31; earliest close now stored: 2016-10-31.` **Earliest close returned** is
 the oldest day the source sent: for **All available**, that is how deep the vendor's history for the symbol
 goes. The history page's chart still offers 30, 90 and 365 days; the older closes are in the admin under
-**Prices**, **Daily closes**.
+**Prices**, **Daily closes**. Since 2026-10-29 a re-fetch of days already stored counts them as **updated** when
+it brings their adjusted close, split factor and dividend for the first time.
+
+**Several symbols at once: Fetch history for selected and Fetch history for all.**
+
+1. On an account page, in the **Watch list** table, tick the box at the start of each symbol's **History** cell
+   (or tick none and use **for all**).
+2. Under the table, pick the **History range**: 1 year, 5 years, 10 years or All available.
+3. Press **Fetch history for selected** or **Fetch history for all** (every symbol on this account's watch list).
+
+One request per symbol, in symbol order, at most 50 in one press, a one-second pause between them, and no more
+than four minutes. You see one line per symbol: `FUNDX, 5 years: 1,255 days added, 3 updated; earliest close
+stored 2021-10-29.` Then, if any: `Skipped, fetched less than 10 minutes ago; each can run again at the time
+shown: OTHER (at 2026-10-29 14:05 UTC).` and, when the run stopped early, `Stopped by the 50-request limit for
+one run. The rest: press again in 60 minutes: S50, S51.` (60 minutes after the request limit or Tiingo's 429,
+because the free plan counts requests per hour; 1 minute after the time limit). A ticked symbol that is not on
+this account's list is named and left out; pressing **for selected** with nothing ticked says `Tick at least one
+symbol, or press Fetch history for all.`
 
 **What can go wrong.**
 

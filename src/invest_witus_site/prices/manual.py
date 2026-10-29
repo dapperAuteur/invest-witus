@@ -9,6 +9,9 @@ already has, for the signed-in owner only, behind a ten-minute guard each:
   limit so it answers inside Vercel's function maximum.
 - **Get history** is one request for one symbol over a chosen range (1, 5 or 10 years, or all
   available), written with `DailyClose.upsert`, so a second press adds nothing.
+- **Fetch history for selected / for all** (2026-10-29, decision 134) is Get history for several
+  watched symbols in one press: one request per symbol, inside the same 50-request budget, pause
+  and 240-second limit as Fetch prices now, each symbol behind its own Get history guard.
 
 Tiingo's end-of-day page (https://www.tiingo.com/documentation/end-of-day, read 2026-10-29) shows
 historical prices as one request with `startDate` and `endDate` and names no limit on the range a
@@ -20,7 +23,9 @@ the answer itself says how deep the history goes.
 """
 
 import datetime
-from dataclasses import dataclass
+import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
@@ -29,9 +34,10 @@ from django.db.models import Min
 from django.utils import timezone
 
 from invest_witus_site.holdings.models import Holding
+from invest_witus_site.prices import pull as pull_module
 from invest_witus_site.prices.models import Backfill, DailyClose, ManualRun, UpsertCount
 from invest_witus_site.prices.pull import BACKFILL_DAYS, REQUESTS_PER_RUN, PullResult
-from invest_witus_site.prices.sources import PriceSource
+from invest_witus_site.prices.sources import PriceSource, PriceSourceError
 from invest_witus_site.watchlist.models import WatchItem
 
 # How long a button waits before it runs again for the same owner (Fetch prices now) or the
@@ -191,3 +197,94 @@ def history_message(result: HistoryResult, label: str) -> str:
         f"{counts.unchanged:,} unchanged. Earliest close returned: {first}; earliest close "
         f"now stored: {earliest}."
     )
+
+
+# How long to wait before pressing again for the symbols a stopped run did not reach: Tiingo
+# counts the free plan's 50 requests per hour (decision 70), so a budget or a 429 stop waits the
+# hour; a time stop spent no extra requests and can go again in a minute.
+RETRY_MINUTES = {"budget": 60, "rate limit": 60, "time limit": 1}
+
+
+@dataclass
+class ManyResult:
+    """What one Fetch history for selected (or for all) press did, symbol by symbol."""
+
+    since: date
+    fetched: list[HistoryResult] = field(default_factory=list[HistoryResult])
+    failed: dict[str, str] = field(default_factory=dict[str, str])
+    # Symbols inside their ten-minute Get history guard, with when each may run again.
+    guarded: dict[str, datetime.datetime] = field(default_factory=dict[str, datetime.datetime])
+    not_reached: list[str] = field(default_factory=list[str])
+    stopped: str = ""
+    requests: int = 0
+
+
+def fetch_history_many(
+    source: PriceSource,
+    symbols: list[str],
+    since: date,
+    until: date,
+    budget: int = REQUESTS_PER_RUN,
+    time_limit: float = FETCH_TIME_LIMIT_SECONDS,
+    clock: Callable[[], float] = time.monotonic,
+) -> ManyResult:
+    """Get history for each symbol in turn. Before each request: the budget, then the time
+    limit (either stops the run, and the rest are `not_reached`), then the symbol's own guard (a
+    guarded symbol is skipped and named; it spends no request). A refusal is recorded and the
+    next symbol tried; a 429 stops the run like the budget."""
+    started = clock()
+    result = ManyResult(since)
+    for index, symbol in enumerate(symbols):
+        if result.requests >= budget:
+            result.stopped = "budget"
+        elif clock() - started >= time_limit:
+            result.stopped = "time limit"
+        if result.stopped:
+            result.not_reached = symbols[index:]
+            break
+        refused_until = claim(ManualRun.Kind.HISTORY, symbol)
+        if refused_until is not None:
+            result.guarded[symbol] = refused_until
+            continue
+        if result.requests > 0 and pull_module.PAUSE_SECONDS > 0:
+            time.sleep(pull_module.PAUSE_SECONDS)
+        result.requests += 1
+        try:
+            result.fetched.append(fetch_history(source, symbol, since, until))
+        except PriceSourceError as error:
+            result.failed[symbol] = error.problem
+            if error.retry_later:
+                result.stopped = "rate limit"
+                result.not_reached = symbols[index + 1 :]
+                break
+    return result
+
+
+def many_messages(result: ManyResult, label: str) -> tuple[list[str], list[str], list[str]]:
+    """The success, error and info lines for one press: one line per symbol fetched, one per
+    refusal, then the guarded symbols and the ones not reached."""
+    successes: list[str] = []
+    for item in result.fetched:
+        earliest = f"{item.earliest_stored:%Y-%m-%d}" if item.earliest_stored else "none"
+        successes.append(
+            f"{item.symbol}, {label.lower()}: {plural(item.counts.inserted, 'day')} added, "
+            f"{item.counts.updated:,} updated; earliest close stored {earliest}."
+        )
+    errors = [
+        f"{symbol}: {problem}. Nothing was stored." for symbol, problem in result.failed.items()
+    ]
+    infos: list[str] = []
+    if result.guarded:
+        listed = ", ".join(f"{symbol} (at {when(at)})" for symbol, at in result.guarded.items())
+        infos.append(
+            f"Skipped, fetched less than {GUARD_MINUTES} minutes ago; each can run again at the "
+            f"time shown: {listed}."
+        )
+    if result.not_reached:
+        reason = STOP_REASONS.get(result.stopped, "the run's limits")
+        minutes = RETRY_MINUTES.get(result.stopped, 60)
+        infos.append(
+            f"Stopped by {reason}. The rest: press again in {plural(minutes, 'minute')}: "
+            f"{', '.join(result.not_reached)}."
+        )
+    return successes, errors, infos
