@@ -170,7 +170,8 @@ latest full month is left out), and put the month's amount into the top N in equ
 leaves the top N. Seven rules in `src/invest_witus/methods/momentum_12_1.toml`, each checked by
 `invest_witus/adherence/momentum.py`, every lesson "lesson coming". Start it from the same form with **Top N to
 hold**; the candidates join the watch list so the nightly pull stores their closes (a candidate needs a little over
-a year of history to be ranked; **Get 5 years of history** fetches it). The method page shows the ranking as bars
+a year of history to be ranked; a new symbol's first fetch stores two years, and **Get 5 years of history** fetches
+more). The method page shows the ranking as bars
 with a table, the watch list a 12-1 column, a watched symbol's chart the window shaded with the excluded month, each
 with a "How to read this" note, for the owner of an account running momentum only. On a paper account Confirm buys
 the top N in equal parts; sells are listed, not placed, and a buy of a symbol sold within 30 days carries a

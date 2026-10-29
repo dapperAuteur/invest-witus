@@ -2,7 +2,7 @@
 
 The same code the cron route runs, for a laptop (against the CSV folder) and for the owner's
 shell (against Tiingo, with the key in the environment). Running it twice writes nothing twice.
-A symbol's first pull reaches back a year on its own (`BACKFILL_DAYS`); `--since` asks further
+A symbol's first pull reaches back two years on its own (`BACKFILL_DAYS`); `--since` asks further
 back than that for the symbols named.
 """
 
@@ -55,6 +55,6 @@ class Command(BaseCommand):
         for symbol, problem in result.failed.items():
             self.stderr.write(f"Failed {symbol}: {problem}")
         if result.backfilled:
-            self.stdout.write(f"First pull, a year of closes: {', '.join(result.backfilled)}.")
+            self.stdout.write(f"First pull, two years of closes: {', '.join(result.backfilled)}.")
         if result.skipped:
             self.stderr.write(f"Skipped, for the next run: {', '.join(result.skipped)}")

@@ -162,8 +162,8 @@ def watched_message(request: HttpRequest, added: list[str]) -> None:
         messages.info(
             request,
             "Added to the watch list, so the nightly pull stores their closes: "
-            f"{', '.join(added)}. A candidate needs a year of closes or more to be ranked; "
-            "Get history fetches them now.",
+            f"{', '.join(added)}. A candidate needs about 13 months of closes to be ranked; "
+            "the nightly pull fetches two years, and Get history fetches them now.",
         )
 
 

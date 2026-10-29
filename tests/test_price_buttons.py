@@ -147,7 +147,7 @@ def test_fetch_now_pulls_the_owners_symbols_and_reports_the_counts(
         "0 unchanged, 1 refused, 2 backfilled, 0 skipped for budget."
     ) in html
     assert f"Refused NONE: no file NONE.csv in {csv_folder}" in html
-    assert "A year of closes, first time: FUNDX, INDEX." in html
+    assert "Two years of closes, first time: FUNDX, INDEX." in html
     assert "The rest continue tonight." not in html
     assert not DailyClose.objects.filter(symbol="OTHER").exists(), "another owner's symbol"
     assert not DailyClose.objects.filter(symbol="CASH").exists(), "cash has no price"
@@ -276,7 +276,9 @@ def test_a_tiingo_429_during_fetch_now_is_a_message_not_a_500(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize(("choice", "years"), [("1y", 1), ("5y", 5), ("10y", 10), ("all", None)])
+@pytest.mark.parametrize(
+    ("choice", "years"), [("1y", 1), ("2y", 2), ("5y", 5), ("10y", 10), ("all", None)]
+)
 def test_each_range_asks_one_request_from_the_right_start_date(
     client: Client,
     owner: User,
@@ -364,7 +366,7 @@ def test_an_unknown_range_is_refused_before_any_request(
     asked = tiingo(monkeypatch, settings)
     client.force_login(owner)
     html = text(client.post(history_url(account), {"range": "7y"}, follow=True))
-    assert "Pick a range for FUNDX: 1 year, 5 years, 10 years, all available." in html
+    assert "Pick a range for FUNDX: 1 year, 2 years, 5 years, 10 years, all available." in html
     assert asked == [] and not ManualRun.objects.exists()
 
 

@@ -278,11 +278,13 @@ continue; a rate limit stops the run and lists the symbols not reached. A run ma
 one-second pause between symbols, inside Tiingo's free plan (50 requests an hour, 1,000 a day, 500 unique
 symbols a month, "Internal Use Only", which is why values are shown to the signed-in owner and no one else).
 
-**A year on the first night (2026-10-29).** The first time the pull meets a symbol, held or watched, it asks for
-the last 365 days instead of seven, in the same single request, and notes the symbol under **Prices**, **Price
-backfills**. Symbols the pull already knew before this change get their year on the next run. A run still
-makes at most 50 requests; a symbol that did not fit, or that the source refused, asks for its year again the
-next night. Delete a **Price backfills** row to ask for that symbol's year again.
+**Two years on the first night (2026-10-29; two years since 2026-10-30).** The first time the pull meets a
+symbol, held or watched, it asks for the last 730 days instead of seven, in the same single request, and notes
+the symbol under **Prices**, **Price backfills**. Two years because the 12-1 momentum ranking needs a close in the
+month 13 months back; one year (the first rule) left every new candidate unranked. Symbols the pull already knew,
+including ones backfilled under the one-year rule, get their two years on the next run, once. A run still makes
+at most 50 requests; a symbol that did not fit, or that the source refused, asks again the next night. Delete a
+**Price backfills** row to ask for that symbol's two years again.
 
 **When it runs.** Vercel's cron calls `GET /api/cron/pull-prices/` once a day at 06:00 UTC (`vercel.json`,
 `0 6 * * *`), which is 01:00 or 02:00 in Indiana depending on the season, after Tiingo's mutual fund NAV time.
@@ -355,7 +357,8 @@ button: a symbol reaches a plan only when you add it to the plan's universe.
 2. In **Symbols**, type one or more symbols, separated by commas or spaces. The help under the box gives the
    rule: "Letters, digits, a dot and a hyphen; up to twelve characters each." **Note (optional)** is a short
    reason, kept on the rows added now.
-3. **Fetch their history now** is ticked, with **History range** at **1 year** (since 2026-10-29). Leave it to
+3. **Fetch their history now** is ticked, with **History range** at **2 years** (since 2026-10-30; 1 year
+   before, which is too short for the 12-1 momentum ranking). Leave it to
    fetch the new symbols' closes in the same press, or pick another range; untick it to let prices arrive with
    the nightly pull or **Fetch prices now**, as before.
 4. Press **Add to the watch list**.
@@ -364,8 +367,8 @@ button: a symbol reaches a plan only when you add it to the plan's universe.
 FUNDX." A symbol already on the list is reported as "Already on the watch list: FUNDX." and a token outside the
 rule as "Refused: <token> (<reason>)." while the valid ones are still added. With **Fetch their history now**
 ticked, the symbols just added (not the ones already watched) are fetched like **Fetch history for selected**
-(below, under Get history): one line per symbol, `OTHER, 1 year: 251 days added, 0 updated; earliest close
-stored 2025-10-29.`, a symbol fetched in the last 10 minutes skipped and named, at most 50 requests and four
+(below, under Get history): one line per symbol, `OTHER, 2 years: 502 days added, 0 updated; earliest close
+stored 2024-10-30.`, a symbol fetched in the last 10 minutes skipped and named, at most 50 requests and four
 minutes. The table has **Symbol**, **Note**,
 **Close**, **As of**, **Source** and a **Remove** button in each row. A new symbol reads **no price yet** until
 the nightly pull has run, and the note under the table says so: "Prices arrive after the nightly pull: no close
@@ -555,7 +558,7 @@ store is shown to you only; no public page has either button.
 2. Press **Fetch prices now**.
 
 It asks the price source for the last seven days of every symbol your accounts hold (cash excepted) or watch,
-and a year for a symbol it has never fetched, one request per symbol: at most 50 requests, a one-second pause
+and two years for a symbol it has never fetched, one request per symbol: at most 50 requests, a one-second pause
 between symbols, and no more than four minutes, so the page always answers. It is the same pull the cron runs,
 limited to your symbols.
 
@@ -564,10 +567,10 @@ limited to your symbols.
 - `Fetched closes from tiingo for 3 symbols in 3 requests: 12 inserted, 0 updated, 4 unchanged, 1 refused,
   2 backfilled, 0 skipped for budget.` **Inserted** is new days; **updated** a day whose close changed (a
   vendor's correction); **unchanged** a day already stored; **refused** a symbol the source turned down;
-  **backfilled** a symbol fetched for its first year; **skipped for budget** a symbol the run did not reach.
+  **backfilled** a symbol fetched for its first two years; **skipped for budget** a symbol the run did not reach.
   Press it again after ten minutes: **inserted** 0 and the same days **unchanged**.
 - `Refused FUNDX: Tiingo answered 404: ...`, one line per refused symbol, with the vendor's reason.
-- `A year of closes, first time: FUNDX, INDEX.` when a symbol got its first year.
+- `Two years of closes, first time: FUNDX, INDEX.` when a symbol got its first two years.
 - `Stopped by the 50-request limit for one run; not reached: ... The rest continue tonight.` The run stopped
   early; the nightly pull reaches them. The reason may also read **Tiingo's hourly or daily limit** (the vendor
   answered 429) or **the time one press may take**.
@@ -577,7 +580,7 @@ limited to your symbols.
 
 1. On an account page, in the **Watch list** table, find the symbol's **History** cell. (Or open the symbol's
    history page; the **Get history** section is under the table.)
-2. Pick a range: **1 year**, **5 years**, **10 years** or **All available**.
+2. Pick a range: **1 year**, **2 years**, **5 years**, **10 years** or **All available**.
 3. Press **Get history**.
 
 One request to the price source for that symbol and range. Days already stored are left alone, so pressing it
@@ -596,7 +599,7 @@ it brings their adjusted close, split factor and dividend for the first time.
 1. On an account page, in the **Watch list** table, tick the box at the start of each symbol's **History** cell,
    or type symbols in **Or type symbols** under the table, separated by commas or spaces (`FUNDX, OTHER` or
    `FUNDX OTHER`), or both (or tick none and use **for all**).
-2. Under the table, pick the **History range**: 1 year, 5 years, 10 years or All available.
+2. Under the table, pick the **History range**: 1 year, 2 years, 5 years, 10 years or All available.
 3. Press **Fetch history for selected** or **Fetch history for all** (every symbol on this account's watch list).
 
 One request per symbol, in symbol order, at most 50 in one press, a one-second pause between them, and no more
@@ -761,9 +764,10 @@ symbols below (`ALPHA`, `BETA`, `GAMMA`, `DELTA`) are placeholders.
   than the number of candidates. Leave **Top N to hold** empty for index investing. Press **Start this method**.
   The message names the candidates it added to the watch list, so the nightly pull stores their closes.
 - **Fetch enough history.** A candidate is ranked only when it has a close in the month 13 months back and in the
-  month 2 months back, a little over a year of history. The nightly pull's first fetch of a new symbol stores one
-  year, so a new candidate shows under **Not ranked** with the months it needs; press **Get 5 years of history**
-  under that list, once.
+  month 2 months back, a little over a year of history. Since 2026-10-30 the nightly pull's first fetch of a new symbol (and
+  the add form's **Fetch their history now**) stores two years, so a new candidate is ranked after one night. A
+  candidate that still shows under **Not ranked** (a refused fetch, or a symbol younger than 13 months) lists the
+  months it needs; press **Get 5 years of history** under that list, once.
 - **Read the ranking.** **The ranking for 2026-11** sits above the view in A, B and C. Each candidate is a bar on
   one scale: right of the line it rose over the window, left of it it fell; the number has its sign and the word up
   or down. Filled bars are in the top N and say so; outlined bars are not. The table under the bars has the same

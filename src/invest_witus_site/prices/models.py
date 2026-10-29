@@ -280,11 +280,12 @@ def footing_ratio(
 class Backfill(models.Model):
     """A symbol whose history the pull has already asked for, and how far back (2026-10-29).
 
-    The first pull of a symbol asks for a year of closes in its one request instead of the
-    nightly week, then writes a row here. A symbol without a row, or with one that does not
-    reach back far enough, gets the year on its next pull: one held or watched before this
-    table existed included. A refused or skipped request writes no row, so the next night tries
-    again. Deleting a row in the admin asks for the year again.
+    The first pull of a symbol asks for two years of closes (`pull.BACKFILL_DAYS`; one year
+    until 2026-10-30) in its one request instead of the nightly week, then writes a row here. A
+    symbol without a row, or with one that does not reach back far enough, gets the two years on
+    its next pull: one held or watched before this table existed included. A refused or skipped
+    request writes no row, so the next night tries again. Deleting a row in the admin asks for
+    the two years again.
     """
 
     symbol: models.CharField[str, str] = models.CharField(max_length=20, unique=True)

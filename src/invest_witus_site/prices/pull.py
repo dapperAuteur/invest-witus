@@ -6,11 +6,12 @@ hour, does not retry a failed run, and can occasionally deliver a run twice or n
 means one missed night is filled in by the next, and `DailyClose.upsert` means a repeated night
 writes nothing.
 
-A symbol's first pull asks for `BACKFILL_DAYS` of closes instead (2026-10-29), so a symbol just
-added to a watch list has a year of history for its page after one night. It is still one
+A symbol's first pull asks for `BACKFILL_DAYS` of closes instead (2026-10-29; two years since
+2026-10-30), so a symbol just added to a watch list has two years of history after one night,
+enough for the 12-1 momentum window (about 13 months). It is still one
 request: Tiingo's end-of-day endpoint takes a `startDate` and an `endDate` (chapter 08's
 reading), so the budget below counts it like any other symbol. `Backfill` remembers which
-symbols have had their year.
+symbols have had their backfill.
 """
 
 import logging
@@ -39,8 +40,10 @@ REQUESTS_PER_RUN = 50
 # and per day and says "We do not rate limit to minute or second", so this is a courtesy to the
 # vendor, not a documented requirement; the budget above is the real guard.
 PAUSE_SECONDS = 1.0
-# How far back a symbol's first pull reaches: a year, the history page's longest range.
-BACKFILL_DAYS = 365
+# How far back a symbol's first pull reaches: two years (2026-10-30, decision 149). The 12-1
+# momentum window reads the month-end close 13 months back (decision 143), so one year left a
+# new candidate unranked; two years ranks it with room to spare, still in one request.
+BACKFILL_DAYS = 730
 
 
 def watch_symbols() -> set[str]:
@@ -114,7 +117,8 @@ def pull(
     started = clock()
     result = PullResult(source.name, since, until, list(symbols))
     backfill_since = until - timedelta(days=BACKFILL_DAYS)
-    # A row that reaches back to this run's year counts; one written today still will tomorrow.
+    # A row that reaches back to this run's window counts; one written today still will tomorrow.
+    # A row from the one-year days (before decision 149) does not, so those symbols ask once more.
     done = set(
         Backfill.objects.filter(symbol__in=result.symbols, since__lte=backfill_since).values_list(
             "symbol", flat=True
