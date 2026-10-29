@@ -9,6 +9,7 @@ import httpx
 import pytest
 from pytest_django.fixtures import Settings
 
+from invest_witus_site.outbox import client as outbox_client
 from invest_witus_site.reports import inbox
 
 
@@ -29,4 +30,19 @@ def no_real_inbox(settings: Settings, monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def refuse_real_inbox(request: httpx.Request) -> httpx.Response:
+    raise AssertionError(f"a test tried to reach {request.url.host}")
+
+
+@pytest.fixture(autouse=True)
+def no_real_outbox(settings: Settings, monkeypatch: pytest.MonkeyPatch) -> None:
+    """WitUS Outbox is off in every test, kill switch included, whatever the shell exports, and a
+    request that slipped through fails here. tests/test_outbox.py turns it on with its own fake."""
+    settings.OUTBOX_TRIGGER_ENABLED = ""
+    settings.OUTBOX_INGEST_URL = ""
+    settings.OUTBOX_SOURCE_SLUG = ""
+    settings.OUTBOX_INGEST_SECRET = ""
+    monkeypatch.setattr(outbox_client, "transport", httpx.MockTransport(refuse_real_outbox))
+
+
+def refuse_real_outbox(request: httpx.Request) -> httpx.Response:
     raise AssertionError(f"a test tried to reach {request.url.host}")

@@ -1,0 +1,8 @@
+{% extends "admin/change_list.html" %}
+{% load admin_urls %}
+{% comment %}The admin's add button, named for what it does: the owner drafts a post for Outbox.{% endcomment %}
+{% block object-tools-items %}
+  {% if has_add_permission %}
+    <li><a href="{% url cl.opts|admin_urlname:'add' %}" class="addlink">Draft a post</a></li>
+  {% endif %}
+{% endblock %}
