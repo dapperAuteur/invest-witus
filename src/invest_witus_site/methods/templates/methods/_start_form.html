@@ -1,0 +1,15 @@
+{# The start form (chapter 10): the method from the package's list, and the person's own numbers. #}
+<form method="post" action="{% url 'method-start' account.pk %}" class="method-form" novalidate>
+  {% csrf_token %}
+  {{ start_form.non_field_errors }}
+  {% for field in start_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {{ field.errors }}
+    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+  </div>
+  {% endfor %}
+  <button type="submit">Start this method</button>
+</form>
+<p class="small muted">Starting a method writes your plan down. It places no order and recommends nothing: the symbols are yours, from the lesson, and the app only checks what you log against the rules you chose.</p>

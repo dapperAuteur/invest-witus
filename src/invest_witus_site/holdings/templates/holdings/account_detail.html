@@ -48,6 +48,15 @@
   {% else %}
   <p>No statement yet.{% if user.is_staff %} <a href="{% url 'admin:holdings_snapshot_add' %}?account={{ account.pk }}">Enter the first one in the admin.</a>{% endif %}</p>
   {% endif %}
+  {# The method (chapter 10): one line naming it, or the invitation to start one; the method page has the rest. #}
+  <section class="method-line" aria-labelledby="method-line-heading">
+    <h2 id="method-line-heading">Method</h2>
+    {% if method_plan %}
+    <p><a href="{% url 'method-page' account.pk %}">{{ method_plan.method.name }}</a>: {{ method_plan.amount|plain_number }} into {{ method_plan.symbols }} within the first {{ method_plan.buy_window_days }} day{{ method_plan.buy_window_days|pluralize }} of each month, since {{ method_plan.started_on|date:"Y-m-d" }}. The rules, the review and the journal are on the method page.</p>
+    {% else %}
+    <p>No method yet on this account. <a href="{% url 'method-page' account.pk %}?view=c">Read the rules and start one.</a></p>
+    {% endif %}
+  </section>
   {# The watch list (chapter 09): the symbols followed here, the latest close beside each, the add form. #}
   {% include "watchlist/_section.html" %}
   <p><a href="{% url 'account-list' %}">All accounts</a></p>

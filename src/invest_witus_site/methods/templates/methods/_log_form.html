@@ -1,0 +1,15 @@
+{# The one-row add form (chapter 10): a buy or a sell, by hand, as the confirmation shows it. Chapter 12 builds the logbook. #}
+<form method="post" action="{% url 'method-log' account.pk %}" class="method-form" novalidate>
+  {% csrf_token %}
+  {{ entry_form.non_field_errors }}
+  {% for field in entry_form %}
+  <div class="field">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {{ field.errors }}
+    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+  </div>
+  {% endfor %}
+  <button type="submit">Log it</button>
+</form>
+<p class="small muted">Logging records what you did; it places no order. The review reads the journal, not the broker.</p>

@@ -14,6 +14,7 @@ This repository is two things at once:
 
 The user guide and the screen-recording scripts for each feature, written for the person who uses the app rather
 than the person who builds it, live in [`docs/guide/`](docs/guide/README.md).
+The commands the owner runs against production (migrations, the superuser, the cron by hand) are in `docs/05-operations.md`.
 
 Information, not advice. Invest.WitUS is a learning tool. It does not recommend securities and is not open to
 other users yet.
@@ -90,6 +91,24 @@ letters, digits, a dot or a hyphen, one to twelve characters; anything else is r
 stored. Every watched symbol joins the nightly pull's universe inside chapter 08's budget, so `pull_prices` and
 the cron fetch it with the held ones. There is no buy button: watching places no order. The walk-through is
 [chapter 09](docs/chapters/09-the-watch-list.md), section 09.8.
+
+## The method engine and the three views
+
+Chapter 10 puts the product's core on the web: a `methods` app whose `MethodPlan` row is chapter 03's `Plan`
+for one account (the method's id, the amount, the buy window, the symbols, the start; one active plan per
+account, an ended one kept as history) and whose `JournalEntry` row is chapter 03's `Entry` (a buy or a sell,
+the symbol, the amount, the shares if known, a note). The rules are never copied into a row: `load_method`
+reads the package's TOML file at request time, so every rule prints its text with the lesson that explains it,
+or the words "lesson coming" when the file has no link yet. Chapter 03's `review()` runs unchanged against the
+rows, and the signed-in owner reads it at `/accounts/<id>/method/` in three views of one context, named as the
+research named them: A, The Plan and the Logbook (the home: the next window, the on-plan status with its
+findings, the rules, the logbook); B, Method Console (rule checks with status, evidence and a lesson column,
+every month of the plan done, missed or open with amounts and shares, the findings and the journal as tables);
+C, The Lesson Lab (the rules read before the start form, then each rule's lesson and how often it was flagged).
+The switch is three links, `?view=a|b|c`, remembered in the session; the page opens on C until a method runs and
+on A after. Starting a method and logging an entry are POST forms behind the sign-in and the ownership check;
+nothing on the page is a price, and no public page links it. The walk-through is
+[chapter 10](docs/chapters/10-the-method-engine-and-the-three-views.md), section 10.10.
 
 ## Credits
 

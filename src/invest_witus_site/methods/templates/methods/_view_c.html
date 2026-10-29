@@ -1,0 +1,38 @@
+{% load holdings_extras %}
+{# View C, "The Lesson Lab" (research 01, direction C): the lesson is the screen. The rules are read #}
+{# before the plan is written; once it runs, a broken rule points back at its lesson, and the journal #}
+{# is the lab notebook. No points, no streaks: a rule is on when the plan names the method. #}
+{% if plan %}
+<p class="lead">You are running <strong>{{ review.method.name }}</strong>. {{ review.method.summary }}</p>
+<p>Your plan: {{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, since {{ plan.started_on|date:"Y-m-d" }}.</p>
+<h2>The rules, and what to re-read</h2>
+<p>Each rule comes from one lesson. A rule the review flagged names how often, and its lesson is the place to go back to before the next window.</p>
+<ol class="rules">
+  {% for check in review.checks %}
+  <li id="rule-{{ check.rule.id }}">{{ check.rule.text }} <span class="small">{% if check.rule.lesson_url %}<a href="{{ check.rule.lesson_url }}">Open the lesson</a>{% else %}<span class="muted">lesson coming</span>{% endif %}{% if check.findings %} <strong>Flagged {{ check.findings|length }} time{{ check.findings|length|pluralize }}, in {{ check.months }}.</strong>{% else %} Followed so far.{% endif %}</span></li>
+  {% endfor %}
+</ol>
+<h2>This month's lab</h2>
+<p>{% if review.next_action.status == "due" %}The window is open: buy {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }} by {{ review.next_action.closes|date:"Y-m-d" }}, then log it below.{% else %}The next window is {{ review.next_action.opens|date:"Y-m-d" }} to {{ review.next_action.closes|date:"Y-m-d" }}: {{ review.next_action.amount|plain_number }} of {{ review.next_action.symbols|join:", " }}. Until then, read.{% endif %} {{ review.months_done }} of {{ review.months_due }} scheduled buy{{ review.months_due|pluralize }} made through {{ review.through|date:"Y-m-d" }}.</p>
+{% include "methods/_findings.html" %}
+<h2>Lab notebook</h2>
+{% include "methods/_entries.html" with caption="Every trade logged for this account, in date order" %}
+<h3>Add to the notebook</h3>
+{% include "methods/_log_form.html" %}
+{# A start submitted while a method runs lands here with its reason; the form itself is not shown. #}
+{{ start_form.non_field_errors }}
+<p class="small muted">This account runs one method at a time. Ending it is an admin step for now; a change of plan with its reason is chapter 12's.</p>
+{% else %}
+<p class="lead">A method is a short list of rules, each taught by one lesson. Read them before you commit: once the plan is written, the app holds you to every one and sends you back to the lesson when the journal leaves it.</p>
+{% for method, rules in catalog %}
+<section aria-labelledby="catalog-{{ method.id }}">
+  <h2 id="catalog-{{ method.id }}">{{ method.name }} <span class="muted small">(version {{ method.version }})</span></h2>
+  <p>{{ method.summary }} {% if method.lesson %}<a href="{{ method.lesson }}">The lesson</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</p>
+  {% include "methods/_rules.html" with rules=rules %}
+</section>
+{% endfor %}
+<section aria-labelledby="start-heading">
+  <h2 id="start-heading">Start a method on this account</h2>
+  {% include "methods/_start_form.html" %}
+</section>
+{% endif %}

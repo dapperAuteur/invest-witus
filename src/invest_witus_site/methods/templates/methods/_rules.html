@@ -1,0 +1,7 @@
+{# The rules of one method, each with its lesson (chapter 10). Included with `rules`, a list of RuleLine. #}
+{# A rule whose TOML has no lesson URL reads "lesson coming": the words come from the file, never a guessed link. #}
+<ol class="rules">
+  {% for rule in rules %}
+  <li id="rule-{{ rule.id }}">{{ rule.text }} <span class="small">{% if rule.lesson_url %}<a href="{{ rule.lesson_url }}">Why this rule</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</span></li>
+  {% endfor %}
+</ol>
