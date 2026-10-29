@@ -13,7 +13,7 @@ One operator in Indiana, who builds the WitUS family of learning tools. No emplo
 Today the app holds two kinds of data:
 
 - **The waitlist.** Your name and email address, and the time you joined. We keep it to tell you when the app opens to learners. Nothing else is collected with it.
-- **The operator's own records.** Plans (the method an account runs and the plan's own numbers, added October 28, 2026), holdings entered by hand from statements, the symbols on each account's watch list (added October 28, 2026), a trading journal (its entries, logged by hand, added October 28, 2026), and paper (simulated) trades, all belonging to the operator.
+- **The operator's own records.** Plans (the method an account runs and the plan's own numbers, added October 28, 2026), holdings entered by hand from statements, the symbols on each account's watch list (added October 28, 2026), a trading journal (its entries, logged by hand, added October 28, 2026; from October 29, 2026 each entry may also hold a written reason, a state of mind chosen from a short list, and tags), the monthly reviews written about it (added October 29, 2026), and paper (simulated) trades, all belonging to the operator.
 
 When the app opens to other learners, education only and alongside the course, it will store for each person: the WitUS user id, email address and name from Sign in with WitUS (the operator's own sign-in stores the same three today); the plans they write; the holdings they enter; their journal; and their paper trades. Nothing is collected that the app does not use.
 
@@ -51,7 +51,7 @@ Added October 28, 2026: the hosted site uses Vercel Web Analytics, which counts 
 
 ## Deleting your data
 
-Email the Contact address in the footer from the address you signed up with. A waitlist entry is deleted on request; an account, when accounts exist, is deleted with everything attached to it. Plans and the journal export to CSV first if you ask.
+Email the Contact address in the footer from the address you signed up with. A waitlist entry is deleted on request; an account, when accounts exist, is deleted with everything attached to it. The journal can be downloaded as a CSV file from its logbook page at any time; plans export to CSV first if you ask.
 
 ## Children
 

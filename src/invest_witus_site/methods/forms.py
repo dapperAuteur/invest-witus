@@ -1,12 +1,14 @@
-"""Two forms on the method page: start a method for an account, and log one journal entry."""
+"""The method page's forms: start a method for an account, and log one journal entry. Chapter 12
+adds three: change or end the plan with a reason, close a month's review, and reopen it."""
 
 from collections.abc import Mapping
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from invest_witus.methods.rulebook import available_methods
 from invest_witus_site.holdings.models import Account
@@ -14,9 +16,14 @@ from invest_witus_site.methods.models import (
     MAX_WINDOW_DAYS,
     MIN_WINDOW_DAYS,
     ONE_CENT,
+    REASON_MAX_LENGTH,
+    TRADE,
     JournalEntry,
     MethodPlan,
+    MonthlyReview,
     join_symbols,
+    month_of,
+    parse_tags,
     validate_symbol_list,
 )
 
@@ -84,7 +91,8 @@ class StartMethodForm(forms.Form):
         cleaned = super().clean() or {}
         if MethodPlan.active_for(self.account) is not None:
             raise ValidationError(
-                "This account already runs a method. End it in the admin before starting another."
+                "This account already runs a method. End it from the method page before "
+                "starting another."
             )
         return cleaned
 
@@ -105,12 +113,237 @@ class StartMethodForm(forms.Form):
 class JournalEntryForm(forms.ModelForm[JournalEntry]):
     """One row of the journal, as a `ModelForm`: the fields, their labels, help and validators
     come from the model, so the symbol rule and the one-cent minimum run here before `save()`
-    runs them again. The account is set by the view."""
+    runs them again. The view passes `instance=JournalEntry(account=account)`, so the model's
+    `clean()` knows the account and can refuse a closed month.
+
+    Chapter 12: the kind, the reason, the state and the tags. A form posted without a kind (the
+    chapter 10 form, a script) is a trade, as every entry was before this chapter."""
 
     class Meta:
         model = JournalEntry
-        fields = ["date", "action", "symbol", "amount", "shares", "note"]
+        fields = [
+            "date",
+            "kind",
+            "action",
+            "symbol",
+            "amount",
+            "shares",
+            "reason",
+            "state",
+            "tags",
+            "note",
+        ]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
             "symbol": forms.TextInput(attrs=SYMBOL_BOX),
+            "reason": forms.Textarea(attrs={"rows": 2}),
+            "tags": forms.TextInput(attrs={"autocomplete": "off", "spellcheck": "false"}),
         }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["kind"].required = False
+
+    def clean_kind(self) -> str:
+        kind: str = self.cleaned_data.get("kind") or ""
+        return kind or TRADE
+
+    def clean_tags(self) -> str:
+        try:
+            return " ".join(parse_tags(self.cleaned_data.get("tags") or ""))
+        except ValueError as error:
+            raise ValidationError(str(error)) from None
+
+
+def first_of_month(day: date) -> date:
+    return day.replace(day=1)
+
+
+def first_of_next_month(day: date) -> date:
+    return (day.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+
+THIS_MONTH = "this"
+NEXT_MONTH = "next"
+CHANGE = "change"
+END = "end"
+
+
+class PlanChangeForm(forms.Form):
+    """Change the plan's amount, window or symbols, or end it, always with a reason. A change
+    makes a new version that starts on the first day of this month or next month; the old version
+    keeps judging the months before it (PRD 7.1: "old reviews keep pointing at the version they
+    judged"). The method itself does not change here: a different method is a new plan."""
+
+    what = forms.ChoiceField(
+        label="What to do",
+        choices=[(CHANGE, "Change the numbers"), (END, "End the plan")],
+        widget=forms.RadioSelect,
+        initial=CHANGE,
+    )
+    amount = forms.DecimalField(
+        label="Amount each month",
+        required=False,
+        min_value=ONE_CENT,
+        max_digits=14,
+        decimal_places=2,
+    )
+    buy_window_days = forms.IntegerField(
+        label="Buy window, in days",
+        required=False,
+        min_value=MIN_WINDOW_DAYS,
+        max_value=MAX_WINDOW_DAYS,
+    )
+    symbols = forms.CharField(
+        label="Symbols", required=False, max_length=200, widget=forms.TextInput(attrs=SYMBOL_BOX)
+    )
+    effective = forms.ChoiceField(label="Starting", required=False)
+    reason = forms.CharField(
+        label="Why",
+        max_length=REASON_MAX_LENGTH,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Required. It is kept with the version, dated, for every later review.",
+    )
+
+    def __init__(
+        self, plan: MethodPlan, today: date, data: Mapping[str, Any] | None = None
+    ) -> None:
+        initial = {
+            "amount": plan.amount,
+            "buy_window_days": plan.buy_window_days,
+            "symbols": plan.symbols,
+            "effective": NEXT_MONTH,
+        }
+        super().__init__(data, initial=initial)
+        self.plan = plan
+        self.today = today
+        this, following = first_of_month(today), first_of_next_month(today)
+        effective = self.fields["effective"]
+        assert isinstance(effective, forms.ChoiceField)
+        effective.choices = [
+            (NEXT_MONTH, f"Next month, from {following:%Y-%m-%d}"),
+            (THIS_MONTH, f"This month, from {this:%Y-%m-%d}"),
+        ]
+
+    def clean_symbols(self) -> str:
+        text: str = self.cleaned_data.get("symbols") or ""
+        if not text.strip():
+            return ""
+        validate_symbol_list(text)
+        return join_symbols(text)
+
+    def clean(self) -> dict[str, Any]:
+        cleaned = super().clean() or {}
+        if cleaned.get("what") != CHANGE:
+            return cleaned
+        for name in ("amount", "buy_window_days", "symbols"):
+            if name not in self.errors and cleaned.get(name) in (None, ""):
+                self.add_error(name, "A change keeps every number: fill this in.")
+        if self.errors:
+            return cleaned
+        plan = self.plan
+        new = (cleaned["amount"], cleaned["buy_window_days"], cleaned["symbols"])
+        if new == (plan.amount, plan.buy_window_days, plan.symbols):
+            raise ValidationError("Nothing changed: the amount, the window and the symbols match.")
+        if cleaned.get("effective") == THIS_MONTH:
+            self.check_this_month()
+        return cleaned
+
+    def check_this_month(self) -> None:
+        """This month may take the new numbers only while nothing in it is settled: the window is
+        still open, no trade is logged in it, and the version in force has started. Otherwise
+        the month already belongs to the old numbers, and the change starts next month."""
+        plan, today = self.plan, self.today
+        if plan.started_on > today:
+            raise ValidationError(
+                f"Version {plan.version} starts on {plan.started_on:%Y-%m-%d} and has not begun; "
+                "a change to it starts next month."
+            )
+        if today.day > plan.buy_window_days:
+            raise ValidationError(
+                f"This month's window closed on day {plan.buy_window_days}; the month is judged "
+                "by the numbers in force then. Choose next month."
+            )
+        traded = JournalEntry.objects.filter(
+            account=plan.account,
+            kind=TRADE,
+            date__year=today.year,
+            date__month=today.month,
+            date__gte=plan.started_on,
+        ).exists()
+        if traded:
+            raise ValidationError(
+                f"{month_of(today)} already has a trade in the journal; it stays on version "
+                f"{plan.version}. Choose next month."
+            )
+        if MonthlyReview.is_closed(plan.account.pk, today):
+            raise ValidationError(f"{month_of(today)} is closed. Choose next month.")
+
+    def apply(self) -> MethodPlan:
+        """Write the change, after `is_valid()`. Ending: the row stays, inactive, with the day and
+        the reason. Changing: the old row ends the day before the new version starts, and the
+        new row points back at it. One transaction, the old row first, so the partial unique
+        constraint (one active plan per account) never sees two."""
+        plan, data = self.plan, self.cleaned_data
+        reason: str = data["reason"].strip()
+        with transaction.atomic():
+            if data["what"] == END:
+                plan.active = False
+                plan.ended_on = self.today
+                plan.end_reason = reason
+                plan.save()
+                return plan
+            effective = (
+                first_of_month(self.today)
+                if data.get("effective") == THIS_MONTH
+                else first_of_next_month(self.today)
+            )
+            starts = max(effective, plan.started_on)
+            plan.active = False
+            plan.ended_on = starts - timedelta(days=1)
+            plan.save()
+            return MethodPlan.objects.create(
+                account=plan.account,
+                method_id=plan.method_id,
+                amount=data["amount"],
+                buy_window_days=data["buy_window_days"],
+                symbols=data["symbols"],
+                started_on=starts,
+                practice_budget=plan.practice_budget,
+                previous=plan,
+                version=plan.version + 1,
+                change_reason=reason,
+            )
+
+
+TEXT_BOX = {"rows": 3}
+
+
+class CloseReviewForm(forms.Form):
+    """The month's written review: three short answers, each required."""
+
+    did = forms.CharField(
+        label="What I did",
+        max_length=REASON_MAX_LENGTH,
+        widget=forms.Textarea(attrs=TEXT_BOX),
+    )
+    rules_said = forms.CharField(
+        label="What the rules said",
+        max_length=REASON_MAX_LENGTH,
+        widget=forms.Textarea(attrs=TEXT_BOX),
+        help_text="Started for you from the review's findings. Edit it to say it your way.",
+    )
+    next_month = forms.CharField(
+        label="What I'll do next month",
+        max_length=REASON_MAX_LENGTH,
+        widget=forms.Textarea(attrs=TEXT_BOX),
+    )
+
+
+class ReopenReviewForm(forms.Form):
+    reason = forms.CharField(
+        label="Why reopen it",
+        max_length=REASON_MAX_LENGTH,
+        widget=forms.Textarea(attrs=TEXT_BOX),
+        help_text="Required, and kept: the month's history shows every close and reopen.",
+    )

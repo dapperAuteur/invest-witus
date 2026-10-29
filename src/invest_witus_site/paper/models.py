@@ -25,11 +25,16 @@ FINAL_STATUSES = frozenset({"filled", "canceled", "expired", "rejected", "replac
 STAGED = "staged"
 
 
-def client_order_id(account_pk: int, plan_pk: int, month: str, symbol: str) -> str:
-    """The same four facts always give the same id, so Alpaca and this table both see a repeat
-    as the order they already have. `iw-12-3-2026-11-INDEX`: well under Alpaca's 128 characters
-    (a symbol is at most 12)."""
-    return f"iw-{account_pk}-{plan_pk}-{month}-{symbol}"
+def client_order_id(
+    account_pk: int, plan_pk: int, month: str, symbol: str, attempt: int = 1
+) -> str:
+    """The same facts always give the same id, so Alpaca and this table both see a repeat as the
+    order they already have. `iw-12-3-2026-11-INDEX`: well under Alpaca's 128 characters (a
+    symbol is at most 12). Chapter 12: a month whose order ended with nothing filled may be placed
+    again, and the second try is a new order with a new id, `iw-12-3-2026-11-INDEX-r2`; the first
+    try keeps the chapter 11 id with no suffix."""
+    base = f"iw-{account_pk}-{plan_pk}-{month}-{symbol}"
+    return base if attempt == 1 else f"{base}-r{attempt}"
 
 
 class PaperOrder(models.Model):
@@ -41,6 +46,11 @@ class PaperOrder(models.Model):
     )
     month: models.CharField[str, str] = models.CharField(max_length=7, help_text="YYYY-MM")
     symbol: models.CharField[str, str] = models.CharField(max_length=20)
+    # Chapter 12: 1 for the month's first order, 2 for "Place again" after it ended unfilled, and
+    # so on. A database default too, so the previous release can still write a row mid-migration.
+    attempt: models.PositiveSmallIntegerField[int, int] = models.PositiveSmallIntegerField(
+        default=1, db_default=1
+    )
     notional: models.DecimalField[Decimal, Decimal] = models.DecimalField(
         max_digits=14, decimal_places=MONEY_PLACES, help_text="The dollars the order asked for."
     )
@@ -70,7 +80,7 @@ class PaperOrder(models.Model):
     updated_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-month", "symbol"]
+        ordering = ["-month", "symbol", "-attempt"]
         verbose_name = "paper order"
         verbose_name_plural = "paper orders"
 
@@ -85,9 +95,15 @@ class PaperOrder(models.Model):
     def final(self) -> bool:
         return self.status in FINAL_STATUSES
 
+    @property
+    def ended_unfilled(self) -> bool:
+        """Alpaca is done with it and nothing was bought: the month may be placed again."""
+        return self.placed and self.final and self.filled_qty == 0
+
     @classmethod
     def for_month(cls, plan: MethodPlan, month: str) -> list[PaperOrder]:
-        return list(cls.objects.filter(plan=plan, month=month))
+        """The plan's orders for the month, every attempt, the first try first."""
+        return list(cls.objects.filter(plan=plan, month=month).order_by("symbol", "attempt"))
 
     @classmethod
     def open_orders(cls, account: Account | None = None) -> models.QuerySet[PaperOrder]:

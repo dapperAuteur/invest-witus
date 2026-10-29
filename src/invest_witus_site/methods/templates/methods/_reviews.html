@@ -1,0 +1,10 @@
+{# Every month's review state (chapter 12), for view B: a list, oldest first, each linking to its page. #}
+{% if month_reviews %}
+<ul class="reviews">
+  {% for item in month_reviews %}
+  <li><a href="{% url 'method-review' account.pk item.month %}">{{ item.month }}</a>: {% if item.closed %}closed {{ item.closed_at|date:"Y-m-d" }}{% else %}open since {{ item.opened_on|date:"Y-m-d" }}{% endif %} <span class="small muted">(version {{ item.plan.version }})</span></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No month's window has closed yet, so there is nothing to review.</p>
+{% endif %}

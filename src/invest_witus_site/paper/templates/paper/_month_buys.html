@@ -6,7 +6,7 @@
   <p class="band">Alpaca paper ({{ paper.host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
   <ul>
     {% for buy in paper.stage.buys %}
-    <li>Buy {{ buy.notional|plain_number }} of {{ buy.symbol }}{% if buy.placed %}: placed, {{ buy.order.status }}{% elif buy.order.message %}: not placed. {{ buy.order.message }}{% endif %}</li>
+    <li>Buy {{ buy.notional|plain_number }} of {{ buy.symbol }}{% if buy.placed %}: placed, {{ buy.order.status }}{% elif buy.order.message %}: not placed. {{ buy.order.message }}{% elif buy.previous %}: the last order ended with nothing filled ({{ buy.previous.status }}){% endif %}</li>
     {% endfor %}
   </ul>
   <p>Practice budget, the app's own number: {% if paper.stage.budget is not None %}{{ paper.stage.budget|plain_number }}, spent {{ paper.stage.spent|plain_number }}, left {{ paper.stage.left|plain_number }}{% else %}not set{% endif %}.</p>
@@ -20,8 +20,9 @@
   {% endif %}
   <form method="post" action="{% url 'paper-confirm' account.pk %}">
     {% csrf_token %}
-    <button type="submit">{% if paper.clock.is_open %}Confirm{% else %}Confirm: queue for the open{% endif %}</button>
+    <button type="submit">{% if paper.stage.placing_again %}Place again{% else %}Confirm{% endif %}{% if not paper.clock.is_open %}: queue for the open{% endif %}</button>
   </form>
+  {% if paper.stage.placing_again %}<p class="small muted">A new order with a new id ending in "-r{{ paper.stage.to_place.0.attempt }}". The order that ended unfilled stays on the paper page.</p>{% endif %}
   <p class="small muted">One market order per symbol for the dollar amount, good for the day, on Alpaca's paper account. Each order goes in the journal at once; the nightly check fills in the shares.</p>
   {% else %}
   <p>This month's buys are placed. The nightly check copies the fills into the journal. <a href="{% url 'paper-account' account.pk %}">See the orders</a>.</p>

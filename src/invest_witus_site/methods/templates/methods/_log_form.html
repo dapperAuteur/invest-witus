@@ -1,4 +1,5 @@
-{# The one-row add form (chapter 10): a buy or a sell, by hand, as the confirmation shows it. Chapter 12 builds the logbook. #}
+{# The one-row add form (chapter 10): a buy or a sell, by hand, as the confirmation shows it. #}
+{# Chapter 12: a hold or a skip too, each with its reason, and the state and tags any entry may carry. #}
 <form method="post" action="{% url 'method-log' account.pk %}" class="method-form" novalidate>
   {% csrf_token %}
   {{ entry_form.non_field_errors }}
@@ -12,4 +13,4 @@
   {% endfor %}
   <button type="submit">Log it</button>
 </form>
-<p class="small muted">Logging records what you did; it places no order. The review reads the journal, not the broker.</p>
+<p class="small muted">Logging records what you did; it places no order. The review reads the journal, not the broker. A trade needs Action, Symbol and Amount; a hold or a skip needs only the day and why, and a skip explains a month with no buy.</p>

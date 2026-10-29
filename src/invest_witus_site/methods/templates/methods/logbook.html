@@ -1,0 +1,74 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Logbook: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="logbook-page-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="logbook-page-heading">Logbook</h1>
+  <p>Every entry on this account: trades, holds and skips, with the reason, the state and the tags each carries. What you did, never what it is worth. Information, not advice.</p>
+  <form method="get" class="filters" aria-label="Filter the logbook">
+    <div class="field">
+      <label for="filter-month">Month</label>
+      <select id="filter-month" name="month">
+        <option value="">Every month</option>
+        {% for month in months %}<option value="{{ month }}"{% if month == filters.month %} selected{% endif %}>{{ month }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="filter-kind">Kind</label>
+      <select id="filter-kind" name="kind">
+        <option value="">Every kind</option>
+        {% for kind in kinds %}<option value="{{ kind }}"{% if kind == filters.kind %} selected{% endif %}>{{ kind|capfirst }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="filter-tag">Tag</label>
+      <select id="filter-tag" name="tag">
+        <option value="">Every tag</option>
+        {% for tag in tags %}<option value="{{ tag }}"{% if tag == filters.tag %} selected{% endif %}>{{ tag }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit">Show</button>
+  </form>
+  <p class="small">{{ lines|length }} of {{ total }} entr{{ total|pluralize:"y,ies" }}. <a href="{% url 'logbook-csv' account.pk %}{{ filters.query }}">Download these as CSV</a>{% if filters.query %} · <a href="{% url 'logbook' account.pk %}">Clear the filters</a>{% endif %}</p>
+  {% if lines %}
+  <table class="holdings">
+    <caption class="sr-only">The account's journal entries, filtered as chosen above, in date order</caption>
+    <thead>
+      <tr>
+        <th scope="col">Day</th>
+        <th scope="col">Kind</th>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">Amount</th>
+        <th scope="col" class="num">Shares</th>
+        <th scope="col">State</th>
+        <th scope="col">Tags</th>
+        <th scope="col">Why</th>
+        <th scope="col">Note</th>
+        <th scope="col">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+      <tr>
+        <th scope="row">{{ line.entry.date|date:"Y-m-d" }}</th>
+        <td>{{ line.entry.what }}</td>
+        <td>{{ line.entry.symbol }}</td>
+        <td class="num">{% if line.entry.amount is not None %}{{ line.entry.amount|plain_number }}{% endif %}</td>
+        <td class="num">{% if line.entry.shares is not None %}{{ line.entry.shares|plain_number }}{% endif %}</td>
+        <td>{{ line.entry.get_state_display }}</td>
+        <td>{{ line.entry.tags }}</td>
+        <td>{{ line.entry.reason }}</td>
+        <td>{{ line.entry.note }}</td>
+        <td>{% if line.order_id %}Alpaca paper{% elif line.month_closed %}By hand, month closed{% else %}By hand <a href="{% url 'logbook-edit' account.pk line.entry.pk %}">Edit<span class="sr-only"> the entry of {{ line.entry.date|date:"Y-m-d" }}</span></a>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No entry matches.</p>
+  {% endif %}
+  <p class="small muted">To add an entry, use the log form on the method page. A line a paper order wrote is kept in step with Alpaca by the nightly check and is not edited by hand; a line in a closed month is read-only until its review is reopened.</p>
+  <p><a href="{% url 'method-page' account.pk %}">Back to the method</a> · <a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
+</section>
+{% endblock %}

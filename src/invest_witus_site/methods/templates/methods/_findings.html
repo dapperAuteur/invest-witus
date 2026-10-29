@@ -1,8 +1,9 @@
 {# The review's findings as a list (chapter 10). "No findings" is a sentence, never an empty box. #}
+{# Chapter 12: a month with no buy and a skip in the journal is still a finding; the skip's reason is shown beside it. #}
 {% if review.findings %}
 <ul class="findings">
   {% for finding in review.findings %}
-  <li><strong>{{ finding.month }}</strong> {{ finding.message }} <span class="small">Rule: {{ finding.rule.text }} {% if finding.rule.lesson_url %}<a href="{{ finding.rule.lesson_url }}">Read the lesson</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</span></li>
+  <li><strong>{{ finding.month }}</strong> {{ finding.message }}{% if finding.explained %} <span class="explained">Explained by a skip: {{ finding.explanation }}</span>{% endif %} <span class="small">Rule: {{ finding.rule.text }} {% if finding.rule.lesson_url %}<a href="{{ finding.rule.lesson_url }}">Read the lesson</a>{% else %}<span class="muted">lesson coming</span>{% endif %}</span></li>
   {% endfor %}
 </ul>
 {% else %}
