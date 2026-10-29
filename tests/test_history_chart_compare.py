@@ -266,7 +266,7 @@ def test_the_x_axis_picks_mondays_months_or_years() -> None:
     month = x_ticks(date(2026, 9, 29), date(2026, 10, 28))
     assert [tick.label for tick in month] == ["Oct 5", "Oct 12", "Oct 19", "Oct 26"]
     year = x_ticks(date(2025, 10, 29), date(2026, 10, 28))
-    assert [tick.label for tick in year][:2] == ["Nov 2025", "Jan 2026"] and len(year) <= 6
+    assert [tick.label for tick in year] == ["Nov 2025", "Jan 2026", "Mar", "May", "Jul", "Sep"]
     assert any(tick.minor for tick in year), "every other label hides on a phone"
     decades = x_ticks(date(1999, 3, 10), date(2026, 10, 28))
     assert [tick.label for tick in decades] == ["2000", "2005", "2010", "2015", "2020", "2025"]

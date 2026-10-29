@@ -7,6 +7,7 @@
 <section class="watch" aria-labelledby="watch-heading">
   <h2 id="watch-heading">Watch list</h2>
   {% if watch.rows %}
+  <div class="table-scroll" role="region" aria-label="Watch list table, scrolls sideways on a narrow screen" tabindex="0">
   <table class="holdings">
     <caption class="sr-only">Symbols you follow in this account, with the latest stored close</caption>
     <thead>
@@ -43,6 +44,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   <form method="post" action="{% url 'watch-fetch-history-many' account.pk %}" id="bulk-history" class="history-form bulk-history">
     {% csrf_token %}
     <label for="bulk-history-range">History range</label>

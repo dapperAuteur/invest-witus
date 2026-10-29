@@ -44,6 +44,7 @@
   {% if starts_differ %}
   <p class="small">The lines start on different days: each is rebased on its own first stored day in the range, listed in the table below.</p>
   {% endif %}
+  <div class="table-scroll" role="region" aria-label="Start, end and change table, scrolls sideways on a narrow screen" tabindex="0">
   <table class="holdings">
     <caption>Start, end and change per symbol over the last {{ days }} days</caption>
     <thead>
@@ -71,6 +72,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   <p class="small muted">A line uses the adjusted close (splits and dividends accounted for) when every day in the range has one, otherwise the close. Press <strong>Get history</strong> with <strong>All available</strong> once per symbol to fill adjusted closes stored before 2026-10-29.</p>
   <details class="daily">
     <summary>Every day's values</summary>

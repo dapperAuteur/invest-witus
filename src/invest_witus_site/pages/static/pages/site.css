@@ -230,7 +230,7 @@ fieldset.field legend { font-weight: 600; margin-bottom: 0.25rem; padding: 0; }
 .marker-dividend { border-radius: 50%; }
 .chart-readout { margin-top: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; background: var(--surface); font-size: 0.875rem; min-height: 3rem; }
 .chart-readout p { margin: 0.125rem 0; }
-.table-scroll { max-width: 100%; overflow-x: auto; }
+.table-scroll { position: relative; max-width: 100%; overflow-x: auto; }
 .table-scroll:focus-visible { outline: 2px solid var(--accent); }
 .holdings caption:not(.sr-only) { text-align: left; caption-side: top; font-size: 0.875rem; color: var(--muted); padding: 0.25rem 0; }
 .choice-list { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }

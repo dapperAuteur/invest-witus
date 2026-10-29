@@ -202,11 +202,13 @@ X_INTERVALS: tuple[tuple[str, int], ...] = (
 )
 
 
-def tick_label(kind: str, day: date) -> str:
+def tick_label(kind: str, day: date, first: bool = False) -> str:
+    """A tick's words. A month carries its year on the first tick and on January only, so the
+    labels stay short enough not to touch at 320 pixels wide."""
     if kind == "week":
         return f"{day:%b} {day.day}"
     if kind == "month":
-        return f"{day:%b %Y}"
+        return f"{day:%b %Y}" if first or day.month == 1 else f"{day:%b}"
     if kind == "year":
         return f"{day.year}"
     return f"{day:%Y-%m-%d}"
@@ -222,8 +224,9 @@ def tick_days(kind: str, every: int, first: date, last: date) -> list[date]:
 
 def x_ticks(first: date, last: date) -> list[Tick]:
     """Dates along the bottom: Mondays over a month ("Oct 5"), month starts over a few months
-    ("Oct 2026"), years over a long range ("2020"). Over three labels, every other one is hidden
-    on a narrow screen. A range too short for any of them gets its first and last day."""
+    ("Nov 2025", "Jan 2026", "Mar"), years over a long range ("2020"). Over three labels, every
+    other one is hidden on a narrow screen. A range too short for any of them gets its first and
+    last day."""
     span = (last - first).days
     if span == 0:
         return [Tick(Decimal(50), tick_label("day", first))]
@@ -238,7 +241,8 @@ def x_ticks(first: date, last: date) -> list[Tick]:
     for index, day in enumerate(days):
         at = x_position(day, first, span)
         edge = "start" if at < EDGE_PERCENT else "end" if at > HUNDRED - EDGE_PERCENT else ""
-        ticks.append(Tick(at, tick_label(kind, day), edge, minor=len(days) > 3 and index % 2 == 1))
+        label = tick_label(kind, day, first=index == 0)
+        ticks.append(Tick(at, label, edge, minor=len(days) > 3 and index % 2 == 1))
     return ticks
 
 
