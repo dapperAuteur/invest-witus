@@ -182,7 +182,10 @@ def refusal_for(
     if not any(not buy.placed for buy in buys):
         return ""
     if budget is None:
-        return "Set a practice budget for this plan first: the app's own number, in the admin."
+        return (
+            "Set a practice budget for this plan first, the app's own number: in the admin, "
+            "Method plans, this plan, Practice budget."
+        )
     if unplaced > budget - spent:
         return (
             f"This month's buys, {unplaced:.2f}, are more than the practice budget left, "
