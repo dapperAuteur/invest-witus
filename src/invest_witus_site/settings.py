@@ -135,6 +135,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "invest_witus_site.pages.context_processors.site",
                 "invest_witus_site.accounts.context_processors.identity",
+                # The header's "Paper account" link for the owner of a linked account.
+                "invest_witus_site.paper.context_processors.paper_link",
             ],
         },
     },
