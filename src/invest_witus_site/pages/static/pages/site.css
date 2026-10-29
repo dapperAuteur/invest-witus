@@ -130,3 +130,9 @@ button[type="submit"] { min-height: 2.75rem; padding: 0 1.25rem; background: var
 .holdings .num { text-align: right; font-variant-numeric: tabular-nums; }
 .holdings tfoot th, .holdings tfoot td { border-bottom: 0; font-weight: 700; }
 .stale { color: var(--danger); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* FAQ: each question is a <details>; the question line is the handle. */
+.faq-item { border-top: 1px solid var(--line, #2a2f3a); padding: 0.4rem 0; }
+.faq-item > summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; padding: 0.5rem 0; list-style-position: outside; }
+.faq-item > summary:hover { text-decoration: underline; }
+.faq-item[open] > summary { margin-bottom: 0.25rem; }
