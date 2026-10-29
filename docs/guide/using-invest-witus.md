@@ -126,7 +126,9 @@ the kind; it holds no balances, because those come from statements.
 **What you should see.** The **Accounts** list with the columns **Name**, **Broker**, **Kind**, **Currency**,
 **Owner** and **Statements**; the new row's Statements column reads **0 statements**. On the public site, signed
 in, **Accounts** in the header lists the same account under **Your accounts** with its broker and kind, and its
-page says **No statement yet.** with the link **Enter the first one in the admin.**
+page says **No statement yet.** with the link **Enter the first one in the admin.** The account linked to Alpaca
+paper (see [Alpaca paper](#alpaca-paper-chapter-11)) also shows **Paper account** on its row, and **Paper
+account** appears in the header beside **Accounts** on every page while you are signed in as the site owner.
 
 **What can go wrong.**
 
@@ -220,7 +222,7 @@ than five days is marked stale". Then a table: **Symbol**, **Shares**, **Close**
 
 - A priced line shows the close, the close's date under **As of**, and the source: `tiingo` on production,
   `csv` on a laptop.
-- A cash line (kind **Cash**) shows a close of `1.00`, the statement's own date, and `statement` as the source.
+- A cash line (kind **Cash**) shows a close of `$1.00`, the statement's own date, and `statement` as the source.
 - **stale** appears beside a date more than five calendar days before today. Five covers a weekend and a
   holiday; longer than that means the pull has not run or the source has not answered for that symbol.
 - A line with no stored close reads **no price yet** across the row, and a note under the table names those
@@ -229,6 +231,13 @@ than five days is marked stale". Then a table: **Symbol**, **Shares**, **Close**
 - The total adds the priced lines only.
 
 **All accounts** returns to the list. No public page shows a price or links to these pages.
+
+**How numbers read (2026-10-29).** Every amount of money on the signed-in pages (closes, values, totals, plan
+amounts, budgets, spent, cash, buying power, equity, prices and order amounts) is US dollars to the cent with a
+`$` and thousands commas: `$1,234.56`, a negative `-$1,234.56`. A close stored with more places than cents, such
+as `20.005`, shows rounded half up (`$20.01`); the value beside it is still worked out from the stored close.
+Share counts (shares, quantities, shares filled) show commas and up to six places with the trailing zeros
+dropped: `1,234.5`, `0.123456`, `10`.
 
 **What can go wrong.**
 
@@ -410,7 +419,11 @@ practice money the plan may spend (Alpaca's paper balance cannot be set, so the 
   budget spent and left, and **Confirm** inside the buy window. One click places one market order per symbol for
   the dollar amount on Alpaca paper and writes it into the journal. A second click sends nothing. With the market
   closed the button reads "Confirm: queue for the open". If Confirm is missing, the box says why in one sentence.
-- **The paper page** (`/accounts/<id>/paper/`, linked from the account page) shows Alpaca's cash, buying power,
+- **The paper page** (`/accounts/<id>/paper/`) is **Paper account** in the header, beside **Accounts**, on every
+  page while you are signed in; it is also linked from that account's row under **Your accounts** and from the
+  account page. The header link is there only for the site owner (a superuser) who has an account linked to
+  Alpaca paper, the same rule the page itself uses; signed out, or without a linked account, there is no link.
+  The page shows Alpaca's cash, buying power,
   equity and positions beside the budget, every order the app placed with its status, and **Check orders now**,
   which copies fills into the journal. The nightly job does the same.
 - Paper only: the band at the top says "Paper money. Live trading needs the checklist in a later chapter and
