@@ -512,7 +512,7 @@ def test_the_owner_changes_and_ends_the_plan_from_the_page(
     assert response.redirect_chain == [(method_url(account), 302)]
     assert f"Version 2 of the plan starts on {starts:%Y-%m-%d}." in text(response)
     html = text(owner_client.get(method_url(account, "?view=a")))
-    assert "Version 1: 100.00 into INDEX" in html and "Why: A raise." in html
+    assert "Version 1: $100.00 into INDEX" in html and "Why: A raise." in html
     ended = owner_client.post(url, {**data, "what": "end", "reason": "Stopping."}, follow=True)
     assert "Ended Index investing with a fixed monthly contribution on Practice." in text(ended)
     assert "Start a method on this account" in text(ended)
@@ -745,6 +745,25 @@ def test_the_csv_export_has_the_documented_columns(
         )
     )
     assert [(row[1], row[10]) for row in rows[1:]] == [("skip", "yes"), ("hold", "yes")]
+
+
+@pytest.mark.django_db
+def test_the_pages_show_money_and_the_csv_keeps_plain_numbers(
+    owner_client: Client, account: Account, plan: MethodPlan
+) -> None:
+    """Decision 113 on chapter 12's pages: a dollar sign and thousands commas for money, commas
+    for shares; the CSV is for a spreadsheet, so it keeps plain decimals."""
+    buy(account, date(2026, 1, 2), "1234.50", shares=D("1234.5"))
+    [table] = tables_in(text(owner_client.get(logbook_url(account))))
+    assert table[1][3:5] == ("$1,234.50", "1,234.5")
+    review = text(owner_client.get(review_url(account, "2026-01")))
+    assert "1 buy, $1,234.50 in all." in review
+    assert "Judged by version 1 of the plan: $100.00 into INDEX" in review
+    rows = list(
+        csv.reader(StringIO(owner_client.get(logbook_url(account, "export.csv")).content.decode()))
+    )
+    assert rows[1][3:5] == ["1234.50", "1234.500000"]
+    assert not any("$" in value or "," in value for value in rows[1][3:5])
 
 
 @pytest.mark.django_db

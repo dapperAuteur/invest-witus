@@ -6,7 +6,7 @@
   <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="review-heading">Review of {{ review.month }}</h1>
   <p class="band">{% if review.closed %}Closed {{ review.closed_at|date:"Y-m-d" }}. This month's entries are read-only until the review is reopened with a reason.{% else %}Open since {{ review.opened_on|date:"Y-m-d" }}, the day the month's window closed.{% endif %}</p>
-  <p>Judged by version {{ version.version }} of the plan: {{ version.amount|plain_number }} into {{ version.symbols }} within the first {{ version.buy_window_days }} day{{ version.buy_window_days|pluralize }} of the month.{% if row %} The month is <strong>{{ row.status }}</strong>: {{ row.buys }} buy{{ row.buys|pluralize }}, {{ row.amount|plain_number }} in all.{% endif %}</p>
+  <p>Judged by version {{ version.version }} of the plan: {{ version.amount|money }} into {{ version.symbols }} within the first {{ version.buy_window_days }} day{{ version.buy_window_days|pluralize }} of the month.{% if row %} The month is <strong>{{ row.status }}</strong>: {{ row.buys }} buy{{ row.buys|pluralize }}, {{ row.amount|money }} in all.{% endif %}</p>
 
   <h2>What the review found</h2>
   {% if findings %}

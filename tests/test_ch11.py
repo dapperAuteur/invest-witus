@@ -428,7 +428,7 @@ def test_this_months_buys_come_from_the_plan_with_the_budget(plan: MethodPlan) -
         ({}, date(2026, 11, 10), "This month's window closed on 2026-11-07"),
         ({}, date(2026, 10, 30), "The plan starts on 2026-11-01"),
         ({"practice_budget": None}, DAY, "Set a practice budget"),
-        ({"practice_budget": D("50.00")}, DAY, "more than the practice budget left, 50.00"),
+        ({"practice_budget": D("50.00")}, DAY, "more than the practice budget left, $50.00"),
         ({"symbols": "INDEX OTHER"}, DAY, "The plan names 2 symbols"),
     ],
 )
@@ -487,7 +487,7 @@ def test_confirm_places_each_buy_once_and_writes_one_journal_entry(
     account = plan.account
     first = owner_client.post(paper_url(account, "confirm/"), follow=True)
     assert first.redirect_chain == [(method_url(account), 302)]
-    assert "Placed: buy 100.00 of INDEX, accepted." in text(first)
+    assert "Placed: buy $100.00 of INDEX, accepted." in text(first)
     again = owner_client.post(paper_url(account, "confirm/"), follow=True)
     assert posted_orders(fake) == 1, "a second click sends nothing"
     assert "This month's buys are placed." in text(again)

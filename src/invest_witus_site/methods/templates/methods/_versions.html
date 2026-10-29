@@ -4,7 +4,7 @@
 <h3>Versions</h3>
 <ol class="versions">
   {% for span in review.spans %}
-  <li>Version {{ span.plan.version }}: {{ span.plan.amount|plain_number }} into {{ span.plan.symbols }}, days 1 to {{ span.plan.buy_window_days }}, from {{ span.first|date:"Y-m-d" }}{% if span.last %} to {{ span.last|date:"Y-m-d" }}{% endif %}.{% if span.plan.change_reason %} <span class="small">Why: {{ span.plan.change_reason }}</span>{% endif %}</li>
+  <li>Version {{ span.plan.version }}: {{ span.plan.amount|money }} into {{ span.plan.symbols }}, days 1 to {{ span.plan.buy_window_days }}, from {{ span.first|date:"Y-m-d" }}{% if span.last %} to {{ span.last|date:"Y-m-d" }}{% endif %}.{% if span.plan.change_reason %} <span class="small">Why: {{ span.plan.change_reason }}</span>{% endif %}</li>
   {% endfor %}
 </ol>
 {% endif %}

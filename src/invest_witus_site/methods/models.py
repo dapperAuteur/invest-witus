@@ -35,6 +35,7 @@ from invest_witus.adherence.plan import Plan
 from invest_witus.methods.rulebook import Method, UnknownMethodError, load_method
 from invest_witus.money import to_money, to_shares
 from invest_witus_site.holdings.models import MONEY_PLACES, SHARE_PLACES, Account
+from invest_witus_site.holdings.templatetags import holdings_extras
 from invest_witus_site.watchlist.models import normalize_symbol, parse_symbols, validate_symbol
 
 # Chapter 03's rule for a plan file, kept here for the form and `full_clean`: a buy window is a
@@ -382,7 +383,9 @@ class JournalEntry(models.Model):
 
     def __str__(self) -> str:
         if self.kind == TRADE:
-            return f"{self.date:%Y-%m-%d} {self.action} {self.amount} of {self.symbol}"
+            # The text a "Logged:" or "Saved:" message shows: money as the pages show it (row 113).
+            amount = holdings_extras.money(self.amount)
+            return f"{self.date:%Y-%m-%d} {self.action} {amount} of {self.symbol}"
         return f"{self.date:%Y-%m-%d} {self.kind}{f' {self.symbol}' if self.symbol else ''}"
 
     @property

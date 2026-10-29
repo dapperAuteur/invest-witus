@@ -28,6 +28,7 @@ from django.utils import timezone
 
 from invest_witus.money import CENT, to_money, to_shares
 from invest_witus_site.holdings.models import Account
+from invest_witus_site.holdings.templatetags.holdings_extras import money
 from invest_witus_site.methods.models import SKIP, JournalEntry, MethodPlan
 from invest_witus_site.paper.alpaca import (
     PAPER_HOST,
@@ -210,8 +211,8 @@ def refusal_for(
         )
     if unplaced > budget - spent:
         return (
-            f"This month's buys, {unplaced:.2f}, are more than the practice budget left, "
-            f"{budget - spent:.2f}."
+            f"This month's buys, {money(unplaced)}, are more than the practice budget left, "
+            f"{money(budget - spent)}."
         )
     return ""
 

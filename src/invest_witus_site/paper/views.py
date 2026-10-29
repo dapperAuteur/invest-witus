@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from invest_witus_site.holdings.models import Account
+from invest_witus_site.holdings.templatetags.holdings_extras import money
 from invest_witus_site.methods.models import MethodPlan
 from invest_witus_site.paper import orders
 from invest_witus_site.paper.alpaca import (
@@ -90,7 +91,7 @@ def confirm_buys(request: HttpRequest, pk: int) -> HttpResponse:
 def report(request: HttpRequest, result: orders.ConfirmResult) -> None:
     for order in result.placed:
         messages.success(
-            request, f"Placed: buy {order.notional:.2f} of {order.symbol}, {order.status}."
+            request, f"Placed: buy {money(order.notional)} of {order.symbol}, {order.status}."
         )
     for order in result.already:
         messages.info(request, f"Already placed: {order.symbol}, {order.status}. Nothing new sent.")

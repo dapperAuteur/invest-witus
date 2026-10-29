@@ -54,8 +54,8 @@
         <th scope="row">{{ line.entry.date|date:"Y-m-d" }}</th>
         <td>{{ line.entry.what }}</td>
         <td>{{ line.entry.symbol }}</td>
-        <td class="num">{% if line.entry.amount is not None %}{{ line.entry.amount|plain_number }}{% endif %}</td>
-        <td class="num">{% if line.entry.shares is not None %}{{ line.entry.shares|plain_number }}{% endif %}</td>
+        <td class="num">{% if line.entry.amount is not None %}{{ line.entry.amount|money }}{% endif %}</td>
+        <td class="num">{% if line.entry.shares is not None %}{{ line.entry.shares|quantity }}{% endif %}</td>
         <td>{{ line.entry.get_state_display }}</td>
         <td>{{ line.entry.tags }}</td>
         <td>{{ line.entry.reason }}</td>
