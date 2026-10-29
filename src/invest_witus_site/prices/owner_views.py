@@ -109,3 +109,49 @@ def fetch_history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
         return back
     messages.success(request, manual.history_message(result, manual.HISTORY_RANGES[choice][0]))
     return back
+
+
+@login_required
+@require_POST
+def fetch_history_many(request: HttpRequest, pk: int) -> HttpResponse:
+    """Fetch history for selected (`which=selected` with the ticked `symbols`) or for all
+    (`which=all`) of this account's watched symbols, over one range, back to the account page.
+    A ticked symbol not on this account's list is named and left out."""
+    account = get_object_or_404(Account, pk=pk, owner=request.user)
+    back = redirect("account-detail", pk=account.pk)
+    watched = list(
+        WatchItem.objects.filter(account=account)
+        .order_by("symbol")
+        .values_list("symbol", flat=True)
+    )
+    if request.POST.get("which") == "all":
+        symbols = watched
+    else:
+        asked = {
+            value.strip().upper() for value in request.POST.getlist("symbols") if value.strip()
+        }
+        symbols = [symbol for symbol in watched if symbol in asked]
+        if asked - set(watched):
+            messages.error(
+                request,
+                f"Not on this watch list, so left out: {', '.join(sorted(asked - set(watched)))}.",
+            )
+    if not symbols:
+        messages.error(request, "Tick at least one symbol, or press Fetch history for all.")
+        return back
+    choice = request.POST.get("range", "")
+    today = timezone.localdate()
+    since = manual.history_since(choice, today)
+    if since is None:
+        labels = ", ".join(label.lower() for label, _ in manual.HISTORY_RANGES.values())
+        messages.error(request, f"Pick a range: {labels}.")
+        return back
+    result = manual.fetch_history_many(source_from_settings(), symbols, since, today)
+    successes, errors, infos = manual.many_messages(result, manual.HISTORY_RANGES[choice][0])
+    for line in successes:
+        messages.success(request, line)
+    for line in errors:
+        messages.error(request, line)
+    for line in infos:
+        messages.info(request, line)
+    return back

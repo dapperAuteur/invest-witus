@@ -24,7 +24,8 @@ from invest_witus.valuation import STALE_AFTER_DAYS
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.prices import pull as pull_module
 from invest_witus_site.prices import sources
-from invest_witus_site.prices.history import line_chart, range_days
+from invest_witus_site.prices.charts import SeriesInput, build_plot
+from invest_witus_site.prices.history import range_days
 from invest_witus_site.prices.models import Backfill, DailyClose
 from invest_witus_site.prices.pull import BACKFILL_DAYS, pull
 from invest_witus_site.prices.sources import CsvPrices, TiingoEod
@@ -262,14 +263,18 @@ def test_the_chart_has_one_point_per_close_and_the_table_matches(
     assert len(points) == 5 and 'data-points="5"' in html
     assert points == sorted(points), "oldest on the left"
     assert points[0][1] > points[-1][1], "the higher close is drawn higher (smaller y)"
-    assert '<svg viewBox="0 0 600 200"' in html and 'role="img"' in html
+    # Since 2026-10-29 the plot's viewBox is 0 to 100 both ways, stretched to its box, with the
+    # axes as HTML beside it (decision 119).
+    assert '<svg viewBox="0 0 100 100"' in html and 'role="img"' in html
     assert '<title id="chart-title">FUNDX, last 30 days: 5 closes' in html
     assert "low $1,180.00, high $1,234.50" in html
     assert len(table_dates(html)) == 5, "the table is the chart's text alternative"
     assert table_dates(html)[0] == (today() - timedelta(days=1)).isoformat(), "newest first"
     assert '<td class="num">$1,234.50</td>' in html
     assert f"As of {(today() - timedelta(days=1)).isoformat()}: $1,234.50 (csv)" in html
-    assert "<script" not in html.split("</header>", 1)[1].split("<footer", 1)[0]
+    # Since 2026-10-29 the owner's chart pages carry the hover script (decision 122); public pages
+    # still carry none (the test below and chapter 06a's).
+    assert '<script src="/static/prices/chart.js" defer></script>' in html
 
 
 @pytest.mark.django_db
@@ -344,13 +349,22 @@ def test_public_pages_show_no_price_and_no_history_link(
 
 def test_one_close_or_a_flat_range_sits_in_the_middle() -> None:
     day = date(2026, 10, 1)
-    single = line_chart([DailyClose(symbol="INDEX", date=day, close=D("5"))])
-    assert single is not None and single.points == "300.0,100.0"
-    flat = line_chart(
-        [
-            DailyClose(symbol="INDEX", date=day, close=D("5")),
-            DailyClose(symbol="INDEX", date=day + timedelta(days=4), close=D("5")),
-        ]
+    single = build_plot(
+        [SeriesInput("INDEX", [DailyClose(symbol="INDEX", date=day, close=D("5"))])], "t", False
     )
-    assert flat is not None and flat.points == "12.0,100.0 588.0,100.0"
-    assert line_chart([]) is None
+    assert single is not None and single.lines[0].points == "50,50.00"
+    flat = build_plot(
+        [
+            SeriesInput(
+                "INDEX",
+                [
+                    DailyClose(symbol="INDEX", date=day, close=D("5")),
+                    DailyClose(symbol="INDEX", date=day + timedelta(days=4), close=D("5")),
+                ],
+            )
+        ],
+        "t",
+        False,
+    )
+    assert flat is not None and flat.lines[0].points == "0.00,50.00 100.00,50.00"
+    assert build_plot([SeriesInput("INDEX", [])], "t", False) is None

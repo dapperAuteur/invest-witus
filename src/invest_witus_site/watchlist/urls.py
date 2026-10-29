@@ -9,6 +9,9 @@ from invest_witus_site.watchlist import views
 urlpatterns = [
     path("add/", views.add, name="watch-add"),
     path("<int:item_pk>/remove/", views.remove, name="watch-remove"),
+    # Fetch history for selected or for all (2026-10-29): before the symbol paths, so
+    # "fetch-history/" is never read as a symbol.
+    path("fetch-history/", owner_views.fetch_history_many, name="watch-fetch-history-many"),
     # A watched symbol's closes (2026-10-29). After the two fixed paths, so "add/" stays the form's.
     path("<str:symbol>/", views.history, name="watch-history"),
     # Get history (2026-10-29): one request for a watched symbol's closes over a chosen range.

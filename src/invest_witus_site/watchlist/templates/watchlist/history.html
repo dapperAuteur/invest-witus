@@ -18,36 +18,41 @@
     {% if range == days %}<strong aria-current="page">{{ range }} days</strong>{% else %}<a href="?days={{ range }}">{{ range }} days</a>{% endif %}{% if not forloop.last %} · {% endif %}
     {% endfor %}
   </nav>
-  {% if chart %}
-  <figure class="price-chart">
-    <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" width="100%" role="img" aria-labelledby="chart-title chart-desc" data-points="{{ chart.count }}">
-      <title id="chart-title">{{ item.symbol }}, last {{ days }} days: {{ chart.count }} close{{ chart.count|pluralize }} from {{ chart.first|date:"Y-m-d" }} to {{ chart.last|date:"Y-m-d" }}, low {{ chart.low|money }}, high {{ chart.high|money }}</title>
-      <desc id="chart-desc">A line of the stored closing prices, oldest on the left. The table below lists every close in the chart.</desc>
-      <rect x="0.5" y="0.5" width="{{ chart.width|add:"-1" }}" height="{{ chart.height|add:"-1" }}" fill="none" stroke="currentColor" stroke-opacity="0.2"/>
-      <polyline points="{{ chart.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="{{ chart.latest.x }}" cy="{{ chart.latest.y }}" r="4" fill="currentColor"/>
-    </svg>
-    <figcaption class="small muted">Low {{ chart.low|money }}, high {{ chart.high|money }}, {{ chart.first|date:"Y-m-d" }} to {{ chart.last|date:"Y-m-d" }}. The dot is the newest close.</figcaption>
-  </figure>
+  <p><a href="{% url 'compare' account.pk %}?symbols={{ item.symbol }}&amp;days={{ days }}">Compare {{ item.symbol }} with other symbols</a></p>
+  {% if plot %}
+  {% include "prices/_chart.html" %}
+  {% if line.basis == "close" and line.missing_adjusted %}
+  <p class="small">Adjusted closes are missing for {{ line.missing_adjusted }} of {{ line.days|length }} day{{ line.days|length|pluralize }} in this range, so the chart uses the unadjusted close, where a split shows as a sudden drop. Press <strong>Get history</strong> with <strong>All available</strong> below once to fill them.</p>
+  {% endif %}
+  <div class="table-scroll" role="region" aria-labelledby="closes-caption" tabindex="0">
   <table class="holdings">
-    <caption class="sr-only">{{ item.symbol }} closes for the last {{ days }} days, newest first</caption>
+    <caption id="closes-caption">{{ item.symbol }}, every stored day in the last {{ days }} days, newest first. Change is from the stored day before, on the {{ line.basis }}.</caption>
     <thead>
       <tr>
         <th scope="col">Date</th>
         <th scope="col" class="num">Close</th>
+        <th scope="col" class="num">Adjusted close</th>
+        <th scope="col" class="num">Change</th>
+        <th scope="col" class="num">Change %</th>
+        <th scope="col">Split or dividend</th>
         <th scope="col">Source</th>
       </tr>
     </thead>
     <tbody>
-      {% for row in closes %}
+      {% for row in line.newest_first %}
       <tr>
-        <th scope="row">{{ row.date|date:"Y-m-d" }}</th>
+        <th scope="row">{{ row.day|date:"Y-m-d" }}</th>
         <td class="num">{{ row.close|money }}</td>
+        <td class="num">{% if row.adj_close is not None %}{{ row.adj_close|money }}{% else %}<span class="muted">not stored</span>{% endif %}</td>
+        <td class="num">{% if row.change is not None %}{{ row.change|signed_money }}{% endif %}</td>
+        <td class="num">{% if row.change_pct is not None %}{{ row.change_pct|percent }}{% endif %}</td>
+        <td>{{ row.events_text }}</td>
         <td>{{ row.source }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <p>No closes stored in the last {{ days }} days.</p>
   {% endif %}

@@ -1,0 +1,67 @@
+{% load static %}
+{# The owner's price chart (2026-10-29, decisions 119 to 124), from `prices/charts.py`'s `Plot`. Included with `plot`. #}
+{# The plot is an SVG whose viewBox runs 0 to 100 both ways, stretched to its box; the axes are HTML placed by #}
+{# the same percentages, so their text stays readable on a phone. The table the page puts under the chart is the #}
+{# text alternative. The hover script is served here, so only an owner chart page carries it. #}
+<figure class="chart" aria-labelledby="chart-heading">
+  <figcaption class="chart-caption">
+    <p class="chart-title" id="chart-heading">{{ plot.title }}</p>
+    <p class="small muted">{% if plot.rebase %}Each line is its symbol's {{ plot.bases }}, rebased so its first day in the range is 100: 110 means ten percent above where it started, whatever the price.{% else %}{{ plot.y_title }}.{% endif %} Daily closes from {{ plot.sources }}, as of {{ plot.last|date:"Y-m-d" }}.</p>
+  </figcaption>
+  <ul class="legend" aria-label="Key">
+    {% for line in plot.lines %}
+    <li><svg class="swatch" viewBox="0 0 36 10" width="36" height="10" aria-hidden="true" focusable="false"><line x1="1" y1="5" x2="35" y2="5" stroke="{{ line.color }}" stroke-width="3"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %}/></svg>{{ line.symbol }} <span class="muted">({{ line.basis }}, {{ line.pattern }} line)</span></li>
+    {% endfor %}
+    {% for kind, letter, words in plot.marker_kinds %}
+    <li><span class="marker-key marker-{{ kind }}" aria-hidden="true">{{ letter }}</span>{{ words }}</li>
+    {% endfor %}
+  </ul>
+  <div class="chart-frame" style="--y-width: {{ plot.y_width }}ch">
+    <p class="axis-title axis-y">{{ plot.y_title }}</p>
+    <div class="chart-y" aria-hidden="true">
+      {% for tick in plot.y_ticks %}<span style="top: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
+    </div>
+    <div class="chart-plot" data-chart="chart-data" data-readout="chart-readout">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-labelledby="chart-title chart-desc" data-points="{{ plot.count }}">
+        <title id="chart-title">{{ plot.svg_title }}</title>
+        <desc id="chart-desc">{% if plot.rebase %}One line per symbol, oldest day on the left, each rebased to 100 on its first day in the range.{% else %}A line of the stored {{ plot.bases }}, oldest on the left.{% endif %}{% if plot.markers %} Letters on the line mark splits (S) and dividends (D).{% endif %} The tables below list every value in the chart.</desc>
+        {% for tick in plot.y_ticks %}<line class="grid" x1="0" x2="100" y1="{{ tick.at }}" y2="{{ tick.at }}" vector-effect="non-scaling-stroke"/>{% endfor %}
+        {% for tick in plot.x_ticks %}<line class="grid" x1="{{ tick.at }}" x2="{{ tick.at }}" y1="0" y2="100" vector-effect="non-scaling-stroke"/>{% endfor %}
+        {% for line in plot.lines %}
+        <polyline points="{{ line.points }}" fill="none" stroke="{{ line.color }}" stroke-width="2"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %} stroke-linejoin="round" vector-effect="non-scaling-stroke" data-symbol="{{ line.symbol }}"/>
+        {% endfor %}
+      </svg>
+      {% for line in plot.lines %}<span class="chart-end" style="left: {{ line.end_x }}%; top: {{ line.end_y }}%; background: {{ line.color }}" aria-hidden="true"></span>{% endfor %}
+      {% for marker in plot.markers %}<span class="chart-marker marker-{{ marker.kind }}" style="left: {{ marker.x }}%; top: {{ marker.y }}%; border-color: {{ marker.color }}" title="{{ marker.symbol }} {{ marker.day|date:'Y-m-d' }}: {{ marker.text }}" aria-hidden="true">{{ marker.letter }}</span>{% endfor %}
+    </div>
+    <div class="chart-x" aria-hidden="true">
+      {% for tick in plot.x_ticks %}<span class="{{ tick.edge }}{% if tick.minor %} minor{% endif %}" style="left: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
+    </div>
+    <p class="axis-title axis-x">Date</p>
+  </div>
+  <div class="chart-readout" id="chart-readout" aria-live="polite" hidden></div>
+</figure>
+{% if plot.markers %}
+<table class="holdings events">
+  <caption>Splits and dividends from {{ plot.first|date:"Y-m-d" }} to {{ plot.last|date:"Y-m-d" }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Symbol</th>
+      <th scope="col">Event</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for marker in plot.markers %}
+    <tr>
+      <th scope="row">{{ marker.day|date:"Y-m-d" }}</th>
+      <td>{{ marker.symbol }}</td>
+      <td>{{ marker.text }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="small muted">From the price source's split factor and cash dividend for each day; a dividend is listed on its ex-date. The adjusted close already accounts for both.</p>
+{% endif %}
+{{ plot.hover|json_script:"chart-data" }}
+<script src="{% static 'prices/chart.js' %}" defer></script>

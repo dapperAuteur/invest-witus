@@ -1,6 +1,9 @@
 {% load holdings_extras %}
 {# The watch list section of the account page (chapter 09). Included by holdings/account_detail.html #}
 {# with `account`, `watch` (the rows with their quotes), `watch_form` and `history_ranges` (2026-10-29). #}
+{# Since 2026-10-29 each row's History cell starts with a checkbox for Fetch history for selected; the boxes #}
+{# belong to the `bulk-history` form under the table through their `form` attribute, since a form cannot hold #}
+{# the row forms. #}
 <section class="watch" aria-labelledby="watch-heading">
   <h2 id="watch-heading">Watch list</h2>
   {% if watch.rows %}
@@ -29,7 +32,7 @@
         {% else %}
         <td class="muted" colspan="3">no price yet</td>
         {% endif %}
-        <td>{% include "prices/_history_form.html" with symbol=row.item.symbol return_to="account" %}</td>
+        <td class="history-cell"><label class="pick-label"><input type="checkbox" name="symbols" value="{{ row.item.symbol }}" form="bulk-history" class="pick"><span class="sr-only">Select {{ row.item.symbol }} for Fetch history for selected</span></label>{% include "prices/_history_form.html" with symbol=row.item.symbol return_to="account" %}</td>
         <td>
           <form method="post" action="{% url 'watch-remove' account.pk row.item.pk %}">
             {% csrf_token %}
@@ -40,6 +43,17 @@
       {% endfor %}
     </tbody>
   </table>
+  <form method="post" action="{% url 'watch-fetch-history-many' account.pk %}" id="bulk-history" class="history-form bulk-history">
+    {% csrf_token %}
+    <label for="bulk-history-range">History range</label>
+    <select name="range" id="bulk-history-range">
+      {% for value, label in history_ranges %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" name="which" value="selected">Fetch history for selected</button>
+    <button type="submit" name="which" value="all">Fetch history for all</button>
+  </form>
+  <p class="small muted">Get history for several symbols in one press: tick symbols in the History column, or press for all. One request per symbol, at most 50, within four minutes; a symbol fetched in the last 10 minutes is skipped and named.</p>
+  <p><a href="{% url 'compare' account.pk %}?symbols={% for row in watch.rows|slice:":6" %}{{ row.item.symbol }}{% if not forloop.last %},{% endif %}{% endfor %}">Compare these symbols on one chart</a></p>
   {% if watch.unpriced %}
   <p class="muted">Prices arrive after the nightly pull: no close is stored yet for {{ watch.unpriced|join:", " }}. Press <strong>Fetch prices now</strong> to ask for them without waiting. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
   {% endif %}
