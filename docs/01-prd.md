@@ -210,6 +210,14 @@ Acceptance:
 - Changing a running plan's method or parameters creates a new plan version with a dated note; old reviews keep
   pointing at the version they judged.
 
+*Built in chapter 10 (2026-10-28), method 1 only: the `methods` app's `MethodPlan` holds the method's id and the
+person's numbers (one active plan per account by a partial unique constraint) and the rules come from the package's
+TOML at request time through `load_method`, each rendered with its lesson link or "lesson coming" from the file;
+chapter 03's `review()` runs unchanged against `JournalEntry` rows, each finding shown with its rule's text and
+lesson, each rule's status as the word pass or fail with its evidence in words. Deferred: plan versions with a dated
+note (chapter 12), a deviation that writes a journal entry with a reason (chapter 12), the loader refusing a rule
+without the `lesson` key, method 2 (chapter 14); decisions log, rows 86 to 93.*
+
 ### 7.2 Three views, all built, with a toggle
 
 From [`research/01`](research/01-ux-benchmarks-and-three-directions.md) and the mockup
@@ -238,6 +246,17 @@ Acceptance:
 - Every number in a table is right-aligned, tabular, with a caption and header `scope`; charts have a text
   summary and a data table (USWDS and GOV.UK guidance in research 01). Target: WCAG 2.2 AA.
 - The paper or live environment is printed as text on every signed-in page.
+
+*Built in chapter 10 (2026-10-28): the signed-in page `/accounts/<id>/method/` renders one context through three
+templates, A (The Plan and the Logbook: next action, on-plan status with findings, rules with lessons, logbook), B
+(Method Console: rule checks with status, evidence and a lesson column, every month done, missed or open with amounts
+and shares, findings, journal, all captioned tables with header `scope`) and C (The Lesson Lab: the rules read before
+the start form, then each rule's lesson and how often it was flagged, this month's lab, the lab notebook); the switch
+is three links with `aria-current`, `?view=a|b|c` kept in the session, C by default until a method runs and A after;
+the account's kind is printed as text on the page. Deferred: the choice saved per user across sign-ins and the toggle
+in the header (it is on the method page, per account), B's order queue, envelope chart and promotion checklist
+(chapter 11), A's Confirm and Skip (chapters 11 and 12), C's rules switching on one at a time (needs course content),
+charts (none yet); decisions log, rows 90 to 93.*
 
 ### 7.3 Accounts, manual holdings and statement updates
 
