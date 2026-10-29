@@ -34,7 +34,7 @@ class InboxStatus(models.TextChoices):
     PENDING = "pending", "Not tried yet"
     SENT = "sent", "Sent"
     FAILED = "failed", "Failed, will retry"
-    OFF = "off", "Inbox off, will retry"
+    OFF = "off", "Off, will retry"
 
 
 class InboxDelivery(models.Model):

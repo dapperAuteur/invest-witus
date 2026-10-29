@@ -32,9 +32,8 @@ class Command(BaseCommand):
             self.stdout.write("No open reports.")
             return
         for row in open_reports:
-            sent = "sent" if row.sent_at else f"not sent ({InboxStatus(row.inbox_status).label})"
             self.stdout.write(
-                f"#{row.pk} {row.created_at:%Y-%m-%d %H:%M} {row.kind} {row.triage}, "
-                f"Inbox {sent}, page {row.page or '-'}"
+                f"#{row.pk} {row.created_at:%Y-%m-%d %H:%M} {row.kind}, {row.triage}; "
+                f"Inbox: {InboxStatus(row.inbox_status).label}; page {row.page or '-'}"
             )
             self.stdout.write(f"    {' '.join(row.message.split())}")
