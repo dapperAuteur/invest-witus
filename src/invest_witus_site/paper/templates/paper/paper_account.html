@@ -14,9 +14,9 @@
   <h2>Practice budget</h2>
   {% if plan %}
   <dl class="status" aria-label="Practice budget">
-    <dt>Budget</dt><dd>{% if plan.practice_budget is not None %}{{ plan.practice_budget|plain_number }}{% else %}not set{% endif %}</dd>
-    <dt>Spent</dt><dd>{{ spent|plain_number }}</dd>
-    <dt>Plan</dt><dd>{{ plan.amount|plain_number }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} days of each month</dd>
+    <dt>Budget</dt><dd>{% if plan.practice_budget is not None %}{{ plan.practice_budget|money }}{% else %}not set{% endif %}</dd>
+    <dt>Spent</dt><dd>{{ spent|money }}</dd>
+    <dt>Plan</dt><dd>{{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} days of each month</dd>
   </dl>
   <p>The budget is the app's own number. Alpaca's paper balance cannot be set, so the plan spends from this budget and Alpaca's cash below is not the plan's.</p>
   {% else %}
@@ -26,9 +26,9 @@
   {% if alpaca_account %}
   <h2>Alpaca's account</h2>
   <dl class="status" aria-label="Alpaca's paper account">
-    <dt>Cash</dt><dd>{{ alpaca_account.cash|plain_number }}</dd>
-    <dt>Buying power</dt><dd>{{ alpaca_account.buying_power|plain_number }}</dd>
-    <dt>Equity</dt><dd>{{ alpaca_account.equity|plain_number }}</dd>
+    <dt>Cash</dt><dd>{{ alpaca_account.cash|money }}</dd>
+    <dt>Buying power</dt><dd>{{ alpaca_account.buying_power|money }}</dd>
+    <dt>Equity</dt><dd>{{ alpaca_account.equity|money }}</dd>
     <dt>Status</dt><dd>{{ alpaca_account.status }}{% if alpaca_account.trading_blocked %}, trading blocked{% endif %}</dd>
   </dl>
 
@@ -49,10 +49,10 @@
       {% for position in positions %}
       <tr>
         <th scope="row">{{ position.symbol }}</th>
-        <td class="num">{{ position.qty|plain_number }}</td>
-        <td class="num">{{ position.current_price|plain_number }}</td>
-        <td class="num">{{ position.lastday_price|plain_number }}</td>
-        <td class="num">{{ position.market_value|plain_number }}</td>
+        <td class="num">{{ position.qty|quantity }}</td>
+        <td class="num">{{ position.current_price|money }}</td>
+        <td class="num">{{ position.lastday_price|money }}</td>
+        <td class="num">{{ position.market_value|money }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -81,9 +81,9 @@
       <tr>
         <th scope="row">{{ order.month }}</th>
         <td>{{ order.symbol }}</td>
-        <td class="num">{{ order.notional|plain_number }}</td>
+        <td class="num">{{ order.notional|money }}</td>
         <td>{{ order.status }}{% if order.message %}: {{ order.message }}{% endif %}</td>
-        <td class="num">{{ order.filled_qty|plain_number }}</td>
+        <td class="num">{{ order.filled_qty|quantity }}</td>
         <td>{{ order.alpaca_id|default:"none yet" }}</td>
       </tr>
       {% endfor %}
