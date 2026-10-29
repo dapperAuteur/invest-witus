@@ -12,6 +12,7 @@ from the dashboards named; this file never holds one.
 | `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_CLIENT_SECRET` | same page; the matching `WITUS_OIDC_SECRET__INVEST` sits on the witus-online project | Sign in with WitUS |
 | `TIINGO_API_KEY`, `CRON_SECRET` | same page | the nightly pull and its cron route |
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | same page; made in Alpaca's paper dashboard, API Keys, Generate New Key | Confirm, the paper page and the order sync (chapter 11) |
+| `INBOX_INGEST_URL`, `INBOX_SOURCE_SLUG`, `INBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-inbox project | the in-app reporter and the waitlist's copy to WitUS Inbox (chapter 13) |
 | the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
 
 Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
@@ -119,6 +120,30 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
   above.
 - By hand on the laptop: `uv run --env-file .env python manage.py sync_paper_orders`. With no keys in `.env` it
   prints `Alpaca paper keys are not set; nothing to sync.` and calls nothing.
+
+## Reports and the waitlist's copies to WitUS Inbox (chapter 13)
+
+Nothing to run after a deploy: migration `reports/0001` is applied by the migrate workflow on merge.
+
+- Each report and each new waitlist signup is saved first, then sent to Inbox at once with a 5-second timeout.
+  A row Inbox did not take keeps its reason in **Last error** (admin, **Reports and WitUS Inbox**).
+- **The retry is automatic.** The nightly cron sends every unsent row after the price pull and the paper orders,
+  oldest first, at most 25 a night, once the three `INBOX_` names are set; its JSON gains an `inbox` object
+  (`checked`, `sent`, `failed`, `stopped`). A timeout or a 5xx stops that night's run; a 4xx is recorded on its
+  row and the rest go on.
+- **The manual fallback is "Send again".** Admin, **Reports** (or **Waitlist copies to Inbox**), select the rows,
+  action **Send again to WitUS Inbox**, **Go**. A row already sent is left alone, so selecting everything is safe.
+- By hand on the laptop against the local database: `uv run --env-file .env python manage.py reports --send`
+  (without `--send` it only lists the reports not marked Done). With no `INBOX_` names in `.env` it says Inbox is
+  off and sends nothing.
+- A row that reads **Failed, will retry** with a 401: the slug is not in Inbox's `INGEST_SOURCES` for that
+  environment, Inbox was not redeployed after its list changed, the two secrets differ, or the server clock is more
+  than five minutes off. Inbox's own function log names which (`[ingest] unknown source` or `[ingest] hmac verify
+  failed`).
+- Registering this app with Inbox, or rotating the secret: one `openssl rand -hex 32` per environment, the entry
+  `{"slug":"<INBOX_SOURCE_SLUG>","hmac_secret":"<secret>"}` appended to `INGEST_SOURCES` on the witus-inbox Vercel
+  project for that environment (keep the other entries), redeploy Inbox, set the same secret here as
+  `INBOX_INGEST_SECRET`, redeploy this app, then **Send again** on any waiting rows.
 
 ## The laptop copy
 

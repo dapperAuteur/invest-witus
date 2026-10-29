@@ -5,7 +5,8 @@ safe default for the laptop. The names are listed in `.env.example`; values neve
 Chapter 06 added the server's side: the database from `DATABASE_URL`, a secret key the server
 must set, the HTTPS cookie and proxy settings, the folder `collectstatic` fills, and logging a
 server can show. Chapter 07 added the four names of Sign in with WitUS; chapter 08 the price
-source and the cron secret, at the end. Chapters 09 and 10 add one app each and no names.
+source and the cron secret, at the end. Chapters 09 and 10 add one app each and no names. Chapter
+13 adds the three names of WitUS Inbox, at the end.
 """
 
 import contextlib
@@ -107,6 +108,8 @@ INSTALLED_APPS = [
     "invest_witus_site.methods",
     # Alpaca paper trading (chapter 11): the paper client, the orders, the confirm step, the sync.
     "invest_witus_site.paper",
+    # The in-app reporter (chapter 13): reports and waitlist copies, saved, then sent to Inbox.
+    "invest_witus_site.reports",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -299,3 +302,16 @@ if _alpaca_base_url and _alpaca_base_url.rstrip("/") != "https://paper-api.alpac
         "APCA_API_BASE_URL points somewhere other than https://paper-api.alpaca.markets. "
         "This app trades on paper only; unset it or set it to the paper host."
     )
+
+# WitUS Inbox (chapter 13): where in-app reports and new waitlist signups are copied for the
+# operator, with a signed request. All three must be set, or nothing is sent and every row waits
+# (the report form says forwarding is off). The URL is Inbox's ingest endpoint, the slug is this
+# app's source as registered in Inbox's INGEST_SOURCES, and the secret is the same string Inbox
+# holds for that slug (at least 32 characters; Inbox refuses shorter ones). None has a default:
+# they come from the Vercel project's Environment Variables page, never from this file.
+INBOX_INGEST_URL = os.environ.get("INBOX_INGEST_URL", "")
+INBOX_SOURCE_SLUG = os.environ.get("INBOX_SOURCE_SLUG", "")
+INBOX_INGEST_SECRET = os.environ.get("INBOX_INGEST_SECRET", "")
+# The deployed commit, which Vercel sets on every deployment (its system environment variables
+# page, read October 29, 2026); empty on a laptop. A report carries it beside the version.
+GIT_COMMIT_SHA = os.environ.get("VERCEL_GIT_COMMIT_SHA", "")

@@ -1,0 +1,50 @@
+{% extends "pages/base.html" %}
+{% block title %}Report a problem or ask a question: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <h1>Report a problem or ask a question</h1>
+  <p>Tell us what broke, what you wish the app did, or what you want to know. The operator reads every report.</p>
+  {% if not inbox_on %}
+  {# Chapter 13: with the three INBOX_ names unset (a learner's copy, a laptop) the report is saved here and #}
+  {# the owner reads it in the admin; nothing is forwarded. Said plainly, because it is true. #}
+  <p class="report-off">On this copy of the app, reports are saved for the owner to read in the admin. Forwarding to WitUS Inbox is off.</p>
+  {% endif %}
+  <form method="post" action="{% url 'report' %}" class="report-form" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <fieldset class="field">
+      <legend>{{ form.kind.label }}</legend>
+      {{ form.kind }}
+      {{ form.kind.errors }}
+    </fieldset>
+    <div class="field">
+      <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+      {{ form.message }}
+      <p class="small muted" id="{{ form.message.auto_id }}_helptext">{{ form.message.help_text }}</p>
+      {{ form.message.errors }}
+    </div>
+    <div class="field">
+      <label for="{{ form.page.id_for_label }}">{{ form.page.label }}</label>
+      {{ form.page }}
+      <p class="small muted" id="{{ form.page.auto_id }}_helptext">{{ form.page.help_text }}</p>
+      {{ form.page.errors }}
+    </div>
+    {% if form.email %}
+    <div class="field">
+      <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+      {{ form.email }}
+      <p class="small muted" id="{{ form.email.auto_id }}_helptext">{{ form.email.help_text }}</p>
+      {{ form.email.errors }}
+    </div>
+    {% else %}
+    <p class="small muted">Sent as {{ display_name }}, from your WitUS sign-in.</p>
+    {% endif %}
+    {# The honeypot, as on the waitlist form: hidden from people by the stylesheet and from assistive tech. #}
+    <div class="honeypot" aria-hidden="true">
+      <label for="{{ form.website.id_for_label }}">Leave this field empty</label>
+      {{ form.website }}
+    </div>
+    <button type="submit">Send</button>
+  </form>
+</section>
+{% endblock %}

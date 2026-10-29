@@ -1,5 +1,5 @@
-"""`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron, and since chapter 11
-the paper order check after it.
+"""`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron, since chapter 11 the
+paper order check after it, and since chapter 13 the retry of what WitUS Inbox has not taken.
 
 Vercel sends the project's `CRON_SECRET` as `Authorization: Bearer <value>` with every cron
 request (its docs, read October 28, 2026). The route compares that header with the setting in
@@ -21,6 +21,8 @@ from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_c
 from invest_witus_site.paper.orders import sync_orders
 from invest_witus_site.prices.pull import DAYS_BACK, pull, symbol_universe
 from invest_witus_site.prices.sources import source_from_settings
+from invest_witus_site.reports.delivery import send_unsent
+from invest_witus_site.reports.inbox import configured as inbox_configured
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +53,10 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
             body["orders"] = sync_orders(paper_client()).as_dict()
         except AlpacaError as error:
             body["orders"] = {"error": error.message}
+    # Chapter 13: then every report and waitlist copy WitUS Inbox has not taken yet, once Inbox is
+    # configured. Without it the body is unchanged, as with the Alpaca step above.
+    if inbox_configured():
+        body["inbox"] = send_unsent().as_dict()
     # Which schedule fired, when more than one cron shares a path; empty for a call by hand.
     body["schedule"] = request.headers.get("x-vercel-cron-schedule", "")
     log.info("cron: pull-prices %s", body)

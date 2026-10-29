@@ -26,6 +26,8 @@
         {# The first account with a plan or an entry (`logbook_account_id`, decision 115). #}
         {% if logbook_account_id %}<li><a href="{% url 'logbook' logbook_account_id %}">Logbook</a></li>{% endif %}
         {% endif %}
+        {# Chapter 13: the in-app reporter, signed in and out, last in the list. #}
+        <li><a href="{% url 'report' %}">Report a problem or ask a question</a></li>
       </ul>
       <div class="menu-always">
         {% if user.is_authenticated %}

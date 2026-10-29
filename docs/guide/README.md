@@ -63,6 +63,8 @@ In the order a new owner meets them. Each row links the guide section and the re
 | 5 | Account values and the nightly pull | [Account values](using-invest-witus.md#account-values) and [The nightly price pull](using-invest-witus.md#the-nightly-price-pull) | [Script 5](recording-scripts.md#script-5-account-values-after-the-nightly-pull) |
 | 6 | The watch list (chapter 09, on its branch, not merged) | [The watch list](using-invest-witus.md#the-watch-list-when-chapter-09-lands) | [Script 6](recording-scripts.md#script-6-the-watch-list-when-chapter-09-lands) |
 | 7 | The FAQ and "Report a bad actor" | [The FAQ and Report a bad actor](using-invest-witus.md#the-faq-and-report-a-bad-actor) | [Script 7](recording-scripts.md#script-7-the-faq-and-reporting-a-bad-actor) |
+| 8 | Skip a month, close it, and export the logbook | [The journal and the monthly close](using-invest-witus.md#the-journal-and-the-monthly-close-chapter-12) | [Script 8](recording-scripts.md#script-8-skip-a-month-close-it-and-export-the-logbook) |
+| 9 | Report a problem or ask a question | [Report a problem or ask a question](using-invest-witus.md#report-a-problem-or-ask-a-question-chapter-13) | [Script 9](recording-scripts.md#script-9-report-a-problem-or-ask-a-question) |
 
 What the app will not do is its own section: [What the app will not do](using-invest-witus.md#what-the-app-will-not-do).
 
