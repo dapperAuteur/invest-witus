@@ -303,6 +303,14 @@ Acceptance:
 Acceptance: watch lists are private to their owner; adding a symbol the price provider does not know shows a
 clear message instead of a zero price; removing a symbol keeps its history in the journal if it was ever traded.
 
+*Built in chapter 09 (2026-10-28): the `watchlist` app, one list per account (`WatchItem(account, symbol, note,
+added_at)`, unique on account and symbol; a `name` per list is deferred), the symbol rule at the boundary (letters,
+digits, a dot and a hyphen, one to twelve characters), add one or many with a report of added, already there and
+refused, remove, the latest stored close and its date per row, every watched symbol in the nightly pull. "The
+change since the user added it" is deferred: it needs the close on the day of adding, which is derivable from the
+prices table and `added_at` once the pull has run, so no `added price` column is stored (decisions log, rows 79
+to 85).*
+
 ### 7.6 Trading journal (the logbook)
 
 Replaces paying for Edgewonk ($197 a year, read 2026-10-27). Research 05 recommends building the journal in

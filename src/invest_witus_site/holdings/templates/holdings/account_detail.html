@@ -48,6 +48,8 @@
   {% else %}
   <p>No statement yet.{% if user.is_staff %} <a href="{% url 'admin:holdings_snapshot_add' %}?account={{ account.pk }}">Enter the first one in the admin.</a>{% endif %}</p>
   {% endif %}
+  {# The watch list (chapter 09): the symbols followed here, the latest close beside each, the add form. #}
+  {% include "watchlist/_section.html" %}
   <p><a href="{% url 'account-list' %}">All accounts</a></p>
 </section>
 {% endblock %}

@@ -79,6 +79,18 @@ The signed-in owner's accounts are listed at `/accounts/`, and each account's pa
 at the latest stored close, with the close's date and source beside every line. The owner's Tiingo key and the
 cron secret are dashboard steps in [chapter 08](docs/chapters/08-prices-and-the-nightly-pull.md), section 08.10.
 
+## The watch list
+
+Chapter 09 adds a `watchlist` app: symbols the signed-in owner follows in an account without holding them. On
+each account's page (`/accounts/<id>/`) a Watch list section lists them with the latest stored close and its
+date ("no price yet" until the nightly pull has run), takes one symbol or a comma- or space-separated list in
+one box and reports what was added, what was already there and what was refused, and removes a row with a
+button (a POST, CSRF-checked; another owner's account is a 404). A symbol is trimmed and upper-cased and must be
+letters, digits, a dot or a hyphen, one to twelve characters; anything else is refused with the reason and never
+stored. Every watched symbol joins the nightly pull's universe inside chapter 08's budget, so `pull_prices` and
+the cron fetch it with the held ones. There is no buy button: watching places no order. The walk-through is
+[chapter 09](docs/chapters/09-the-watch-list.md), section 09.8.
+
 ## Credits
 
 The project began from freeCodeCamp's course "Python Algorithmic Trading with SnapTrade, Massive, Alpaca"
