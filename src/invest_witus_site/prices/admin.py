@@ -10,7 +10,7 @@ class DailyCloseAdmin(admin.ModelAdmin[DailyClose]):
     """Rows come from the pull. The owner can read them here, filter by source, and delete a
     row to make the next run fetch it again."""
 
-    list_display = ("symbol", "date", "close", "source", "fetched_at")
+    list_display = ("symbol", "date", "close", "adj_close", "source", "fetched_at")
     list_filter = ("source",)
     search_fields = ("symbol",)
     date_hierarchy = "date"

@@ -7,6 +7,7 @@
   <h1 id="account-heading">{{ account.name }} <span class="muted">({{ account.broker }})</span></h1>
   {% if snapshot %}
   <p>Statement as of {{ snapshot.as_of|date:"Y-m-d" }}{% if snapshot.source %} ({{ snapshot.source }}){% endif %}. Each line is valued at the latest close the app has stored for its symbol, with that close's date and source beside it; a close older than five days is marked stale. Information, not advice.</p>
+  <div class="table-scroll" role="region" aria-label="Holdings table, scrolls sideways on a narrow screen" tabindex="0">
   <table class="holdings">
     <caption class="sr-only">Holdings on the latest statement, valued at the latest stored close</caption>
     <thead>
@@ -42,6 +43,7 @@
       </tr>
     </tfoot>
   </table>
+  </div>
   {% if valuation.unpriced %}
   <p class="muted">No price yet for {{ valuation.unpriced|join:", " }}: the nightly pull has not stored a close for {{ valuation.unpriced|length|pluralize:"it,them" }}. A symbol the price source does not know stays unpriced; the pull's log names it.</p>
   {% endif %}

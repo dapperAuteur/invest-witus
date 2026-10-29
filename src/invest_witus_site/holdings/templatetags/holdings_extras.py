@@ -76,3 +76,23 @@ def quantity(value: Decimal | int | str | None) -> str:
     if "." in text:
         text = text.rstrip("0").rstrip(".")
     return f"{sign}{text}"
+
+
+@register.filter
+def signed_money(value: Decimal | None) -> str:
+    """A change in dollars with its sign (2026-10-29): `+$34.50`, `-$1,234.57`, `$0.00`. None
+    is empty."""
+    if value is None:
+        return ""
+    text = money(value)
+    return text if text.startswith("-") or text == "$0.00" else f"+{text}"
+
+
+@register.filter
+def percent(value: Decimal | None) -> str:
+    """A change in percent to two places with its sign (2026-10-29): `+2.88%`, `-0.50%`,
+    `0.00%`. None is empty."""
+    if value is None:
+        return ""
+    rounded = value.quantize(CENT, rounding=ROUND_HALF_UP)
+    return "0.00%" if rounded == 0 else f"{rounded:+.2f}%"
