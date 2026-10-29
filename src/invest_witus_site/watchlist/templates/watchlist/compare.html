@@ -22,14 +22,16 @@
     <div class="field">
       <label for="compare-days">Range</label>
       <select id="compare-days" name="days">
-        {% for range in ranges %}<option value="{{ range }}"{% if range == days %} selected{% endif %}>{{ range }} days</option>{% endfor %}
+        {% for preset in presets %}<option value="{{ preset.key }}"{% if preset.key == chosen.key %} selected{% endif %}>{{ preset.label }}</option>{% endfor %}
       </select>
     </div>
+    {% include "prices/_range_dates.html" %}
     <button type="submit">Compare</button>
   </form>
   {% else %}
   <p>Nothing to compare yet: this account has no watched symbol and no holding. Add a symbol to the watch list on the account page.</p>
   {% endif %}
+  {% include "prices/_range_error.html" %}
   {% if picked.not_allowed %}
   <p class="message error">Not on this account's watch list or holdings, so left out: {{ picked.not_allowed|join:", " }}.</p>
   {% endif %}
@@ -37,16 +39,17 @@
   <p class="message error">Up to {{ max_lines }} symbols at once; left out: {{ picked.over_limit|join:", " }}.</p>
   {% endif %}
   {% if empty %}
-  <p class="message">No closes stored in the last {{ days }} days for {{ empty|join:", " }}. Press <strong>Get history</strong> on the account page, or wait for the nightly pull.</p>
+  <p class="message">No closes stored {{ chosen.within }} for {{ empty|join:", " }}. Press <strong>Get history</strong> on the account page, or wait for the nightly pull.</p>
   {% endif %}
   {% if plot %}
   {% include "prices/_chart.html" %}
+  {% include "prices/_thinned.html" %}
   {% if starts_differ %}
   <p class="small">The lines start on different days: each is rebased on its own first stored day in the range, listed in the table below.</p>
   {% endif %}
   <div class="table-scroll" role="region" aria-label="Start, end and change table, scrolls sideways on a narrow screen" tabindex="0">
   <table class="holdings">
-    <caption>Start, end and change per symbol over the last {{ days }} days</caption>
+    <caption>Start, end and change per symbol, {{ chosen.title }}</caption>
     <thead>
       <tr>
         <th scope="col">Symbol</th>
@@ -74,11 +77,11 @@
   </table>
   </div>
   <p class="small muted">A line uses the adjusted close (splits and dividends accounted for) when every day in the range has one, otherwise the close. Press <strong>Get history</strong> with <strong>All available</strong> once per symbol to fill adjusted closes stored before 2026-10-29.</p>
-  <details class="daily">
+  <details class="daily" id="daily"{% if daily_open %} open{% endif %}>
     <summary>Every day's values</summary>
     <div class="table-scroll" role="region" aria-labelledby="daily-caption" tabindex="0">
     <table class="holdings">
-      <caption id="daily-caption">Each symbol's rebased value and close per stored day, newest first</caption>
+      <caption id="daily-caption">Each symbol's rebased value and close per stored day, newest first{% if daily.paginator.num_pages > 1 %}, {{ rows_per_page }} a page{% endif %}</caption>
       <thead>
         <tr>
           <th scope="col">Date</th>
@@ -89,7 +92,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for day, rows in plot.daily_rows %}
+        {% for day, rows in daily %}
         <tr>
           <th scope="row">{{ day|date:"Y-m-d" }}</th>
           {% for row in rows %}
@@ -105,6 +108,9 @@
       </tbody>
     </table>
     </div>
+    {% with base="symbols="|add:symbols_query|add:"&"|add:chosen.query %}
+    {% include "prices/_pager.html" with page=daily base_query=base label="Every day's values" anchor="#daily" %}
+    {% endwith %}
   </details>
   {% endif %}
   <p class="small muted">Closes from the app's own table; the vendor's free plan is for the owner's own use, so this page is the signed-in owner's only. A comparison of past prices, not a forecast. Information, not advice.</p>

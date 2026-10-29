@@ -13,20 +13,26 @@
   {% else %}
   <p>No close stored yet. The nightly pull fetches a watched symbol's last year of closes on its first night; <strong>Get history</strong> below fetches it now.</p>
   {% endif %}
-  <nav aria-label="Range" class="small">
-    {% for range in ranges %}
-    {% if range == days %}<strong aria-current="page">{{ range }} days</strong>{% else %}<a href="?days={{ range }}">{{ range }} days</a>{% endif %}{% if not forloop.last %} · {% endif %}
+  <nav aria-label="Range" class="small range-presets">
+    {% for preset in presets %}
+    {% if preset.key == chosen.key %}<strong aria-current="page">{{ preset.label }}</strong>{% else %}<a href="?days={{ preset.key }}">{{ preset.label }}</a>{% endif %}{% if not forloop.last %} · {% endif %}
     {% endfor %}
   </nav>
-  <p><a href="{% url 'compare' account.pk %}?symbols={{ item.symbol }}&amp;days={{ days }}">Compare {{ item.symbol }} with other symbols</a></p>
+  <form method="get" class="range-form">
+    {% include "prices/_range_dates.html" %}
+    <button type="submit">Show these dates</button>
+  </form>
+  {% include "prices/_range_error.html" %}
+  <p><a href="{% url 'compare' account.pk %}?symbols={{ item.symbol }}&amp;{{ chosen.query }}">Compare {{ item.symbol }} with other symbols</a></p>
   {% if plot %}
   {% include "prices/_chart.html" %}
+  {% include "prices/_thinned.html" %}
   {% if line.basis == "close" and line.missing_adjusted %}
   <p class="small">Adjusted closes are missing for {{ line.missing_adjusted }} of {{ line.days|length }} day{{ line.days|length|pluralize }} in this range, so the chart uses the unadjusted close, where a split shows as a sudden drop. Press <strong>Get history</strong> with <strong>All available</strong> below once to fill them.</p>
   {% endif %}
-  <div class="table-scroll" role="region" aria-labelledby="closes-caption" tabindex="0">
+  <div class="table-scroll" role="region" aria-labelledby="closes-caption" tabindex="0" id="closes">
   <table class="holdings">
-    <caption id="closes-caption">{{ item.symbol }}, every stored day in the last {{ days }} days, newest first. Change is from the stored day before, on the {{ line.basis }}.</caption>
+    <caption id="closes-caption">{{ item.symbol }}, every stored day {{ chosen.within }}, newest first{% if rows.paginator.num_pages > 1 %}, {{ rows_per_page }} a page{% endif %}. Change is from the stored day before, on the {{ line.basis }}.</caption>
     <thead>
       <tr>
         <th scope="col">Date</th>
@@ -39,7 +45,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in line.newest_first %}
+      {% for row in rows %}
       <tr>
         <th scope="row">{{ row.day|date:"Y-m-d" }}</th>
         <td class="num">{{ row.close|money }}</td>
@@ -53,8 +59,9 @@
     </tbody>
   </table>
   </div>
+  {% include "prices/_pager.html" with page=rows base_query=chosen.query label="Closes table" anchor="#closes" %}
   {% else %}
-  <p>No closes stored in the last {{ days }} days.</p>
+  <p>No closes stored {{ chosen.within }}.</p>
   {% endif %}
   <section class="get-history" aria-labelledby="get-history-heading">
     <h2 id="get-history-heading">Get history</h2>
