@@ -25,7 +25,7 @@ from invest_witus.methods.rulebook import load_method
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.engine import build_review, next_action
 from invest_witus_site.methods.forms import PlanChangeForm, first_of_next_month
-from invest_witus_site.methods.logbook import CSV_COLUMNS
+from invest_witus_site.methods.logbook import CSV_COLUMNS, cell
 from invest_witus_site.methods.models import (
     JournalEntry,
     MethodPlan,
@@ -729,6 +729,11 @@ def test_the_csv_export_has_the_documented_columns(
     assert rows[2][:3] == ["2026-02-03", "skip", ""] and rows[2][7] == SKIP_REASON
     assert rows[3][7] == "'=SUM(1) is not advice", "a formula is exported as text"
     assert rows[4][8] == "'-a note that starts with a minus"
+    assert [cell(text) for text in ("\uff1d1+1", "@SUM", "plain")] == [
+        "'\uff1d1+1",
+        "'@SUM",
+        "plain",
+    ]
     MonthlyReview.objects.create(
         plan=plan, month="2026-02", opened_on=date(2026, 2, 7), closed_at=timezone.now()
     )

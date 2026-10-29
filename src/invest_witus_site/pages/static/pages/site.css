@@ -170,3 +170,5 @@ button[type="submit"] { min-height: 2.75rem; padding: 0 1.25rem; background: var
 .filters select { min-height: 2.75rem; }
 .explained { font-style: italic; }
 .reviews li, .versions li, .events li { margin-bottom: 0.375rem; }
+fieldset.field { border: 0; padding: 0; margin: 0 0 1rem; }
+fieldset.field legend { font-weight: 600; margin-bottom: 0.25rem; padding: 0; }

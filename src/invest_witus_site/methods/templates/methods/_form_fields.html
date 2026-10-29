@@ -1,10 +1,20 @@
 {# A form's fields with their labels, errors and help (chapter 12), shared by the change, review and edit pages. #}
+{# A group of radio buttons gets a fieldset and a legend (Django's `use_fieldset`), so a screen reader names the group. #}
 {{ form.non_field_errors }}
 {% for field in form %}
+{% if field.use_fieldset %}
+<fieldset class="field">
+  <legend>{{ field.label }}</legend>
+  {{ field }}
+  {{ field.errors }}
+  {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+</fieldset>
+{% else %}
 <div class="field">
   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
   {{ field }}
   {{ field.errors }}
   {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
 </div>
+{% endif %}
 {% endfor %}

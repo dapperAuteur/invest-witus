@@ -49,9 +49,9 @@ CSV_COLUMNS = (
     "source",
     "month_closed",
 )
-# A spreadsheet runs a cell that starts with one of these as a formula. Text the owner typed is
-# exported with a leading apostrophe instead, so opening the file never runs anything.
-FORMULA_STARTS = ("=", "+", "-", "@", "\t", "\r")
+# A spreadsheet may run a cell that starts with one of these as a formula: OWASP's list, with the
+# full-width forms. Text the owner typed is exported with a leading apostrophe instead.
+FORMULA_STARTS = ("=", "+", "-", "@", "\t", "\r", "\n", "\uff1d", "\uff0b", "\uff0d", "\uff20")
 
 
 @dataclass(frozen=True, slots=True)
