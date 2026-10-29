@@ -21,7 +21,7 @@
 {% include "methods/_log_form.html" %}
 {# A start submitted while a method runs lands here with its reason; the form itself is not shown. #}
 {{ start_form.non_field_errors }}
-<p class="small muted">This account runs one method at a time. Ending it is an admin step for now; a change of plan with its reason is chapter 12's.</p>
+<p class="small muted">This account runs one method at a time. To change its numbers or end it, use the change form above; each change is kept as a dated version with its reason.</p>
 {% else %}
 <p class="lead">A method is a short list of rules, each taught by one lesson. Read them before you commit: once the plan is written, the app holds you to every one and sends you back to the lesson when the journal leaves it.</p>
 {% for method, rules in catalog %}

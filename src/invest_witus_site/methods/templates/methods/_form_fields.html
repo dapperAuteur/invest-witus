@@ -1,0 +1,10 @@
+{# A form's fields with their labels, errors and help (chapter 12), shared by the change, review and edit pages. #}
+{{ form.non_field_errors }}
+{% for field in form %}
+<div class="field">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {{ field.errors }}
+  {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+</div>
+{% endfor %}

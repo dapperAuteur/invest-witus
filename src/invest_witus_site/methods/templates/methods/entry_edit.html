@@ -1,0 +1,19 @@
+{% extends "pages/base.html" %}
+{% block title %}Edit an entry: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container" aria-labelledby="edit-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="edit-heading">Edit the entry of {{ entry.date|date:"Y-m-d" }}</h1>
+  {% if closed %}
+  <p class="band">{{ entry.date|date:"Y-m" }} is closed, so its entries are read-only. Reopen its review, with a reason, to change this one.</p>
+  <p><a href="{% url 'method-review' account.pk entry.date|date:'Y-m' %}">The review of {{ entry.date|date:"Y-m" }}</a></p>
+  {% else %}
+  <form method="post" action="{% url 'logbook-edit' account.pk entry.pk %}" class="method-form" novalidate>
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" %}
+    <button type="submit">Save the entry</button>
+  </form>
+  {% endif %}
+  <p><a href="{% url 'logbook' account.pk %}">Back to the logbook</a></p>
+</section>
+{% endblock %}

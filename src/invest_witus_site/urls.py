@@ -17,8 +17,11 @@ urlpatterns = [
     # The watch list's add and remove actions on an account page (chapter 09). The `pk` captured
     # here is passed on to the included views.
     path("accounts/<int:pk>/watch/", include("invest_witus_site.watchlist.urls")),
-    # The method an account runs, its journal and the review, in three views (chapter 10).
+    # The method an account runs, its journal and the review, in three views (chapter 10); the
+    # plan's change form and each month's review (chapter 12).
     path("accounts/<int:pk>/method/", include("invest_witus_site.methods.urls")),
+    # The account's logbook: every journal line, filtered, edited and exported (chapter 12).
+    path("accounts/<int:pk>/logbook/", include("invest_witus_site.methods.logbook_urls")),
     # The account linked to Alpaca paper: its positions, cash and orders, the Confirm step and
     # the order check (chapter 11). Owner, superuser and a linked account only.
     path("accounts/<int:pk>/paper/", include("invest_witus_site.paper.urls")),
