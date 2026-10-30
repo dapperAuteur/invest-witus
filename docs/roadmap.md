@@ -1,9 +1,9 @@
 ---
 app: invest
 name: Invest.WitUS
-stage: beta
+stage: alpha
 url: https://invest.witus.online
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 ## Live now
@@ -22,6 +22,7 @@ updated: 2026-10-29
 - Migrations run automatically after each merge
 
 ## In progress
+- Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
 ## Next
