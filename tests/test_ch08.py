@@ -550,9 +550,13 @@ def test_the_owner_sees_each_line_valued_with_the_closes_date(
     html = response.content.decode()
     fresh = (today - timedelta(days=1)).isoformat()
     old = (today - timedelta(days=STALE_AFTER_DAYS + 3)).isoformat()
+    # The statement is dated 2026-10-25, so its cash line passes the stale rule like any quote
+    # once more than STALE_AFTER_DAYS days have gone by (this test was written on 2026-10-28).
+    statement = date(2026, 10, 25)
+    cash_as_of = "2026-10-25" + (" stale" if (today - statement).days > STALE_AFTER_DAYS else "")
     assert rows_in(html) == [
         ("Symbol", "Shares", "Close", "As of", "Source", "Value"),
-        ("CASH", "500", "$1.00", "2026-10-25", "statement", "$500.00"),
+        ("CASH", "500", "$1.00", cash_as_of, "statement", "$500.00"),
         ("INDEX", "2.5", "$101.23", fresh, "tiingo", "$253.08"),
         ("NONE", "1", "no price yet"),
         ("OTHER", "10", "$20.01", f"{old} stale", "csv", "$200.05"),
