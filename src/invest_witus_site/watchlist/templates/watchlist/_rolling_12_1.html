@@ -1,0 +1,70 @@
+{% load holdings_extras %}
+{# The rolling 12-1 line (chapter 14a), on a watched symbol's history page, on an account running 12-1 momentum. #}
+{# Included by watchlist/history.html with `rolling` (a RollingLine) and `item`. The plot is an SVG stretched to #}
+{# its box like the price chart, its axes HTML beside it; the dots are HTML so they stay round. The table under it #}
+{# is the text alternative and lists every month, the ones without a number too. No script. #}
+<section aria-labelledby="rolling-heading">
+  <h2 id="rolling-heading">{{ item.symbol }}'s 12-1 return, month by month</h2>
+  <p>For each month from {{ rolling.first }} to {{ rolling.last }}: the 12-1 return a rebalance in that month reads, from the last close 13 months back to the last close 2 months back, on adjusted closes. {{ rolling.scored }} of {{ rolling.points|length }} months have enough history for a number. This line does not follow the range picked above.</p>
+  {% if rolling.scored %}
+  <figure class="chart rolling-chart" aria-labelledby="rolling-title">
+    <figcaption class="chart-caption">
+      <p class="chart-title" id="rolling-title">Rolling 12-1 return of {{ item.symbol }}, {{ rolling.first }} to {{ rolling.last }}</p>
+      <p class="small muted">One dot per month with a number; the line breaks at a month without one. The dashed line is zero: above it the window rose, below it the window fell.</p>
+    </figcaption>
+    <div class="chart-frame" style="--y-width: {{ rolling.y_width }}ch">
+      <p class="axis-title axis-y">12-1 return, percent</p>
+      <div class="chart-y" aria-hidden="true">
+        {% for tick in rolling.y_ticks %}<span style="top: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
+      </div>
+      <div class="chart-plot">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-labelledby="rolling-svg-title rolling-svg-desc" data-points="{{ rolling.scored }}">
+          <title id="rolling-svg-title">{{ rolling.svg_title }}</title>
+          <desc id="rolling-svg-desc">One point per month, oldest on the left, with a dashed zero line. The table below lists every month's number or why it has none.</desc>
+          {% for tick in rolling.y_ticks %}<line class="grid" x1="0" x2="100" y1="{{ tick.at }}" y2="{{ tick.at }}" vector-effect="non-scaling-stroke"/>{% endfor %}
+          <line class="rolling-zero" x1="0" x2="100" y1="{{ rolling.zero_y }}" y2="{{ rolling.zero_y }}" vector-effect="non-scaling-stroke"/>
+          {% for run in rolling.runs %}<polyline class="rolling-run" points="{{ run }}" fill="none" vector-effect="non-scaling-stroke"/>{% endfor %}
+        </svg>
+        {% for each in rolling.drawn %}<span class="rolling-dot" style="left: {{ each.x }}%; top: {{ each.y }}%" title="{{ each.label }}: {{ each.text }}" aria-hidden="true"></span>{% endfor %}
+      </div>
+      <div class="chart-x" aria-hidden="true">
+        {% for tick in rolling.x_ticks %}<span class="{{ tick.edge }}" style="left: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
+      </div>
+      <p class="axis-title axis-x">Rebalance month</p>
+    </div>
+  </figure>
+  {% else %}
+  <p>No month from {{ rolling.first }} to {{ rolling.last }} has enough history for a 12-1 return yet. <strong>Get history</strong> below with 5 years fetches the closes the windows need.</p>
+  {% endif %}
+  <p class="how-to-read"><strong>How to read this.</strong> Each dot is the number the method's ranking reads, or would have read, for a rebalance in that month. A line climbing means the past eleven months kept looking better from one month to the next; a line crossing zero means the window turned from a rise to a fall. The newest dot is this month's 12-1 return, the same as the window above. A month with no dot is missing a close at one end of its window, and says "not enough history" in the table; the app never fills it in from a neighbor. <span class="muted">Lesson coming.</span></p>
+  {% if rolling.unadjusted %}<p class="small">{{ rolling.unadjusted }} stored close{{ rolling.unadjusted|pluralize }} in these months had no adjusted close, so the plain close was used; a split would then read as a fall.</p>{% endif %}
+  <div class="table-scroll" role="region" aria-labelledby="rolling-caption" tabindex="0">
+  <table class="holdings">
+    <caption id="rolling-caption">{{ item.symbol }}'s 12-1 return for each rebalance month, newest first, with the two closes it is computed from</caption>
+    <thead>
+      <tr>
+        <th scope="col">Month</th>
+        <th scope="col" class="num">12-1 return</th>
+        <th scope="col">From</th>
+        <th scope="col">To</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for each in rolling.newest_first %}
+      <tr>
+        <th scope="row">{{ each.label }}</th>
+        {% if each.point.score %}
+        <td class="num">{{ each.text }}</td>
+        <td>{{ each.point.score.start_day|date:"Y-m-d" }}, {{ each.point.score.start_close|money }}</td>
+        <td>{{ each.point.score.end_day|date:"Y-m-d" }}, {{ each.point.score.end_close|money }}</td>
+        {% else %}
+        <td class="num">not enough history</td>
+        <td colspan="2">{{ each.point.reason }}</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="small muted">Arithmetic on the stored closes. A past return is not a forecast. Information, not advice.</p>
+</section>

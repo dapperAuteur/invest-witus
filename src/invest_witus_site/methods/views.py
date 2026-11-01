@@ -37,6 +37,7 @@ from invest_witus_site.methods.models import (
     MonthlyReview,
     ReviewEvent,
 )
+from invest_witus_site.methods.momentum_history import rank_changes
 from invest_witus_site.methods.reviews import (
     ReviewRefused,
     close_review,
@@ -122,6 +123,11 @@ def render_method_page(
             paper_section(plan)
             if plan is not None and alpaca_allowed(request.user, account)
             else None
+        ),
+        # Chapter 14a: how each candidate's rank moved since last month, and its last twelve
+        # places, on a 12-1 momentum plan only. One more query, for the closes those months read.
+        "rank_changes": (
+            rank_changes(plan, through) if plan is not None and plan.is_momentum else None
         ),
     }
     return render(request, "methods/method_page.html", context)

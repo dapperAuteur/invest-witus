@@ -302,6 +302,16 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 .momentum-up { color: #56b4e9; }
 .momentum-down { color: #e69f00; }
 
+/* 12-1 momentum over time (chapter 14a): the rank moves and the rolling 12-1 line. The move's arrow and words carry
+   the meaning; the color repeats it. The line is the chart palette's blue, the zero line dashed. */
+.rank-move { white-space: nowrap; }
+.rank-move-up { color: #56b4e9; }
+.rank-move-down { color: #e69f00; }
+.rank-history td, .rank-history th { white-space: nowrap; }
+.chart-plot .rolling-zero { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.chart-plot .rolling-run { stroke: #56b4e9; stroke-width: 2; stroke-linejoin: round; }
+.rolling-dot { position: absolute; width: 0.5rem; height: 0.5rem; margin: -0.25rem 0 0 -0.25rem; border-radius: 50%; background: #56b4e9; }
+
 /* The floating Help bubble (decision 151): bottom right, clear of the header and its Menu button,
    a 44px target, inside the phone's safe area. The page keeps room under the footer so the bubble
    never sits on its last line. */
