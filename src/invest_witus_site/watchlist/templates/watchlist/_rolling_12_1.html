@@ -28,7 +28,7 @@
         {% for each in rolling.drawn %}<span class="rolling-dot" style="left: {{ each.x }}%; top: {{ each.y }}%" title="{{ each.label }}: {{ each.text }}" aria-hidden="true"></span>{% endfor %}
       </div>
       <div class="chart-x" aria-hidden="true">
-        {% for tick in rolling.x_ticks %}<span class="{{ tick.edge }}" style="left: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
+        {% for tick in rolling.x_ticks %}<span class="{{ tick.edge }}{% if tick.minor %} minor{% endif %}" style="left: {{ tick.at }}%">{{ tick.label }}</span>{% endfor %}
       </div>
       <p class="axis-title axis-x">Rebalance month</p>
     </div>

@@ -183,15 +183,18 @@ def x_at(index: int, count: int) -> Decimal:
 
 def month_ticks(months: list[Month]) -> list[Tick]:
     """A label every `LINE_LABEL_EVERY` months counted back from the newest, so the newest month
-    is always labelled; a label near an edge is aligned to it."""
+    is always labelled; a label near an edge is aligned to it. Over two labels, every other one
+    counted back from the newest is hidden on a narrow screen, as on the price chart."""
     count = len(months)
     ticks: list[Tick] = []
     for index, month in enumerate(months):
-        if (count - 1 - index) % LINE_LABEL_EVERY:
+        back = count - 1 - index
+        if back % LINE_LABEL_EVERY:
             continue
         at = x_at(index, count)
         edge = "start" if at < EDGE_PERCENT else "end" if at > HUNDRED - EDGE_PERCENT else ""
-        ticks.append(Tick(at, month_text(month), edge))
+        minor = count > 2 * LINE_LABEL_EVERY and (back // LINE_LABEL_EVERY) % 2 == 1
+        ticks.append(Tick(at, month_text(month), edge, minor=minor))
     return ticks
 
 

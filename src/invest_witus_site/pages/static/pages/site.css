@@ -307,7 +307,7 @@ details.daily > summary { cursor: pointer; min-height: 2.75rem; display: flex; a
 .rank-move { white-space: nowrap; }
 .rank-move-up { color: #56b4e9; }
 .rank-move-down { color: #e69f00; }
-.rank-history td, .rank-history th { white-space: nowrap; }
+.rank-history td, .rank-history th, .rank-moves thead th { white-space: nowrap; }
 .chart-plot .rolling-zero { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
 .chart-plot .rolling-run { stroke: #56b4e9; stroke-width: 2; stroke-linejoin: round; }
 .rolling-dot { position: absolute; width: 0.5rem; height: 0.5rem; margin: -0.25rem 0 0 -0.25rem; border-radius: 50%; background: #56b4e9; }

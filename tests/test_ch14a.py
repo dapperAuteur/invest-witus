@@ -370,6 +370,10 @@ def test_the_history_page_draws_the_rolling_line_with_a_table_of_every_month(
     line = rolling_line("ALPHA", timezone.localdate())
     # A month m has a number when m-13 is on or after M-30, so m runs from M-17 to M: 18 of 24.
     assert line.scored == 18
+    # A month label every six months back from this one; on a phone every other one is hidden.
+    labels = [tick.label for tick in line.x_ticks]
+    assert len(labels) == 4 and labels[-1] == table[1][0]
+    assert [tick.label for tick in line.x_ticks if not tick.minor] == [labels[1], labels[3]]
     assert html.count('class="rolling-dot"') == line.scored
     assert "How to read this." in html and "Information, not advice." in html
 
