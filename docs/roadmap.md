@@ -3,7 +3,7 @@ app: invest
 name: Invest.WitUS
 stage: alpha
 url: https://invest.witus.online
-updated: 2026-10-30
+updated: 2026-11-01
 ---
 
 ## Live now
@@ -22,11 +22,11 @@ updated: 2026-10-30
 - Migrations run automatically after each merge
 
 ## In progress
+- Chapter 14a: momentum rank changes month to month and a rolling 12-1 line (built, waiting for merge)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
 ## Next
-- Chapter 14a: momentum rank changes month to month and a rolling 12-1 line
 - Chapter 15: signed events to CentenarianOS and lesson links checked against Learn.WitUS
 - Python tutorial course built from the chapters
 
