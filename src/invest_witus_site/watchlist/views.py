@@ -26,6 +26,7 @@ from invest_witus_site.holdings.models import Account, Holding
 from invest_witus_site.holdings.views import account_page
 from invest_witus_site.methods.models import MethodPlan
 from invest_witus_site.methods.momentum import HistoryWindow, history_window
+from invest_witus_site.methods.momentum_history import rolling_line
 from invest_witus_site.prices import profiles
 from invest_witus_site.prices.charts import MAX_LINES, MAX_POINTS, SeriesInput, band, build_plot
 from invest_witus_site.prices.history import (
@@ -180,6 +181,9 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
         # the From and To that show all of it when the stored closes reach back that far.
         "momentum_window": window,
         "window_query": window_query(window, choice.span) if window is not None else "",
+        # Chapter 14a: the symbol's 12-1 return for each of the last 24 months, as a line, on the
+        # same accounts as the window. Its own query: it does not follow the range picked above.
+        "rolling": rolling_line(item.symbol, today) if window is not None else None,
     }
     status = 400 if choice.error else 200
     return render(request, "watchlist/history.html", context, status=status)

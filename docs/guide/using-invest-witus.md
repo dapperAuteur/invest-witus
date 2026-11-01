@@ -823,6 +823,28 @@ symbols below (`ALPHA`, `BETA`, `GAMMA`, `DELTA`) are placeholders.
 - **A symbol's history page** shades this month's 12-1 window, darker, and the excluded month, lighter with a
   dashed edge and labelled "excluded". **Show the whole window** sets the range to cover it.
 
+## Momentum over time: rank changes and the rolling line (chapter 14a)
+
+Written for the app at `v14a`. Two more pictures on an account that runs 12-1 momentum, for its owner only.
+
+- **Rank changes** sits under the ranking on the method page, in views A, B and C. The first table lists each
+  candidate's place for this month's rebalance, its place last month, and the move: `▲ up 2 places`,
+  `▼ down 1 place`, `◆ same place`, "new in the ranking" (ranked now, not last month), "not ranked this month"
+  (ranked last month, not now) or "not ranked". The **Top N** column says "joined the top 2" or "left the top 2"
+  when the move crossed the line, because that is when the method buys or sells. The second table shows each
+  candidate's place in each of the last twelve months, oldest on the left: a place in bold was in the top N, and
+  `n/r` means not ranked that month. Every month ranks your candidates as they are today, so a month before you
+  changed the list shows how today's list would have ranked then.
+- **12-1 return, month by month** sits under the shaded window on a watched symbol's history page. One dot per
+  month for the last 24 months, at the month the number is used in, with a dashed line at zero: above it the
+  window rose, below it the window fell. The newest dot is this month's 12-1 return, the same number as the window
+  above it. A month with no dot is missing a close at one end of its window; the table under the chart says "not
+  enough history" for it and names the months it needs, and the line breaks there instead of joining across. A
+  new symbol's first fetch stores two years, which fills about the newest 12 of the 24 points; **Get history** with
+  5 years fills the rest. The line does not follow the range picked for the price chart.
+- Both read the adjusted close, as the ranking does, and both say how many stored closes had none. Each has a
+  **How to read this** note and "Lesson coming".
+
 ## Draft a post for WitUS Outbox (2026-10-29)
 
 For the site owner only. When you want to tell people something about Invest.WitUS (that it is live, or a
