@@ -182,6 +182,15 @@ the top N in equal parts; sells are listed, not placed, and a buy of a symbol so
 wash-sale warning. The walk-through is [chapter 14](docs/chapters/14-a-second-method-12-1-momentum.md), section
 14.12.
 
+Chapter 14a adds two pictures of momentum over time, on the same accounts. The method page's **Rank changes** lists
+each candidate's place this month and last month with an arrow and the words (`▲ up 2 places`, "new in the
+ranking", "not ranked this month") and whether it joined or left the top N, then each candidate's place in each of
+the last twelve months. A watched symbol's history page draws its **12-1 return month by month**, 24 points, one
+per rebalance month, with a dashed zero line and a table of every month; a month whose window lacks a close at
+either end says "not enough history" and the line breaks there. Both come from the same `score` and `rank` as
+chapter 14 (`invest_witus/methods/momentum_history.py`), on adjusted closes, with no new table. The walk-through is
+[chapter 14a](docs/chapters/14a-momentum-over-time.md).
+
 ## Post drafts to WitUS Outbox
 
 Not a chapter. The site owner's **Draft a post** in the admin sends a short post (the launch, once, or a

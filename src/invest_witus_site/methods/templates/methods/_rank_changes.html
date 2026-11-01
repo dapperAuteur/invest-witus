@@ -1,0 +1,58 @@
+{# Rank changes (chapter 14a), on the method page of an account that runs 12-1 momentum, under the ranking. #}
+{# Included by methods/method_page.html with `changes` (a RankChanges). Two tables, no script: each candidate's #}
+{# move since last month with an arrow and words, then its place in each of the last twelve months. #}
+<section class="card" aria-labelledby="rank-changes-heading">
+  <h2 id="rank-changes-heading">Rank changes since {{ changes.previous }}</h2>
+  {% if changes.any_ranked %}
+  <p>Where each candidate ranked for the {{ changes.month }} rebalance, where it ranked for {{ changes.previous }}, and how far it moved. Place 1 is the highest 12-1 return; the plan holds the top {{ changes.top_n }}.</p>
+  <div class="table-scroll" role="region" aria-labelledby="moves-caption" tabindex="0">
+  <table class="holdings rank-moves">
+    <caption id="moves-caption">Each candidate's place for {{ changes.month }} and for {{ changes.previous }}, in this month's order</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col" class="num">{{ changes.month }}</th>
+        <th scope="col" class="num">{{ changes.previous }}</th>
+        <th scope="col">Move</th>
+        <th scope="col">Top {{ changes.top_n }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for move in changes.moves %}
+      <tr>
+        <th scope="row">{{ move.symbol }}</th>
+        <td class="num">{% if move.rank %}{{ move.rank }}{% else %}not ranked{% endif %}</td>
+        <td class="num">{% if move.previous %}{{ move.previous }}{% else %}not ranked{% endif %}</td>
+        <td><span class="rank-move rank-move-{{ move.direction }}">{{ move.text }}</span></td>
+        <td>{% if move.top_change == "joined" %}joined the top {{ changes.top_n }}{% elif move.top_change == "left" %}left the top {{ changes.top_n }}{% elif move.top %}in{% else %}out{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="table-scroll" role="region" aria-labelledby="rank-history-caption" tabindex="0">
+  <table class="holdings rank-history">
+    <caption id="rank-history-caption">Each candidate's place for every rebalance from {{ changes.first }} to {{ changes.month }}, oldest on the left. A place in bold was in the top {{ changes.top_n }}; "n/r" means not ranked that month; equal returns take places A to Z, as in the ranking above.</caption>
+    <thead>
+      <tr>
+        <th scope="col">Symbol</th>
+        {% for label in changes.labels %}<th scope="col" class="num">{{ label }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in changes.rows %}
+      <tr>
+        <th scope="row">{{ row.symbol }}</th>
+        {% for rank, top in row.cells %}<td class="num">{% if rank is None %}<abbr title="not ranked">n/r</abbr>{% elif top %}<strong>{{ rank }}</strong><span class="sr-only"> (top {{ changes.top_n }})</span>{% else %}{{ rank }}{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if changes.unadjusted %}<p class="small">{{ changes.unadjusted }} stored close{{ changes.unadjusted|pluralize }} in these months had no adjusted close, so the plain close was used; a split would then read as a fall.</p>{% endif %}
+  {% else %}
+  <p>No candidate can be ranked in any month from {{ changes.first }} to {{ changes.month }} yet: none has a close stored in both months of a window. The ranking above says which history is missing.</p>
+  {% endif %}
+  <p class="how-to-read"><strong>How to read this.</strong> The method acts on rank, not on the return itself: at each rebalance it holds whatever sits in the top {{ changes.top_n }}. An arrow up means the candidate's 12-1 return now ranks higher among your candidates than it did last month; "joined" or "left" means the move crossed the top {{ changes.top_n }} line, which is when the method buys or sells. Every month is ranked with your candidates as they are today, so a month before you changed the list shows how today's list would have ranked then. "not ranked" means a close is missing at one end of that month's window; the app never fills it in. <span class="muted">Lesson coming.</span></p>
+  <p class="small muted">Arithmetic on stored closes of the candidates you chose. A past rank is not a forecast. Information, not advice.</p>
+</section>

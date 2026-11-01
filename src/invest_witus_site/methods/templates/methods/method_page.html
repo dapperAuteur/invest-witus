@@ -14,6 +14,8 @@
   {% if paper %}{% include "paper/_month_buys.html" %}{% endif %}
   {# Chapter 14: a 12-1 momentum plan's ranking, its bars and this month's rebalance, in every view. #}
   {% if review.momentum %}{% include "methods/_momentum.html" with momentum=review.momentum %}{% endif %}
+  {# Chapter 14a: how each candidate's place moved since last month, and its places over twelve months. #}
+  {% if rank_changes %}{% include "methods/_rank_changes.html" with changes=rank_changes %}{% endif %}
   {# The same context, one of three arrangements (chapter 10). The view's letter is the research's. #}
   {% include view_template %}
   <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
