@@ -3,7 +3,7 @@ app: invest
 name: Invest.WitUS
 stage: alpha
 url: https://invest.witus.online
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 ## Live now
@@ -18,11 +18,10 @@ updated: 2026-11-01
 - Journal with hold and skip reasons, monthly close and CSV export
 - Report a problem or ask a question, sent to WitUS Inbox; a Help bubble on every page
 - Owner drafts posts to WitUS Outbox
-- Tutorial chapters 00 to 14, one git tag per chapter
+- Tutorial chapters 00 to 14a, one git tag per chapter (14a merged 2026-10-31)
 - Migrations run automatically after each merge
 
 ## In progress
-- Chapter 14a: momentum rank changes month to month and a rolling 12-1 line (built, waiting for merge)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
