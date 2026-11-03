@@ -1395,7 +1395,8 @@ say "not enough history".
 
 ## Next
 
-Chapter 15 sends signed events to CentenarianOS and checks the lesson links against Learn.WitUS.
+Chapter 15 compares your methods: two to four accounts on one chart beside an index fund, with what each put in,
+holds and gained (decision 167 placed it before the CentenarianOS events, now chapter 16).
 
 ## References
 

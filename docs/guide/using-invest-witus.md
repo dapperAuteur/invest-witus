@@ -969,8 +969,47 @@ keeps working as it was.
   the account again to choose.
 - **The header.** With one linked account, **Paper account** opens its paper page; with more than one, **Paper
   accounts** opens the key slot list, which links each.
-- **Not yet:** a page comparing the methods side by side. Each account's method page, logbook and paper page
-  show its own results for now.
+- **Comparing them:** **Compare methods**, below.
+
+## Comparing your methods (chapter 15)
+
+Since 2026-11-03 (decisions 167 to 171). **Compare methods** in the header (also on **Accounts** and under an
+account's method line) opens `/compare/`: your own accounts side by side. Nobody else's account can appear on it.
+
+- **Pick.** Tick two to four accounts; with none ticked the page picks every account that runs or ran a plan, by
+  name, up to four. **From** starts at the earliest plan start of the accounts picked and **To** at today; change
+  either and press **Compare**.
+- **The yardstick.** A do-nothing line: an S&P 500 index fund, bought once and never touched. The page starts on
+  the first of SPY, VOO, IVV, SPLG, FXAIX, VFIAX and SWPPX that you hold, watch or name in a plan, and prints its
+  stored description's name so you can check what it is; pick any other symbol of yours, or None. If it has no
+  closes stored for the dates, the page says so and shows **Get history** (for a watched symbol), which brings you
+  back to the same comparison. To add one: put the fund on a watch list and press **Get history**.
+- **The chart.** One line per account, plus the yardstick. An account's line is its value with the money you put
+  in left out, starting at 100 on its first day with a holding: a $50,000 deposit does not lift it, a 1% rise in
+  what it holds does. Point at the chart (or focus it and use the arrow keys) to read a day: the level, the value
+  in dollars and the money put in so far. **Every day's values** under it is the same data as a table.
+- **The table.** Money put in, value now (with its date), gain, the **money-weighted return** (XIRR: it counts
+  when your money went in, so it judges the method and the timing of your deposits together), the
+  **time-weighted return** (the line's change: the method alone), the **worst drop** (the largest fall of the line
+  from a high, with both dates), months running, and **plan followed** ("followed in 2 of 3 closed months", from
+  the months you closed in the month review). Under a year both returns are the change over the days shown, never
+  stretched to a yearly rate; from a year on they are yearly.
+- **Where the numbers come from.** Your journal and the app's stored closes. A buy placed through Alpaca counts
+  from the day it filled, with Alpaca's shares; an order still open is left out and the page says how many. The
+  app keeps no cash ledger, so the value is what your trades bought: the cash an Alpaca paper account keeps
+  beside them (most of its $1,000,000 at first) is not in it. When a number cannot be worked out (no trades yet,
+  a symbol with no stored price) the row says why instead.
+- **Alpaca's own numbers.** For an account the site owner linked to Alpaca paper, a second table shows Alpaca's
+  equity, cash and equity less cash ("holdings now"), read when the page opens, beside the value here. They
+  should be close, not equal (Alpaca uses its latest prices, the app its latest stored close); a gap of more than
+  a few percent means a trade missing from the journal or a close missing from the app. If Alpaca does not answer
+  within 5 seconds, the row says so and the rest of the page is unchanged.
+- **How to read it.** A few months prove nothing. 12-1 momentum buys only its top N of your list; index investing
+  buys all of it. Same starting cash, same monthly amount and same list make it a fair test of the method. Past
+  results do not predict future results.
+- **An index plan with several symbols** shows findings every month on its method page and "followed in 0 of N"
+  here, because the index rules expect one buy of the whole amount a month (backlog 23). Read its months on the
+  method page until that is fixed.
 
 ## Draft a post for WitUS Outbox (2026-10-29)
 

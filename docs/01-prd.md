@@ -418,7 +418,7 @@ orders placed outside the app, live trading and its checklist; decisions log, ro
 closes, is closed by the owner with three written answers, cannot be closed while a month has a missed buy with no
 skip to explain it, and is reopened only with a reason, every step audited; closing writes the review row, not a
 journal entry (decisions log, row 106); a month whose paper order ended unfilled offers "Place again" with a new
-order id. The event to CentenarianOS is chapter 15.*
+order id. The event to CentenarianOS is chapter 16 (decision 167; it was 15).*
 
 ### 7.8 In-app reporter: bug, feature, question
 

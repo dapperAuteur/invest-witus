@@ -25,23 +25,24 @@ updated: 2026-11-03
 - Migrations run automatically after each merge
 
 ## In progress
+- Compare methods (chapter 15, decisions 167 to 171): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed (task 35, with task 34)
 - The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165, task 33)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
 ## Next
-- Chapter 15: signed events to CentenarianOS and lesson links checked against Learn.WitUS
+- Chapter 16: signed events to CentenarianOS and lesson links checked against Learn.WitUS
 - Python tutorial course built from the chapters
 
 ## Backlog
-- Compare page for methods running side by side in their own accounts (backlog 20; key slots are live)
 - Practice simulator for classes, after a vetting analysis
 - More momentum views: relative strength, quintiles, heatmap, path smoothness
 - Quarterly momentum with a quality screen as its own method
 - Placing paper sells for momentum rebalances
 - Learn.WitUS lessons inside the app
 - Foreign markets research
-- Owner usage dashboard (chapter 16)
+- Owner usage dashboard (chapter 17)
+- Index rules for a plan with several symbols: one buy of the whole amount a month is expected, so a split month shows findings (backlog 23)
 - A small sibling API service in a second Python framework
 
 ## Blocked on

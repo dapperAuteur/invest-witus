@@ -227,6 +227,25 @@ falls back to DEFAULT.
 **The nightly check** reads each account's open orders with its own slot. An account whose slot is missing lists
 each of its open orders under `orders.failed` in the cron's JSON with that sentence; the others go on.
 
+## Compare methods (chapter 15)
+
+No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes.
+The one outside call is Alpaca's `GET /v2/account` for each account the site owner linked to Alpaca paper, read
+when `/compare/` opens, all at once, with a 5-second timeout (`compare/records.py`, `ALPACA_TIMEOUT_SECONDS`), using
+that account's key slot through `client_for`. A slow or refused answer is one sentence in the cross-check table;
+the page still draws.
+
+After a deploy, signed in as the owner:
+
+1. Open **Compare methods**. The accounts with a plan are ticked; the chart has one line per account, plus the
+   yardstick if a fund such as SPY or VOO is on a watch list with closes.
+2. If the page says "No closes stored for VOO ...", press its **Get history** (2 years); the redirect comes back to
+   the same comparison.
+3. In **Cross-check: Alpaca's own numbers**, "Alpaca: holdings now" should be within a few percent of "Value here".
+   A larger gap: run **Check orders now** on the account's paper page (an unsynced fill), then **Fetch prices now**
+   (a missing close). "Keys for slot X are not set on the server." means the slot's keys are missing on Vercel
+   (the section above).
+
 ## Reports and the waitlist's copies to WitUS Inbox (chapter 13)
 
 Nothing to run after a deploy: migration `reports/0001` is applied by the migrate workflow on merge.

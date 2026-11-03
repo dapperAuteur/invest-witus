@@ -210,6 +210,15 @@ either end says "not enough history" and the line breaks there. Both come from t
 chapter 14 (`invest_witus/methods/momentum_history.py`), on adjusted closes, with no new table. The walk-through is
 [chapter 14a](docs/chapters/14a-momentum-over-time.md).
 
+Chapter 15 compares methods. With one plan per account (one Alpaca paper account each), **Compare methods**
+(`/compare/`, in the signed-in header) puts two to four of your accounts on one chart, each line its value with the
+money put in left out and rebased to 100, beside a do-nothing S&P 500 index fund line from the app's own closes, and
+a table of money put in, value now, gain, the money-weighted return (XIRR) and the time-weighted return, the worst
+drop, months running and how often each plan was followed (its closed month reviews). Values are rebuilt from the
+journal and the stored adjusted closes; the app keeps no cash ledger, so cash beside the holdings is not counted,
+and Alpaca's own equity is shown beside it as a cross-check for a linked account. A stretch under a year is never
+turned into a yearly rate. The walk-through is [chapter 15](docs/chapters/15-compare-your-methods.md).
+
 ## Post drafts to WitUS Outbox
 
 Not a chapter. The site owner's **Draft a post** in the admin sends a short post (the launch, once, or a
