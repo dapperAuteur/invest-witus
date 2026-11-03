@@ -1,0 +1,37 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Delete the plan: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+{# 2026-11-02 (decision 158): the confirmation step. A plan with history is never deleted; End it instead. #}
+<section class="container" aria-labelledby="delete-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="delete-heading">Delete the plan</h1>
+  <p>{{ plan.method.name }}: {% if plan.is_momentum %}{{ plan.amount|money }} a month, in equal parts, into the top {{ plan.top_n }} of {{ plan.symbols }}{% else %}{{ plan.amount|money }} into {{ plan.symbols }}{% endif %} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
+  {% if plan_state.can_delete %}
+  <p>Nothing has been bought or logged under this plan, so it can be deleted to start over. Deleting cannot be undone. These go with it:</p>
+  <ul>
+    <li>The plan{% if plan_state.versions|length > 1 %} and all {{ plan_state.versions|length }} of its versions{% endif %}.</li>
+    {% if plan_state.empty_reviews %}<li>{{ plan_state.empty_reviews|length }} month review{{ plan_state.empty_reviews|length|pluralize }} the app opened and nobody wrote in: {% for review in plan_state.empty_reviews %}{{ review.month }}{% if not forloop.last %}, {% endif %}{% endfor %}.</li>{% endif %}
+    {% if plan_state.unfilled_orders %}<li>The app's record of {{ plan_state.unfilled_orders|length }} paper order{{ plan_state.unfilled_orders|length|pluralize }} that ended with nothing bought: {% for order in plan_state.unfilled_orders %}{{ order.month }} {{ order.symbol }} ({{ order.status }}){% if not forloop.last %}, {% endif %}{% endfor %}. Alpaca keeps its own record of {% if plan_state.unfilled_orders|length == 1 %}it{% else %}them{% endif %}.</li>{% endif %}
+  </ul>
+  {% if plan_state.open_orders %}
+  <div class="band" role="note">
+    <p>First, {% if plan_state.open_orders|length == 1 %}this order is{% else %}these orders are{% endif %} cancelled at Alpaca paper, and {% if plan_state.open_orders|length == 1 %}its journal entry is{% else %}their journal entries are{% endif %} removed:</p>
+    <ul>{% for order in plan_state.open_orders %}<li>Buy {{ order.notional|money }} of {{ order.symbol }}, {{ order.status }}{% if order.alpaca_id %} (queued at Alpaca){% else %} (not confirmed at Alpaca){% endif %}</li>{% endfor %}</ul>
+    <p>If Alpaca has already filled one, or has not finished cancelling it, nothing is deleted.</p>
+  </div>
+  {% endif %}
+  <p>Your journal, your watch list and your other accounts are not touched.</p>
+  <form method="post" action="{% url 'method-delete' account.pk %}">
+    {% csrf_token %}
+    <button type="submit" name="confirm" value="delete">Delete this plan</button>
+  </form>
+  <p><a href="{% url 'method-page' account.pk %}">Keep the plan and go back</a></p>
+  {% else %}
+  <p>This plan cannot be deleted, because it has history:</p>
+  <ul>{% for reason in plan_state.history %}<li>{{ reason }}</li>{% endfor %}</ul>
+  <p>Deleting it would leave that history judged by no plan. <a href="{% url 'method-change' account.pk %}">End the plan instead</a>: it stops the reviews from today, and its months, reviews and journal stay. Then start a new method.</p>
+  <p><a href="{% url 'method-page' account.pk %}">Back to the method</a></p>
+  {% endif %}
+</section>
+{% endblock %}

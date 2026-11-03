@@ -10,6 +10,8 @@
   {% include "methods/_switch.html" %}
   {# Chapter 12: the logbook and the plan's change form, the same two links in every view. #}
   <p class="small"><a href="{% url 'logbook' account.pk %}">Open the logbook</a>: every entry, with filters and a CSV export.{% if plan %} <a href="{% url 'method-change' account.pk %}">Change or end this plan</a>, with a reason.{% endif %}</p>
+  {# 2026-11-02 (decisions 157, 158): before anything is bought or logged under the plan, edit it in place or delete it. #}
+  {% if plan_state.can_edit or plan_state.can_delete %}{% include "methods/_edit_or_delete.html" with state=plan_state %}{% endif %}
   {# Chapter 11: on an account linked to Alpaca paper, this month's buys and the Confirm button. #}
   {% if paper %}{% include "paper/_month_buys.html" %}{% endif %}
   {# Chapter 14: a 12-1 momentum plan's ranking, its bars and this month's rebalance, in every view. #}

@@ -1,5 +1,6 @@
 """Alpaca's paper Trading API over httpx: the account, the positions, the market clock, one kind
-of order (a notional market buy) and reading an order back.
+of order (a notional market buy), reading an order back, and (2026-11-02, decision 156) cancelling
+an open one.
 
 Read from Alpaca's own pages on October 29, 2026 (the decisions log, row 94, has every URL):
 
@@ -17,6 +18,12 @@ Read from Alpaca's own pages on October 29, 2026 (the decisions log, row 94, has
   order back; `GET /v2/account` has `cash`, `buying_power`, `equity`; `GET /v2/clock` has
   `timestamp`, `is_open`, `next_open`, `next_close`; `GET /v2/positions` has `qty`,
   `current_price`, `lastday_price`, `market_value`.
+- `DELETE /v2/orders/{order_id}` asks Alpaca to cancel an open order. From Alpaca's order reference
+  as this app's author knew it, not re-read on 2026-11-02 (no request to Alpaca from that session):
+  an accepted cancel answers 204 with no body, and an order that can no longer be cancelled (for
+  example one already filled) answers 422. The cancel itself is asynchronous (an order may sit in
+  `pending_cancel`), so the caller never trusts the answer: it reads the order back and goes by
+  its status and `filled_qty`. Decision 156 records this and what to check.
 - Errors carry a JSON body with a `message` (and usually a numeric `code`): 403 "insufficient
   buying power", 422 "notional must be >= 1.00", 401 "unauthorized".
 
@@ -159,6 +166,7 @@ class AlpacaPaper:
         path: str,
         params: dict[str, str] | None = None,
         body: dict[str, str] | None = None,
+        expect_body: bool = True,
     ) -> object:
         try:
             with httpx.Client(
@@ -175,6 +183,9 @@ class AlpacaPaper:
             raise AlpacaUnavailable(f"Could not reach Alpaca ({type(error).__name__}).") from None
         if response.status_code >= 400:
             raise refusal(response)
+        if not expect_body:
+            # A cancel's 204 has no body; whatever came back, the caller reads the order next.
+            return None
         try:
             return cast(object, json.loads(response.text, parse_float=Decimal))
         except json.JSONDecodeError:
@@ -235,6 +246,12 @@ class AlpacaPaper:
             "client_order_id": client_order_id,
         }
         return order_state(self._request("POST", "/v2/orders", body=body))
+
+    def cancel_order(self, order_id: str) -> None:
+        """Ask Alpaca to cancel one open order. Any 2xx means the request was accepted, not that
+        the order is cancelled: read it back with `order()` for its status and what filled. A 422
+        (no longer cancellable) is raised as `AlpacaRefused` with Alpaca's words."""
+        self._request("DELETE", f"/v2/orders/{order_id}", expect_body=False)
 
     def order(self, order_id: str) -> PaperOrderState:
         return order_state(self._request("GET", f"/v2/orders/{order_id}"))

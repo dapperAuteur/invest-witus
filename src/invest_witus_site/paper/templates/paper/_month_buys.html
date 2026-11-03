@@ -24,6 +24,7 @@
   </form>
   {% if paper.stage.placing_again %}<p class="small muted">A new order with a new id ending in "-r{{ paper.stage.to_place.0.attempt }}". The order that ended unfilled stays on the paper page.</p>{% endif %}
   <p class="small muted">One market order per symbol for the dollar amount, good for the day, on Alpaca's paper account. Each order goes in the journal at once; the nightly check fills in the shares.</p>
+  {% if plan_state.can_edit %}<p class="small">Want different numbers first? <a href="{% url 'method-edit' account.pk %}">Edit the plan</a> before you confirm.</p>{% endif %}
   {% else %}
   <p>This month's buys are placed. The nightly check copies the fills into the journal. <a href="{% url 'paper-account' account.pk %}">See the orders</a>.</p>
   {% endif %}

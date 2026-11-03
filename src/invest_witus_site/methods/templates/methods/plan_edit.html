@@ -1,0 +1,31 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Edit the plan: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+{# 2026-11-02 (decision 157): the start form again, for a plan with no history yet. #}
+<section class="container" aria-labelledby="edit-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="edit-heading">Edit the plan</h1>
+  {% if plan_state.can_edit %}
+  <p>Nothing has been bought or logged under this plan yet, and no month's buy window has closed under it, so its numbers can still change without a new version. Saving writes the new numbers into the same plan. Once something is bought or logged, a change is a new version with a reason, from the change page.</p>
+  {% if plan_state.open_orders %}
+  <div class="band" role="note">
+    <p>Saving cancels {% if plan_state.open_orders|length == 1 %}this order{% else %}these orders{% endif %} at Alpaca paper first, and removes {% if plan_state.open_orders|length == 1 %}its journal entry{% else %}their journal entries{% endif %}:</p>
+    <ul>{% for order in plan_state.open_orders %}<li>Buy {{ order.notional|money }} of {{ order.symbol }}, {{ order.status }}{% if order.alpaca_id %} (queued at Alpaca){% else %} (not confirmed at Alpaca){% endif %}</li>{% endfor %}</ul>
+    <p>If Alpaca has already filled one, nothing is saved and the plan keeps its numbers. After saving, this month's buys box offers the buys for the new numbers.</p>
+  </div>
+  {% endif %}
+  <form method="post" action="{% url 'method-edit' account.pk %}" class="method-form" novalidate>
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" %}
+    <button type="submit">Save the plan</button>
+  </form>
+  <p class="small muted">These are your own numbers. The app recommends no amount and no symbol.</p>
+  {% else %}
+  <p>This plan's numbers can no longer be edited in place:</p>
+  <ul>{% for reason in plan_state.edit_blockers %}<li>{{ reason }}</li>{% endfor %}</ul>
+  <p><a href="{% url 'method-change' account.pk %}">Change or end the plan</a>: a change is a new version with a reason, and the months before it keep the old numbers.{% if plan_state.can_delete %} Or <a href="{% url 'method-delete' account.pk %}">delete it</a> and start over: nothing was bought or logged under it.{% endif %}</p>
+  {% endif %}
+  <p><a href="{% url 'method-page' account.pk %}">Back to the method</a></p>
+</section>
+{% endblock %}

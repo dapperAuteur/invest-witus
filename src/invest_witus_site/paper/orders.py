@@ -505,3 +505,72 @@ def sync_orders(client: AlpacaPaper, account: Account | None = None) -> SyncResu
         else:
             result.ended_unfilled += 1
     return result
+
+
+# --- 4. Withdraw (2026-11-02, decision 156) ------------------------------------------------------
+
+
+@dataclass(slots=True)
+class Withdrawal:
+    """What happened to each order a plan edit or a plan delete asked Alpaca to drop. Only
+    `done` lets the edit or the delete go on: every order ended with nothing filled."""
+
+    canceled: list[PaperOrder] = field(default_factory=list[PaperOrder])
+    never_sent: list[str] = field(default_factory=list[str])
+    waiting: list[PaperOrder] = field(default_factory=list[PaperOrder])
+    filled: list[PaperOrder] = field(default_factory=list[PaperOrder])
+    failed: list[tuple[str, str]] = field(default_factory=list[tuple[str, str]])
+
+    @property
+    def done(self) -> bool:
+        return not (self.waiting or self.filled or self.failed)
+
+
+def withdraw_orders(orders_to_drop: list[PaperOrder], client: AlpacaPaper) -> Withdrawal:
+    """Cancel each order that is not final, then read it back and reconcile its journal entry, so
+    an order that ended with nothing filled leaves no entry, as the nightly sync would leave it.
+
+    - A row with no Alpaca id (`staged`: never sent, or sent and the answer lost) is looked up by
+      its `client_order_id` first, as `place_one` does. Not found: Alpaca never made it, so the row
+      is deleted (it moved no money and wrote no entry). Found: it is treated as the order it is.
+    - A cancel refused with 422 means the order can no longer be cancelled (it filled, most
+      likely); the read-back says what it is.
+    - An order still open after the cancel (`pending_cancel`) is `waiting`: try again later, or
+      let the nightly sync finish it.
+
+    Nothing here runs without the owner's click on Save or Delete."""
+    result = Withdrawal()
+    for order in orders_to_drop:
+        if order.final:
+            continue
+        name = order.client_order_id
+        try:
+            if not order.placed:
+                try:
+                    found = client.order_by_client_id(name)
+                except AlpacaNotFound:
+                    order.delete()
+                    result.never_sent.append(name)
+                    continue
+                apply_state(order, found)
+            if not order.final:
+                try:
+                    client.cancel_order(order.alpaca_id)
+                except AlpacaRefused as error:
+                    if error.status != 422:
+                        raise
+                apply_state(order, client.order(order.alpaca_id))
+        except AlpacaError as error:
+            result.failed.append((name, error.message))
+            continue
+        with transaction.atomic():
+            order.message = ""
+            order.save()
+            reconcile_journal(order)
+        if order.filled_qty > 0:
+            result.filled.append(order)
+        elif order.final:
+            result.canceled.append(order)
+        else:
+            result.waiting.append(order)
+    return result

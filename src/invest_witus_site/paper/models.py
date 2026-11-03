@@ -78,6 +78,8 @@ class PaperOrder(models.Model):
     )
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
     updated_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now=True)
+    # The foreign key's own column, which Django adds; declared so pyright can read it.
+    journal_entry_id: int | None
 
     class Meta:
         ordering = ["-month", "symbol", "-attempt"]

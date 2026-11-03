@@ -10,6 +10,10 @@ another owner's account is a 404; nothing here is public.
 Chapter 12 adds the plan's change form (`change_plan`) and the month's review page with its two
 actions (`review_month`, `close_month`, `reopen_month`). The method page opens the review of every
 month whose window has closed, and view A offers to close the oldest one still open.
+
+2026-11-02: the default view saved per person (`set_default_view`, decision 155), and a plan with
+no history yet edited in place (`edit_plan`, decision 157) or deleted (`delete_plan`, decision
+158), each cancelling the plan's open paper orders at Alpaca first (decision 156).
 """
 
 from datetime import date
@@ -23,40 +27,50 @@ from django.views.decorators.http import require_POST
 
 from invest_witus.methods.rulebook import available_methods
 from invest_witus_site.holdings.models import Account
+from invest_witus_site.holdings.templatetags.holdings_extras import money
 from invest_witus_site.methods.engine import MethodReview, build_review, rule_lines
 from invest_witus_site.methods.forms import (
     CloseReviewForm,
     JournalEntryForm,
     PlanChangeForm,
+    PlanEditForm,
     ReopenReviewForm,
     StartMethodForm,
 )
 from invest_witus_site.methods.models import (
+    VIEW_CHOICES,
     JournalEntry,
     MethodPlan,
     MonthlyReview,
     ReviewEvent,
+    ViewPreference,
 )
 from invest_witus_site.methods.momentum_history import rank_changes
+from invest_witus_site.methods.plan_state import PlanHasHistory, PlanState, plan_state
+from invest_witus_site.methods.plan_state import delete_plan as delete_plan_rows
 from invest_witus_site.methods.reviews import (
     ReviewRefused,
     close_review,
     open_due_reviews,
     reopen_review,
 )
-from invest_witus_site.paper.orders import alpaca_allowed, paper_section
+from invest_witus_site.paper.alpaca import AlpacaError, paper_client
+from invest_witus_site.paper.orders import (
+    Withdrawal,
+    alpaca_allowed,
+    paper_section,
+    withdraw_orders,
+)
 
 # The three views, by letter, as the research and the PRD name them. The order is the switch's.
-VIEWS = {
-    "a": ("A: The Plan and the Logbook", "methods/_view_a.html"),
-    "b": ("B: Method Console", "methods/_view_b.html"),
-    "c": ("C: The Lesson Lab", "methods/_view_c.html"),
-}
+# The letters and labels live beside `ViewPreference`, so a saved default is always a real view.
+VIEWS = {key: (label, f"methods/_view_{key}.html") for key, label in VIEW_CHOICES}
 SESSION_KEY = "method_view"
 
 
 def chosen_view(request: HttpRequest, has_plan: bool) -> str:
-    """`?view=` when it names a view (and remember it); else the session's; else the default."""
+    """`?view=` when it names a view (and remember it); else the session's; else, while a method
+    runs, the person's saved default (decision 155) or A; with no method, C, where one starts."""
     asked = request.GET.get("view", "").lower()
     if asked in VIEWS:
         request.session[SESSION_KEY] = asked
@@ -64,7 +78,9 @@ def chosen_view(request: HttpRequest, has_plan: bool) -> str:
     saved = request.session.get(SESSION_KEY)
     if isinstance(saved, str) and saved in VIEWS:
         return saved
-    return "a" if has_plan else "c"
+    if not has_plan:
+        return "c"
+    return ViewPreference.for_user(request.user) or "a"
 
 
 def through_date(request: HttpRequest, today: date) -> date:
@@ -100,6 +116,9 @@ def render_method_page(
     # is the one view A offers to close. Opened against today, never `?through=`.
     month_reviews = open_due_reviews(plan, today) if plan is not None else []
     still_open = [review for review in month_reviews if not review.closed]
+    # Decision 157 and 158: whether the plan may still be edited in place or deleted. Read after
+    # the reviews are opened, so a window that just closed counts.
+    state = plan_state(plan) if plan is not None else None
     context = {
         "account": account,
         "plan": plan,
@@ -115,6 +134,8 @@ def render_method_page(
         "view_label": VIEWS[view][0],
         "view_template": VIEWS[view][1],
         "views": [(key, label) for key, (label, _) in VIEWS.items()],
+        "default_view": ViewPreference.for_user(request.user),
+        "plan_state": state,
         "through": through,
         "through_query": f"&through={through.isoformat()}" if through != today else "",
         # Chapter 11: this month's buys and the Confirm button, on an account linked to Alpaca
@@ -145,7 +166,26 @@ def start_method(request: HttpRequest, pk: int) -> HttpResponse:
     plan = form.start()
     messages.success(request, f"Started {plan.method().name} on {account.name}.")
     watched_message(request, form.watched)
-    request.session[SESSION_KEY] = "a"
+    request.session[SESSION_KEY] = ViewPreference.for_user(request.user) or "a"
+    return redirect("method-page", pk=account.pk)
+
+
+@login_required
+@require_POST
+def set_default_view(request: HttpRequest, pk: int) -> HttpResponse:
+    """Decision 155: "Make this my default". Saves the letter for the person, not the account,
+    and makes it the session's choice too. A letter that is not a view changes nothing."""
+    account = get_object_or_404(Account, pk=pk, owner=request.user)
+    view = request.POST.get("view", "").lower()
+    if view not in VIEWS:
+        messages.error(request, "Choose view A, B or C.")
+        return redirect("method-page", pk=account.pk)
+    ViewPreference.save_for(request.user, view)
+    request.session[SESSION_KEY] = view
+    messages.success(
+        request,
+        f"{VIEWS[view][0]} is your default view. Method pages open on it while a method runs.",
+    )
     return redirect("method-page", pk=account.pk)
 
 
@@ -204,8 +244,131 @@ def change_plan(request: HttpRequest, pk: int) -> HttpResponse:
             # With no plan, the method page is the Lesson Lab, where a new one starts.
             request.session[SESSION_KEY] = "c"
         return redirect("method-page", pk=account.pk)
-    context = {"account": account, "plan": plan, "form": form, "versions": plan.versions()}
+    context = {
+        "account": account,
+        "plan": plan,
+        "form": form,
+        "versions": plan.versions(),
+        "plan_state": plan_state(plan),
+    }
     return render(request, "methods/plan_change.html", context)
+
+
+# --- 2026-11-02: edit a plan with no history in place, or delete it -------------------------------
+
+
+def withdraw_open_orders(request: HttpRequest, account: Account, state: PlanState) -> bool:
+    """Decision 156: cancel the plan's open paper orders at Alpaca before an edit or a delete.
+    True when none is left open; the messages say what happened to each."""
+    if not state.open_orders:
+        return True
+    if not alpaca_allowed(request.user, account):
+        messages.error(
+            request,
+            "This plan has orders open at Alpaca, and only the site owner, on an account linked "
+            "to Alpaca paper, can cancel them. Nothing changed.",
+        )
+        return False
+    try:
+        client = paper_client()
+    except AlpacaError as error:
+        messages.error(request, f"Nothing changed. {error.message}")
+        return False
+    result = withdraw_orders(state.open_orders, client)
+    report_withdrawal(request, result)
+    return result.done
+
+
+def report_withdrawal(request: HttpRequest, result: Withdrawal) -> None:
+    for order in result.canceled:
+        messages.info(
+            request,
+            f"Cancelled at Alpaca: buy {money(order.notional)} of {order.symbol} "
+            f"({order.status}, nothing filled). Its journal entry is removed.",
+        )
+    for name in result.never_sent:
+        messages.info(request, f"{name} never reached Alpaca; the app's row for it is removed.")
+    for order in result.waiting:
+        messages.error(
+            request,
+            f"Alpaca took the cancel of {order.symbol} but has not finished it ({order.status}). "
+            "Nothing else changed: try again in a minute, or after the nightly check.",
+        )
+    for order in result.filled:
+        messages.error(
+            request,
+            f"{order.symbol} filled {order.filled_qty.normalize()} shares before the cancel, so "
+            "the plan has history now. Change it with a new version, or end it.",
+        )
+    for name, message in result.failed:
+        messages.error(request, f"Not cancelled: {name}. {message}")
+
+
+@login_required
+def edit_plan(request: HttpRequest, pk: int) -> HttpResponse:
+    """Decision 157. GET draws the start form filled in with the plan's numbers, or says why the
+    plan can no longer be edited in place. POST cancels the plan's open orders at Alpaca, checks
+    the plan again, and writes the new numbers into the same row."""
+    account = get_object_or_404(Account, pk=pk, owner=request.user)
+    plan = MethodPlan.active_for(account)
+    if plan is None:
+        messages.info(request, "No method runs on this account, so there is no plan to edit.")
+        return redirect("method-page", pk=account.pk)
+    open_due_reviews(plan, timezone.localdate())
+    state = plan_state(plan)
+    form = PlanEditForm(plan, request.POST if request.method == "POST" else None)
+    if request.method == "POST" and state.can_edit and form.is_valid():
+        if not form.has_changed():
+            messages.info(request, "Nothing changed: these are the plan's numbers already.")
+            return redirect("method-page", pk=account.pk)
+        if withdraw_open_orders(request, account, state):
+            state = plan_state(plan)
+            if state.can_edit and not state.open_orders:
+                saved = form.save()
+                messages.success(
+                    request,
+                    f"Saved the plan's new numbers. Nothing was bought or logged under the old "
+                    f"ones, so this is still version {saved.version}, not a new one.",
+                )
+                watched_message(request, form.watched)
+                return redirect("method-page", pk=account.pk)
+    context = {"account": account, "plan": plan, "form": form, "plan_state": state}
+    return render(request, "methods/plan_edit.html", context)
+
+
+@login_required
+def delete_plan(request: HttpRequest, pk: int) -> HttpResponse:
+    """Decision 158. GET is the confirmation step: what goes with the plan, which open orders are
+    cancelled at Alpaca first, or why the plan cannot be deleted and End it instead. POST, with
+    the button's `confirm=delete`, cancels, checks again and deletes in one transaction."""
+    account = get_object_or_404(Account, pk=pk, owner=request.user)
+    plan = MethodPlan.active_for(account)
+    if plan is None:
+        messages.info(request, "No method runs on this account, so there is no plan to delete.")
+        return redirect("method-page", pk=account.pk)
+    open_due_reviews(plan, timezone.localdate())
+    state = plan_state(plan)
+    if request.method == "POST":
+        if request.POST.get("confirm") != "delete":
+            messages.error(request, "Press Delete this plan to delete it. Nothing changed.")
+        elif state.can_delete and withdraw_open_orders(request, account, state):
+            name = plan.method().name
+            try:
+                gone = delete_plan_rows(plan)
+            except PlanHasHistory as refused:
+                messages.error(request, f"Not deleted. {refused}")
+            else:
+                messages.success(
+                    request,
+                    f"Deleted {name} on {account.name}: {len(gone.versions)} version"
+                    f"{'' if len(gone.versions) == 1 else 's'}, nothing bought or logged under it. "
+                    "Start a method again when you are ready.",
+                )
+                request.session[SESSION_KEY] = "c"
+                return redirect("method-page", pk=account.pk)
+        state = plan_state(plan)
+    context = {"account": account, "plan": plan, "plan_state": state}
+    return render(request, "methods/plan_delete.html", context)
 
 
 # --- Chapter 12: the month's review ---------------------------------------------------------------

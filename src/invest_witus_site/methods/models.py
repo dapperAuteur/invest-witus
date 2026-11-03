@@ -566,3 +566,45 @@ class ReviewEvent(models.Model):
 
     def __str__(self) -> str:
         return f"{self.review.month} {self.action} {self.at:%Y-%m-%d %H:%M}"
+
+
+# 2026-11-02 (decision 155): the method page's three views, by letter, as chapter 10 named them.
+# The view module builds its switch from this list, so the stored letter and the switch agree.
+VIEW_CHOICES = [
+    ("a", "A: The Plan and the Logbook"),
+    ("b", "B: Method Console"),
+    ("c", "C: The Lesson Lab"),
+]
+
+
+class ViewPreference(models.Model):
+    """The view a person's method pages open on when no view is asked for: chapter 10's exercise
+    1, the PRD's "saved per user and restored at the next sign-in". One row per person, written
+    only by "Make this my default"; no row means the chapter 10 default (A while a method runs, C
+    while none does). A new table, so the migration is additive."""
+
+    user: models.OneToOneField[Any, Any] = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="method_view_preference"
+    )
+    view: models.CharField[str, str] = models.CharField(max_length=1, choices=VIEW_CHOICES)
+    updated_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "view preference"
+        verbose_name_plural = "view preferences"
+
+    def __str__(self) -> str:
+        return f"{self.user} opens on view {self.view.upper()}"
+
+    @classmethod
+    def for_user(cls, user: Any) -> str | None:
+        """The saved letter, or `None` for a person who never chose one (or a signed-out one)."""
+        if not getattr(user, "is_authenticated", False):
+            return None
+        return cls.objects.filter(user=user).values_list("view", flat=True).first()
+
+    @classmethod
+    def save_for(cls, user: Any, view: str) -> None:
+        if view not in dict(VIEW_CHOICES):
+            raise ValueError(f"no view {view!r}")
+        cls.objects.update_or_create(user=user, defaults={"view": view})

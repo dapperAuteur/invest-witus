@@ -1,7 +1,8 @@
 """The method page's forms: start a method for an account, and log one journal entry. Chapter 12
 adds three: change or end the plan with a reason, close a month's review, and reopen it. Chapter
 14 adds the top N a 12-1 momentum plan holds, to the start form and the change form, and puts a
-momentum plan's candidates on the account's watch list so the nightly pull stores their closes."""
+momentum plan's candidates on the account's watch list so the nightly pull stores their closes.
+2026-11-02 (decision 157) adds the edit form: the start form again, for a plan with no history."""
 
 from collections.abc import Mapping
 from datetime import date, timedelta
@@ -106,13 +107,16 @@ class StartMethodForm(forms.Form):
 
     def clean(self) -> dict[str, Any]:
         cleaned = super().clean() or {}
+        self.check_running_plan()
+        check_top_n(self, cleaned.get("method_id"), cleaned.get("top_n"), cleaned.get("symbols"))
+        return cleaned
+
+    def check_running_plan(self) -> None:
         if MethodPlan.active_for(self.account) is not None:
             raise ValidationError(
                 "This account already runs a method. End it from the method page before "
                 "starting another."
             )
-        check_top_n(self, cleaned.get("method_id"), cleaned.get("top_n"), cleaned.get("symbols"))
-        return cleaned
 
     def start(self) -> MethodPlan:
         """The row. Called after `is_valid()`; the model's `save()` normalizes once more."""
@@ -129,6 +133,49 @@ class StartMethodForm(forms.Form):
         )
         if plan.is_momentum:
             self.watched = ensure_watched(self.account, plan.symbol_list())
+        return plan
+
+
+class PlanEditForm(StartMethodForm):
+    """2026-11-02 (decision 157): the start form again, filled in with the plan's numbers, for a
+    plan with no history yet (`methods.plan_state`). Saving changes the same row: no version, no
+    reason, because no month has been judged by the old numbers and nothing was bought or logged
+    under them. The view checks the plan's state before and after it cancels any open order."""
+
+    def __init__(self, plan: MethodPlan, data: Mapping[str, Any] | None = None) -> None:
+        super().__init__(plan.account, data)
+        self.plan = plan
+        self.initial = {
+            "method_id": plan.method_id,
+            "amount": plan.amount,
+            "buy_window_days": plan.buy_window_days,
+            "symbols": plan.symbols,
+            "started_on": plan.started_on,
+            "practice_budget": plan.practice_budget,
+            "top_n": plan.top_n,
+        }
+
+    def check_running_plan(self) -> None:
+        """The plan being edited is the account's running plan; any other is refused."""
+        running = MethodPlan.active_for(self.account)
+        if running is None or running.pk != self.plan.pk:
+            raise ValidationError(
+                "This plan is no longer the one running on the account. Open the method page again."
+            )
+
+    def save(self) -> MethodPlan:
+        """Write the new numbers into the same row, after `is_valid()`."""
+        plan, data = self.plan, self.cleaned_data
+        plan.method_id = data["method_id"]
+        plan.amount = data["amount"]
+        plan.buy_window_days = data["buy_window_days"]
+        plan.symbols = data["symbols"]
+        plan.started_on = data["started_on"]
+        plan.practice_budget = data["practice_budget"]
+        plan.top_n = data.get("top_n")
+        plan.save()
+        if plan.is_momentum:
+            self.watched = ensure_watched(plan.account, plan.symbol_list())
         return plan
 
 
