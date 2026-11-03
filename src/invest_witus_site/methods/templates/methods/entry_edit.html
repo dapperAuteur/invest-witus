@@ -1,8 +1,9 @@
 {% extends "pages/base.html" %}
+{% load holdings_extras %}
 {% block title %}Edit an entry: {{ account.name }}: Invest.WitUS{% endblock %}
 {% block content %}
 <section class="container" aria-labelledby="edit-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="edit-heading">Edit the entry of {{ entry.date|date:"Y-m-d" }}</h1>
   {% if closed %}
   <p class="band">{{ entry.date|date:"Y-m" }} is closed, so its entries are read-only. Reopen its review, with a reason, to change this one.</p>

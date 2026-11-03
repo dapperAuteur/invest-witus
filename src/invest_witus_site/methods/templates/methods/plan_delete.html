@@ -4,7 +4,7 @@
 {% block content %}
 {# 2026-11-02 (decision 158): the confirmation step. A plan with history is never deleted; End it instead. #}
 <section class="container" aria-labelledby="delete-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="delete-heading">Delete the plan</h1>
   <p>{{ plan.method.name }}: {{ plan.amount_text }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
   {% if plan_state.can_delete %}

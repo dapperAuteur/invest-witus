@@ -142,6 +142,13 @@ Every row also links that account's **Logbook**, and the header shows **Logbook*
 plan or a journal entry (decision 115). On a phone or a narrow window, signed in, the header's links fold behind a
 **Menu** button; press it to open them, Escape to close. **Sign out** stays visible beside it.
 
+**Practice or real, at a glance** (2026-11-03, decision 172). Beside every account name (the account list, each
+account's pages, the key slot list, Compare methods) a small badge says which kind it is: a test tube and
+**Practice** for a **Paper (practice)** account, where you try a method with paper money, and a bank and **Real**
+for a **Brokerage** or **Retirement** account, which holds your broker's statements. The badge comes from the
+account's **Kind**, so to change it, change the Kind in the admin; there is nothing else to set. The word is
+always there, so the badge never relies on the symbol or a color.
+
 **What can go wrong.**
 
 - The form refuses the name: you already have an account with that name. Names are unique per owner.

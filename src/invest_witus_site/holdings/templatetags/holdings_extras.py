@@ -3,6 +3,8 @@
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django import template
+from django.utils.html import format_html
+from django.utils.safestring import SafeString
 
 register = template.Library()
 
@@ -103,3 +105,34 @@ def item(mapping: object, key: object) -> object:
     """`{{ badges|item:row.item.symbol }}`: a dictionary's value for a key the template holds in
     a variable, or None (chapter 14, the watch list's 12-1 badges)."""
     return mapping.get(key) if isinstance(mapping, dict) else None  # type: ignore[union-attr]
+
+
+# BAM, 2026-11-03 (decision 172): "differentiate between paper accounts where I'm playing with
+# methods and accounts that hold my statements". Derived from `Account.kind`, never stored twice:
+# Paper (practice) is a practice account; Brokerage and Retirement hold real statements. A symbol
+# for the eye and a word for everyone, so the kind is never told by color or by the symbol alone.
+ACCOUNT_KINDS: dict[str, tuple[str, str, str]] = {
+    "practice": ("\N{TEST TUBE}", "Practice", "Practice account: paper money, for trying a method"),
+    "real": ("\N{BANK}", "Real", "Real account: your broker's statements"),
+}
+
+
+def account_kind_key(account: object) -> str:
+    """ "practice" for a paper account, "real" for any other kind."""
+    return "practice" if getattr(account, "kind", "") == "paper" else "real"
+
+
+@register.filter
+def account_kind(account: object) -> SafeString:
+    """`{{ account|account_kind }}`: a small badge, the symbol hidden from screen readers and the
+    word ("Practice" or "Real") read aloud, with the long form as its title."""
+    key = account_kind_key(account)
+    symbol, word, title = ACCOUNT_KINDS[key]
+    return format_html(
+        '<span class="account-kind account-kind-{}" title="{}">'
+        '<span aria-hidden="true">{}</span> {}</span>',
+        key,
+        title,
+        symbol,
+        word,
+    )

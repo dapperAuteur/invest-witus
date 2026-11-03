@@ -1,4 +1,5 @@
 {% extends "pages/base.html" %}
+{% load holdings_extras %}
 {% block title %}Alpaca key slots: Invest.WitUS{% endblock %}
 {% block content %}
 {# Decision 159: the slots the server has, for the site owner. A slot's name, the last four characters of its key id, and whether both halves are set; never a key. #}
@@ -24,7 +25,7 @@
         <th scope="row">{{ row.name }}</th>
         <td>{{ row.key_hint|default:"none" }}</td>
         <td>{% if row.complete %}complete{% elif row.conflicting %}<span class="error">conflicting</span>: set as both <code>__{{ row.name }}</code> and <code>_{{ row.name }}</code> with different values, so not used; delete one form{% elif row.on_server %}<span class="error">keys incomplete</span>: {{ row.missing|join:" and " }} not set{% else %}<span class="error">not set on the server</span>: {{ row.missing|join:" and " }}; the accounts below cannot trade{% endif %}</td>
-        <td>{% for linked in row.accounts %}{% if linked.owner_id == user.pk %}<a href="{% url 'paper-account' linked.pk %}">{{ linked.name }}</a>{% if linked.alpaca_account_number %} (Alpaca {{ linked.alpaca_account_number }}){% endif %}{% else %}another owner's account{% endif %}{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">none</span>{% endfor %}</td>
+        <td>{% for linked in row.accounts %}{% if linked.owner_id == user.pk %}{{ linked|account_kind }} <a href="{% url 'paper-account' linked.pk %}">{{ linked.name }}</a>{% if linked.alpaca_account_number %} (Alpaca {{ linked.alpaca_account_number }}){% endif %}{% else %}another owner's account{% endif %}{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">none</span>{% endfor %}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -40,7 +41,7 @@
   <h2>Your paper accounts</h2>
   <ul>
     {% for paper in paper_accounts %}
-    <li>{{ paper.name }}: {% if paper.is_alpaca_paper %}slot {{ paper.alpaca_slot_name }}{% if paper.alpaca_account_number %}, Alpaca {{ paper.alpaca_account_number }}{% endif %}{% else %}not linked{% endif %} · <a href="{% url 'paper-link' paper.pk %}">{% if paper.is_alpaca_paper %}Change the link{% else %}Link to Alpaca paper{% endif %}</a></li>
+    <li>{{ paper.name }} {{ paper|account_kind }}: {% if paper.is_alpaca_paper %}slot {{ paper.alpaca_slot_name }}{% if paper.alpaca_account_number %}, Alpaca {{ paper.alpaca_account_number }}{% endif %}{% else %}not linked{% endif %} · <a href="{% url 'paper-link' paper.pk %}">{% if paper.is_alpaca_paper %}Change the link{% else %}Link to Alpaca paper{% endif %}</a></li>
     {% endfor %}
   </ul>
   {% endif %}

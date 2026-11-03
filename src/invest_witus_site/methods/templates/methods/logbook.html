@@ -3,7 +3,7 @@
 {% block title %}Logbook: {{ account.name }}: Invest.WitUS{% endblock %}
 {% block content %}
 <section class="container" aria-labelledby="logbook-page-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="logbook-page-heading">Logbook</h1>
   <p>Every entry on this account: trades, holds and skips, with the reason, the state and the tags each carries. What you did, never what it is worth. Information, not advice.</p>
   <form method="get" class="filters" aria-label="Filter the logbook">

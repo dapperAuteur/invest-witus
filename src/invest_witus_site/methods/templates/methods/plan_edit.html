@@ -4,7 +4,7 @@
 {% block content %}
 {# 2026-11-02 (decision 157): the start form again, for a plan with no history yet. #}
 <section class="container" aria-labelledby="edit-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="edit-heading">Edit the plan</h1>
   {% if plan_state.can_edit %}
   <p>Nothing has been bought or logged under this plan yet, and no month's buy window has closed under it, so its numbers can still change without a new version. Saving writes the new numbers into the same plan. Once something is bought or logged, a change is a new version with a reason, from the change page.</p>

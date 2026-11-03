@@ -4,7 +4,7 @@
 {% block content %}
 {# Decision 159: choose the key slot that reaches this account's own Alpaca paper account. No key is ever shown, only a slot's name and the last four characters of its key id. #}
 <section class="container narrow" aria-labelledby="link-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="link-heading">Link to Alpaca paper</h1>
   <p class="band">Alpaca paper ({{ host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
   {% if account.is_alpaca_paper %}

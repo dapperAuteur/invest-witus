@@ -5,7 +5,7 @@
 {# Compare (2026-10-29, decision 135): up to six of the account's watched or held symbols on one chart, each #}
 {# rebased to 100 on its first stored day in the range. The owner's page only; no public page shows a price. #}
 <section class="container" aria-labelledby="compare-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="compare-heading">Compare symbols</h1>
   <p>Each line starts at 100 on its first stored day in the range, so a $500 fund and a $20 stock compare fairly: a line at 110 is ten percent above where it started, whatever its price.</p>
   {% if allowed %}

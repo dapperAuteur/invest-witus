@@ -1,4 +1,5 @@
 {% extends "pages/base.html" %}
+{% load holdings_extras %}
 {% block title %}Your accounts: Invest.WitUS{% endblock %}
 {% block content %}
 <section class="container narrow" aria-labelledby="accounts-heading">
@@ -7,7 +8,7 @@
   {% if accounts %}
   <ul>
     {% for account in accounts %}
-    <li><a href="{% url 'account-detail' account.pk %}">{{ account.name }}</a> <span class="muted">({{ account.broker }}, {{ account.get_kind_display|lower }})</span>{% if account.is_alpaca_paper and user.is_superuser %} · <a href="{% url 'paper-account' account.pk %}">Paper account</a>{% endif %} · <a href="{% url 'logbook' account.pk %}">Logbook</a></li>
+    <li><a href="{% url 'account-detail' account.pk %}">{{ account.name }}</a> {{ account|account_kind }} <span class="muted">({{ account.broker }}, {{ account.get_kind_display|lower }})</span>{% if account.is_alpaca_paper and user.is_superuser %} · <a href="{% url 'paper-account' account.pk %}">Paper account</a>{% endif %} · <a href="{% url 'logbook' account.pk %}">Logbook</a></li>
     {% endfor %}
   </ul>
   <p><a href="{% url 'compare-methods' %}">Compare methods</a>: your accounts side by side, each line its value with the money put in left out, beside an index fund yardstick.</p>

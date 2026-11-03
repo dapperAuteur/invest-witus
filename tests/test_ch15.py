@@ -624,7 +624,7 @@ def test_alpacas_equity_is_read_for_a_linked_account_of_the_site_owner(
         t for t in tables_in(page) if t and t[0][1:3] == ("Value here", "Alpaca: holdings now")
     )
     assert check[1:] == [
-        ("Linked", "$900.00 on 2026-01-08", "$900.00", "$999,100.00", "$998,200.00")
+        ("Linked 🧪 Practice", "$900.00 on 2026-01-08", "$900.00", "$999,100.00", "$998,200.00")
     ]
     assert "SECRET-B-INDEX" not in page and "KEY-B-INDEX" not in page
 

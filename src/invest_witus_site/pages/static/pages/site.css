@@ -370,3 +370,8 @@ body { padding-bottom: 4.5rem; }
 .help-dialog-actions button[type="submit"].link-button { background: transparent; color: var(--accent); padding: 0 0.25rem; font-weight: 600; text-decoration: underline; }
 .help-dialog-actions button[type="submit"].link-button:hover { text-decoration-thickness: 2px; }
 @media print { .help-bubble-wrap, .help-dialog { display: none; } body { padding-bottom: 0; } }
+
+/* Decision 172: an account's kind beside its name. The word carries the meaning; the symbol and the
+   outline only help the eye, so neither color nor the symbol is ever the only signal. */
+.account-kind { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0 0.4rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.75rem; font-weight: 600; line-height: 1.5; white-space: nowrap; vertical-align: middle; }
+.account-kind-practice { border-style: dashed; }

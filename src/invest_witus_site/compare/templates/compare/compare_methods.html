@@ -15,7 +15,7 @@
       <ul class="plain choice-list">
         {% for account in owned %}
         {% with plan=plans|item:account.pk %}
-        <li><label><input type="checkbox" name="accounts" value="{{ account.pk }}"{% if account.pk in picked_pks %} checked{% endif %}> <span>{{ account.name }} <span class="muted small">({% if plan %}{{ plan.method.name }}{% if not plan.active %}, ended{% endif %}{% else %}no plan{% endif %})</span></span></label></li>
+        <li><label><input type="checkbox" name="accounts" value="{{ account.pk }}"{% if account.pk in picked_pks %} checked{% endif %}> <span>{{ account.name }} {{ account|account_kind }} <span class="muted small">({% if plan %}{{ plan.method.name }}{% if not plan.active %}, ended{% endif %}{% else %}no plan{% endif %})</span></span></label></li>
         {% endwith %}
         {% endfor %}
       </ul>
@@ -90,7 +90,7 @@
     <tbody>
       {% for result, check in rows %}
       <tr>
-        <th scope="row"><a href="{% url 'account-detail' result.account.pk %}">{{ result.account.name }}</a></th>
+        <th scope="row"><a href="{% url 'account-detail' result.account.pk %}">{{ result.account.name }}</a> {{ result.account|account_kind }}</th>
         <td>{% if result.plan %}<a href="{% url 'method-page' result.account.pk %}">{{ result.method }}</a>{% else %}{{ result.method }}{% endif %}</td>
         {% if result.stretch %}
         <td class="num">{{ result.put_in }}</td>
@@ -143,7 +143,7 @@
     <tbody>
       {% for result, check in rows %}{% if check %}
       <tr>
-        <th scope="row">{{ result.account.name }}</th>
+        <th scope="row">{{ result.account.name }} {{ result.account|account_kind }}</th>
         <td class="num">{{ result.value|default:"not worked out" }}</td>
         {% if check.error %}
         <td colspan="3">{{ check.error }}</td>

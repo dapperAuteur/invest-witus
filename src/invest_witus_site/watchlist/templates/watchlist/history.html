@@ -5,7 +5,7 @@
 {# A watched symbol's stored closes (2026-10-29): a line chart drawn on the server and the same closes as #}
 {# a table, which is the chart's text alternative. The owner's page only; no public page shows a price. #}
 <section class="container" aria-labelledby="history-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span>: watch list</p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span>: watch list</p>
   <h1 id="history-heading">{{ item.symbol }}</h1>
   {% if item.note %}<p class="muted">{{ item.note }}</p>{% endif %}
   {% include "watchlist/_profile.html" %}

@@ -3,7 +3,7 @@
 {% block title %}Alpaca paper: {{ account.name }}: Invest.WitUS{% endblock %}
 {% block content %}
 <section class="container" aria-labelledby="paper-heading">
-  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <p class="eyebrow">{{ account.name }} {{ account|account_kind }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="paper-heading">Alpaca paper</h1>
   {# The environment as text (PRD 7.2 and 7.7): the host beside it, and the line about live trading. #}
   <p class="band">Alpaca paper ({{ host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
