@@ -25,7 +25,7 @@ updated: 2026-11-03
 - Migrations run automatically after each merge
 
 ## In progress
-- Compare methods (chapter 15, decisions 167 to 171): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed (task 35, with task 34)
+- Compare methods (chapter 15, decisions 167 to 171): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed; a Practice or Real badge beside every account name (decision 172; task 35, with task 34)
 - The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165, task 33)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
