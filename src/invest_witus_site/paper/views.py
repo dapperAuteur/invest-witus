@@ -27,6 +27,7 @@ from invest_witus_site.paper import linking, orders, slots
 from invest_witus_site.paper.alpaca import (
     PAPER_HOST,
     AlpacaError,
+    AlpacaNotConfigured,
     PaperAccount,
     PaperPosition,
     client_for,
@@ -55,12 +56,14 @@ def paper_account(request: HttpRequest, pk: int) -> HttpResponse:
     alpaca_account: PaperAccount | None = None
     positions: list[PaperPosition] = []
     error = ""
+    not_configured = False
     try:
         client = client_for(account)
         alpaca_account = client.account()
         positions = client.positions()
     except AlpacaError as failure:
         error = failure.message
+        not_configured = isinstance(failure, AlpacaNotConfigured)
     context = {
         "account": account,
         "plan": plan,
@@ -69,6 +72,7 @@ def paper_account(request: HttpRequest, pk: int) -> HttpResponse:
         "positions": positions,
         "orders": PaperOrder.objects.filter(account=account),
         "error": error,
+        "not_configured": not_configured,
         # Decision 159: what the slot's keys reach now, against the number recorded at linking.
         "number_changed": (
             alpaca_account is not None

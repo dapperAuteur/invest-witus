@@ -269,6 +269,7 @@ def test_a_slot_gone_from_the_server_blocks_trading_and_never_falls_back(
         client_for(gone)
     page = text(owner_client.get(f"/accounts/{gone.pk}/method/"))
     assert "Keys for slot GONE are not set on the server." in page
+    assert "Alpaca did not answer" not in page, "the server's gap, not Alpaca's silence"
     assert "queue for the open" not in page and ">Confirm<" not in page
     response = owner_client.post(f"/accounts/{gone.pk}/paper/confirm/", follow=True)
     assert "Nothing was placed. Keys for slot GONE are not set on the server." in text(response)

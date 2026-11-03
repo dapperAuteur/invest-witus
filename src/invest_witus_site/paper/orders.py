@@ -38,6 +38,7 @@ from invest_witus_site.methods.momentum import plan_ranking
 from invest_witus_site.paper.alpaca import (
     PAPER_HOST,
     AlpacaError,
+    AlpacaNotConfigured,
     AlpacaNotFound,
     AlpacaPaper,
     AlpacaRateLimited,
@@ -263,6 +264,8 @@ class PaperSection:
     stage: MonthBuys
     clock: MarketClock | None
     error: str
+    # Decision 159: the error is the server's (a key slot not set), not Alpaca's silence.
+    not_configured: bool = False
 
     @property
     def host(self) -> str:
@@ -287,7 +290,8 @@ def paper_section(plan: MethodPlan) -> PaperSection:
     try:
         clock = client_for(plan.account).clock()
     except AlpacaError as error:
-        return PaperSection(stage, None, error.message)
+        not_configured = isinstance(error, AlpacaNotConfigured)
+        return PaperSection(stage, None, error.message, not_configured)
     return PaperSection(stage, clock, "")
 
 
@@ -535,8 +539,9 @@ def sync_every_account() -> SyncResult:
     orders as failed with that sentence, and the rest go on; nothing falls back to another slot.
     The counts add up across accounts, so the cron's body keeps chapter 11's shape."""
     total = SyncResult()
-    account_ids = PaperOrder.open_orders().values_list("account_id", flat=True).distinct()
-    for account in Account.objects.filter(pk__in=list(account_ids)).order_by("pk"):
+    # `order_by()` drops the model's ordering, which would otherwise join the DISTINCT on Postgres.
+    account_ids = PaperOrder.open_orders().order_by().values_list("account_id", flat=True)
+    for account in Account.objects.filter(pk__in=set(account_ids)).order_by("pk"):
         try:
             client = client_for(account)
         except AlpacaError as error:

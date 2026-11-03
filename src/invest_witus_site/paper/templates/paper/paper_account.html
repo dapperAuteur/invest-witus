@@ -10,7 +10,7 @@
   {# Decision 159: the key slot this account trades through and the Alpaca account it reaches. #}
   <p>Key slot <strong>{{ account.alpaca_slot_name }}</strong>{% if account.alpaca_account_number %}, Alpaca paper account <strong>{{ account.alpaca_account_number }}</strong>{% else %}; no Alpaca account number recorded yet{% endif %}. <a href="{% url 'paper-link' account.pk %}">Change the link</a>.</p>
   {% if error %}
-  <p class="error">Alpaca did not answer. {{ error }}</p>
+  <p class="error">{% if not_configured %}{{ error }} Nothing is read from Alpaca or placed for this account until it is.{% else %}Alpaca did not answer. {{ error }}{% endif %}</p>
   {% endif %}
   {% if number_changed %}
   <p class="error">Slot {{ account.alpaca_slot_name }}'s keys now reach Alpaca paper account {{ alpaca_account.account_number|default:"with no number" }}, not {{ account.alpaca_account_number }}, the one this account was linked to. Confirm places nothing until you <a href="{% url 'paper-link' account.pk %}">link the account again</a>.</p>
