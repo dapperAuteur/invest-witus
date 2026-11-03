@@ -305,9 +305,7 @@ def present_value(
     return total
 
 
-def xirr(
-    flows: Sequence[tuple[date, Decimal]], days_per_unit: int = DAYS_A_YEAR
-) -> Decimal | None:
+def xirr(flows: Sequence[tuple[date, Decimal]], days_per_unit: int = DAYS_A_YEAR) -> Decimal | None:
     """The rate per `days_per_unit` days (a year unless told otherwise) at which the flows'
     present value is zero, found by halving an interval, or None: no money in or no money out,
     every flow on one day, or no single rate in the interval that fits (possible when deposits
