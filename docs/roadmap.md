@@ -15,6 +15,7 @@ updated: 2026-11-02
 - Method engine with three views: the plan and logbook, the console, the lesson lab
 - Index investing with a fixed monthly amount, and 12-1 momentum
 - Paper trading through Alpaca, with orders placed once and synced to the journal
+- One Alpaca paper account per method: any number of key slots on the server, each account linked through its own (decisions 159, 160)
 - Journal with hold and skip reasons, monthly close and CSV export
 - A default view saved per person; a plan edited or deleted before anything happens under it
 - Report a problem or ask a question, sent to WitUS Inbox; a Help bubble on every page
@@ -31,7 +32,7 @@ updated: 2026-11-02
 - Python tutorial course built from the chapters
 
 ## Backlog
-- Running several methods at once to compare them (BAM's design decision first; one active plan per account today)
+- Compare page for methods running side by side in their own accounts (backlog 20; key slots are live)
 - Practice simulator for classes, after a vetting analysis
 - More momentum views: relative strength, quintiles, heatmap, path smoothness
 - Quarterly momentum with a quality screen as its own method

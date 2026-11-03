@@ -128,8 +128,8 @@ nothing on the page is a price, and no public page links it. The walk-through is
 
 ## Alpaca paper trading
 
-Chapter 11 adds a `paper` app. An account linked to Alpaca's paper environment (the admin's **Alpaca** field;
-paper accounts only, one per owner) gets "This month's buys" on its method page: the plan's amount split across
+Chapter 11 adds a `paper` app. An account linked to Alpaca's paper environment (paper accounts only; since
+2026-11-02 linked on the account's **Link to Alpaca paper** page through a key slot, below) gets "This month's buys" on its method page: the plan's amount split across
 its symbols to the cent, the practice budget the app keeps beside Alpaca's own balance (which cannot be set), and
 a **Confirm** button that sends one notional market day order per symbol to `https://paper-api.alpaca.markets`
 with a `client_order_id` made of the account, the plan, the month and the symbol, so a second click or a retry
@@ -140,6 +140,15 @@ the live one, and the settings refuse to start if `APCA_API_BASE_URL` names anot
 built. The keys are `ALPACA_PAPER_KEY_ID` and `ALPACA_PAPER_SECRET_KEY` (`.env.example`); without them nothing
 calls Alpaca. Everything here is for the site owner's superuser only. The walk-through is
 [chapter 11](docs/chapters/11-alpaca-paper-and-the-monthly-review.md), sections 11.9 and 11.10.
+
+**One Alpaca paper account per method** (2026-11-02, decisions 159 and 160). Each Alpaca paper account has its
+own keys, so the server holds any number of key slots: `ALPACA_PAPER_KEY_ID__<SLOT>` and
+`ALPACA_PAPER_SECRET_KEY__<SLOT>`, found when the settings load, with the unsuffixed pair as the slot `DEFAULT`.
+An account stores only its slot's name and the Alpaca account number its link check read; every call for it
+uses that slot's keys (`paper.alpaca.client_for`), and a slot missing from the server blocks the account's
+trading instead of falling back. The **Link to Alpaca paper** page checks what a slot reaches and refuses an
+Alpaca account another Invest account already trades in; **Alpaca key slots** lists the slots by name and the
+last four characters of each key id. Adding a slot: [the runbook](docs/05-operations.md), "Alpaca key slots".
 
 ## The journal and the monthly close
 

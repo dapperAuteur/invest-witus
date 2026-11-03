@@ -135,7 +135,9 @@ the kind; it holds no balances, because those come from statements.
 in, **Accounts** in the header lists the same account under **Your accounts** with its broker and kind, and its
 page says **No statement yet.** with the link **Enter the first one in the admin.** The account linked to Alpaca
 paper (see [Alpaca paper](#alpaca-paper-chapter-11)) also shows **Paper account** on its row, and **Paper
-account** appears in the header beside **Accounts** on every page while you are signed in as the site owner.
+account** appears in the header beside **Accounts** on every page while you are signed in as the site owner
+(**Paper accounts**, opening the key slot list, when more than one account is linked; see
+[Running more than one method](#running-more-than-one-method-one-alpaca-paper-account-each)).
 Every row also links that account's **Logbook**, and the header shows **Logbook** for the first account with a
 plan or a journal entry (decision 115). On a phone or a narrow window, signed in, the header's links fold behind a
 **Menu** button; press it to open them, Escape to close. **Sign out** stays visible beside it.
@@ -704,6 +706,9 @@ the desk's home page is the fallback; tell the operator so the FAQ can be correc
 Written for the app at `v11`. One account can be linked to your Alpaca paper account: in the admin, open the
 account, set **Kind** to Paper (practice) and **Alpaca** to Alpaca paper. Give its plan a **Practice budget**, the
 practice money the plan may spend (Alpaca's paper balance cannot be set, so the app keeps this number).
+Since 2026-11-02 the link is made on the account's own **Link to Alpaca paper** page instead of the admin, and
+each method can have an Alpaca paper account of its own: see
+[Running more than one method](#running-more-than-one-method-one-alpaca-paper-account-each).
 
 - **The method page** shows "This month's buys" above the view switch: the plan's amount for each symbol, the
   budget spent and left, and **Confirm** inside the buy window. One click places one market order per symbol for
@@ -875,6 +880,43 @@ Everything here is on the method page (`/accounts/<id>/method/`), for the accoun
   pages list exactly why. Use **Change or end this plan**: a change is a new version with a reason, and ending
   keeps the plan's months, reviews and journal.
 
+## Running more than one method: one Alpaca paper account each
+
+For the site owner (the superuser) only, since 2026-11-02 (decisions 159 and 160). An account runs one method at
+a time. To try 12-1 momentum and index investing side by side, give each its own Invest account, and give each
+of those its own Alpaca paper account, so each plan buys from its own cash and its results are its own. Alpaca
+gives every paper account its own keys; the server holds each pair as a **key slot** with a name you choose
+(`MOMENTUM`, `DCA`). The pair that existed before is the slot **DEFAULT**, and the account already linked to it
+keeps working as it was.
+
+- **Add a slot.** In Alpaca, create another paper account and generate its keys; put them on Vercel under the
+  slot's two names and redeploy. The runbook (`docs/05-operations.md`, "Alpaca key slots") has the exact steps;
+  the keys never go into the app, a chat or a file.
+- **See the slots.** **Accounts** → **Alpaca key slots** lists each slot: its name, the last four characters of
+  its key id, **complete**, **keys incomplete** (one of the two names is missing, with the name) or **not set on
+  the server** (an account is linked through a slot whose keys were removed), and the accounts linked through
+  it, each with its Alpaca account number. No page ever shows a key.
+- **Link an account.** Make a paper account for the method (admin → Accounts → add, **Kind** Paper (practice)),
+  open it, and press **Link to Alpaca paper**. Choose the slot, then **Check this slot**: the page shows the
+  Alpaca paper account number those keys reach, with its cash and status, and saves nothing. If the number is
+  the new paper account's, press **Link**. The account's page and its paper page then say "Key slot MOMENTUM,
+  Alpaca paper account ..." with **Change the link**.
+- **What is refused.** A slot with keys incomplete. An Alpaca paper account that another Invest account already
+  trades in: "Alpaca paper account ... is already linked to your account Momentum." Two plans in one Alpaca
+  account would spend the same cash, so the app keeps them apart; generate keys in a new paper account instead.
+  Moving an account to another slot, or **Unlink from Alpaca paper**, waits while any of its orders is still
+  open at Alpaca, because the other keys could not read them; press **Check orders now** after the fill, or
+  cancel by editing the plan.
+- **When keys change on the server.** If a slot's keys are removed, its accounts say "Keys for slot MOMENTUM are
+  not set on the server." in **This month's buys**, on the paper page and when you press Confirm, and nothing is
+  bought; the app never uses another slot's keys instead. If the keys are replaced by another Alpaca account's,
+  Confirm stops and the paper page says "Slot MOMENTUM's keys now reach Alpaca paper account ..., not ..."; link
+  the account again to choose.
+- **The header.** With one linked account, **Paper account** opens its paper page; with more than one, **Paper
+  accounts** opens the key slot list, which links each.
+- **Not yet:** a page comparing the methods side by side. Each account's method page, logbook and paper page
+  show its own results for now.
+
 ## Draft a post for WitUS Outbox (2026-10-29)
 
 For the site owner only. When you want to tell people something about Invest.WitUS (that it is live, or a
@@ -939,6 +981,8 @@ Still to come, each its own chapter: rank changes and the rolling 12-1 line (14a
 | Cron answers 503 | `CRON_SECRET` not in the running deployment | Redeploy |
 | A report reads **Off, will retry** in the admin | The three `INBOX_` names are not all set on this deployment | Set them and redeploy; the nightly job sends the waiting rows |
 | A report reads **Failed, will retry** with a 401 | Inbox does not know this source or secret, or the clock is off | Check the slug in Inbox's `INGEST_SOURCES`, redeploy Inbox, compare the secrets; then **Send again** |
+| "Keys for slot X are not set on the server." | The account is linked through a slot whose two variables are not on this deployment | Add them on Vercel (runbook, "Alpaca key slots") and redeploy, or link the account through another slot |
+| "... is already linked to your account ..." on Link to Alpaca paper | Those keys belong to an Alpaca paper account another Invest account trades in | Create a new paper account in Alpaca, generate its keys, add them as a new slot |
 | A post draft reads **Off, will retry** | `OUTBOX_TRIGGER_ENABLED` is not exactly `true`, or an `OUTBOX_` name is missing | Expected until you turn it on; set them and redeploy, then **Send again** |
 | A post draft reads **Failed, will retry** with a 401 | Outbox does not know this source or secret, or the clock is off | Check the slug in Outbox's `INGEST_SOURCES`, redeploy Outbox, compare the secrets; then **Send again** |
 | A post draft reads **Blocked, not sent** | The text named something from your accounts, or it was not written by the superuser | Write a new draft without it |

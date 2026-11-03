@@ -11,7 +11,8 @@ from the dashboards named; this file never holds one.
 | `STORAGE_DATABASE_URL`, `STORAGE_DATABASE_URL_UNPOOLED` and the other `STORAGE_*` names | written by the Neon integration on the same page (the connect dialog's prefix was `STORAGE`) | the site (pooled) and migrations (unpooled) |
 | `WITUS_OIDC_CLIENT_ID`, `WITUS_OIDC_CLIENT_SECRET` | same page; the matching `WITUS_OIDC_SECRET__INVEST` sits on the witus-online project | Sign in with WitUS |
 | `TIINGO_API_KEY`, `CRON_SECRET` | same page | the nightly pull and its cron route |
-| `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | same page; made in Alpaca's paper dashboard, API Keys, Generate New Key | Confirm, the paper page and the order sync (chapter 11) |
+| `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | same page; made in Alpaca's paper dashboard, API Keys, Generate New Key | the DEFAULT key slot: Confirm, the paper page and the order sync for accounts linked through it (chapter 11) |
+| `ALPACA_PAPER_KEY_ID__<SLOT>`, `ALPACA_PAPER_SECRET_KEY__<SLOT>`, any number of pairs | same page; each pair made in its own Alpaca paper account (see [Alpaca key slots](#alpaca-key-slots-one-paper-account-per-method)) | the same, for the accounts linked through that slot (decision 159) |
 | `INBOX_INGEST_URL`, `INBOX_SOURCE_SLUG`, `INBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-inbox project | the in-app reporter and the waitlist's copy to WitUS Inbox (chapter 13) |
 | `OUTBOX_TRIGGER_ENABLED`, `OUTBOX_INGEST_URL`, `OUTBOX_SOURCE_SLUG`, `OUTBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-outbox project | **Draft a post** and its copies to WitUS Outbox |
 | the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
@@ -144,8 +145,10 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
   `failed`).
 - By hand on production: the paper page's **Check orders now** (signed in as the owner), or the cron by hand as
   above.
-- By hand on the laptop: `uv run --env-file .env python manage.py sync_paper_orders`. With no keys in `.env` it
-  prints `Alpaca paper keys are not set; nothing to sync.` and calls nothing.
+- By hand on the laptop: `uv run --env-file .env python manage.py sync_paper_orders`. With no complete key slot
+  in `.env` it prints `Alpaca paper keys are not set; nothing to sync.` and calls nothing. Since decision 159 it
+  reads each account's orders with that account's key slot, and prints an account whose slot is missing on
+  stderr.
 
 - Default view, plan edit and delete (2026-11-02, decisions 155 to 158): migration
   `methods/0005_view_preference` adds the `ViewPreference` table (a new table, additive, safe to run twice),
@@ -154,6 +157,60 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
   for a plan with orders still open: `DELETE /v2/orders/{id}` to cancel, then `GET /v2/orders/{id}` to read it
   back. A cancel Alpaca has not finished (`pending_cancel`) stops the edit or delete with nothing changed; **Check
   orders now** or the nightly cron finishes the row, then the owner presses Save or Delete again.
+
+## Alpaca key slots: one paper account per method
+
+Decisions 159 and 160 (2026-11-02). Each method runs in its own Invest account, and each Invest account that
+trades on paper is linked to its own Alpaca paper account, because two plans in one Alpaca account would spend one
+pool of cash. Alpaca gives every paper account its own keys, so the server holds one pair per Alpaca account,
+called a **slot**: `ALPACA_PAPER_KEY_ID__<SLOT>` and `ALPACA_PAPER_SECRET_KEY__<SLOT>`, where `<SLOT>` is 1 to 40
+of `A-Z`, `0-9` and `_` (for example `MOMENTUM`). The unsuffixed pair is the slot `DEFAULT`; the account linked
+before slots existed uses it and needs nothing done. The app stores only the slot's name and the Alpaca account
+number on the account, never a key.
+
+**After the merge:** migration `holdings/0003_account_alpaca_slot_and_number` (two columns with database
+defaults, chapter 11's one-per-owner constraint swapped for two new ones) is applied by the migrate workflow; by
+hand, the fallback above. Nothing else runs after a deploy.
+
+**Add a slot for a new method** (repeat per method):
+
+1. Alpaca → log in at https://app.alpaca.markets → switch to paper in the top bar. Create another paper account
+   from the account menu in the dashboard's upper left, where the paper account number is shown (Alpaca's
+   paper-trading page: "Don't forget to generate new API keys for any newly created account",
+   https://docs.alpaca.markets/docs/paper-trading, read 2026-11-02). Note the new account's number.
+2. With that new paper account selected, **API Keys** → **Generate New Key**. Alpaca shows the secret once; keep
+   the dialog open for step 3.
+3. In the repository folder (the Vercel project is linked there), add the two variables for Production, one at a
+   time. The CLI asks for each value at a prompt, so the value never goes into the shell's history, a file or a
+   chat; copy it from Alpaca's dialog into the prompt:
+   ```sh
+   cd /Users/bam/Code_NOiCloud/ai-builds/claude/invest-witus
+   vercel env add ALPACA_PAPER_KEY_ID__MOMENTUM --environment production --sensitive
+   vercel env add ALPACA_PAPER_SECRET_KEY__MOMENTUM --environment production --sensitive
+   ```
+   (Flags as `vercel env add --help` lists them in Vercel CLI 65.5.0, read 2026-11-02. Whether the prompt hides
+   what is typed was not checked; clear the screen afterwards if it shows the value. Never use `--value` or
+   `echo ... |`, which put the secret in the shell's history.) Then copy something harmless to empty the clipboard.
+4. **Redeploy** (below): the settings find slots when they load, so a new pair is seen only by a new deployment.
+5. Signed in as the owner: **Accounts** → **Alpaca key slots** shows `MOMENTUM` with the last four characters of
+   its key id and **complete**. If it says **keys incomplete**, one of the two names is missing or misspelled.
+6. Make or pick the Invest account for the method (admin → Accounts → add, **Kind** Paper (practice)), open it,
+   **Link to Alpaca paper** → choose the slot → **Check this slot**: the number shown must be the new Alpaca
+   account's number from step 1. Then **Link**. A refusal that the account "is already linked" means these keys
+   belong to an Alpaca account another Invest account trades in: generate keys in the right paper account.
+7. Start the method on that account's method page, set its practice budget, and Confirm as usual.
+
+**Replacing a slot's keys** (Alpaca keys regenerated): step 3 with `--force`, then redeploy. If the new keys
+belong to a different Alpaca account, Confirm stops and the paper page says the keys now reach another account;
+link the Invest account again to choose.
+
+**Removing a slot:** unlink every account on it first (Link to Alpaca paper → **Unlink**, allowed once no order
+is open), then `vercel env rm ALPACA_PAPER_KEY_ID__MOMENTUM production` and the secret's name, and redeploy. An
+account whose slot is gone shows "Keys for slot MOMENTUM are not set on the server." and trades nothing; it never
+falls back to DEFAULT.
+
+**The nightly check** reads each account's open orders with its own slot. An account whose slot is missing lists
+each of its open orders under `orders.failed` in the cron's JSON with that sentence; the others go on.
 
 ## Reports and the waitlist's copies to WitUS Inbox (chapter 13)
 
