@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from invest_witus_site import health
+from invest_witus_site.accounts import preferences
 
 urlpatterns = [
     # The owner's back office. Every page under it requires a staff login (chapter 05).
@@ -28,6 +29,8 @@ urlpatterns = [
     # Report a problem or ask a question, signed in or out; saved here, sent to WitUS Inbox
     # (chapter 13).
     path("report/", include("invest_witus_site.reports.urls")),
+    # The signed-in person's own settings: the method pages' default view (decision 163).
+    path("settings/", preferences.settings_page, name="settings"),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).
     path("api/cron/", include("invest_witus_site.prices.urls")),
     path("", include("invest_witus_site.pages.urls")),

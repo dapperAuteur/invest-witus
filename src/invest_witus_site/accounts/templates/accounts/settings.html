@@ -1,0 +1,16 @@
+{% extends "pages/base.html" %}
+{% block title %}Settings: Invest.WitUS{% endblock %}
+{% block content %}
+{# 2026-11-03 (decision 163): the signed-in person's own settings. One section per setting; the next per-person option goes here. #}
+<section class="container narrow" aria-labelledby="settings-heading">
+  <h1 id="settings-heading">Settings</h1>
+  <p>Your own settings, for every account you hold here. Nobody else sees them.</p>
+  <form method="post" action="{% url 'settings' %}" class="method-form" novalidate>
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" %}
+    <button type="submit">Save settings</button>
+  </form>
+  <p class="small muted">The three views show the same plan, rules, review and journal, arranged differently: A, The Plan and the Logbook, is one next action, your status and the logbook; B, Method Console, is the rule checks and every month as tables; C, The Lesson Lab, puts the rules and their lessons first. You can also set the default with "Make … my default view" under the A, B and C links on any method page.</p>
+  <p><a href="{% url 'account-list' %}">Back to your accounts</a></p>
+</section>
+{% endblock %}

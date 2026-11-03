@@ -9,13 +9,15 @@
     {% endfor %}
   </ul>
   <p class="small muted">Three arrangements of the same plan, rules, review and journal. Reviewed through {{ through|date:"Y-m-d" }}.</p>
+  {# Decision 163: the default is also on the Settings page (header), where it can be cleared. #}
   {% if default_view == view %}
-  <p class="small">This is your default view.</p>
+  <p class="small">This is your default view. <a href="{% url 'settings' %}">Change it in Settings</a>.</p>
   {% else %}
-  <form method="post" action="{% url 'method-default-view' account.pk %}">
+  <form method="post" action="{% url 'method-default-view' account.pk %}" class="default-view-form">
     {% csrf_token %}
     <input type="hidden" name="view" value="{{ view }}">
     <button type="submit" class="secondary">Make {{ view_label }} my default view</button>
+    <span class="small muted">{% if default_view %}Your default now: view {{ default_view|upper }}.{% else %}No default saved: method pages open on A.{% endif %} Also in <a href="{% url 'settings' %}">Settings</a>.</span>
   </form>
   {% endif %}
 </nav>
