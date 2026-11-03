@@ -740,7 +740,8 @@ Written for the app at `v12`. Everything here is on the method page (`/accounts/
   A trade needs **Action**, **Symbol** and **Amount**, as before. A hold or a skip needs only the day and **Why**;
   leave Action, Amount and Shares empty. Any entry can also carry **State** (Calm, Focused, Confident, Unsure,
   Stressed or Rushed) and **Tags**, up to five words of your own separated by spaces or commas.
-- **A skip explains a month with no buy.** The review still lists "No buy in 2026-03" under "Buy once in every
+- **A skip explains a month with no buy.** (Since 2026-11-03 a skip that names a fund also explains that fund's
+  missing buy in a plan with several funds: see "How index plans are judged".) The review still lists "No buy in 2026-03" under "Buy once in every
   month of the plan", with "Explained by a skip:" and your reason beside it. The month reads **skipped** in view
   B's Months table, and the rule reads **explained** when every finding it has is explained. A skip does not
   excuse a late buy, a wrong amount or a sale.
@@ -884,6 +885,29 @@ parts, while fewer candidates are ranked). To put $500 into each of 3 symbols, t
   or buys past the plan's amount for the month. (Before 2026-11-03 the box re-split the month and offered Confirm
   again for the newcomer.) A month whose orders all ended with nothing filled is split again from the plan.
 
+## How index plans are judged (2026-11-03)
+
+Since 2026-11-03 (decisions 173 and 174) the index method's rules have a **version 2**, made for a plan whose total
+is split across several funds. The rules have the same names as before; what changes is how a month with several
+funds is checked:
+
+- **One buy of each fund every month.** A month with no buy at all reads "No buy in 2026-03." as before. A month
+  with buys names each fund of your plan that got none ("No buy of GAMMA in 2026-03.") and each fund bought twice.
+  When the app knows why a fund's buy is missing (Alpaca refused the order, or it ended with nothing filled), the
+  finding says so in Alpaca's words.
+- **The month's total is the plan's amount.** Once every fund was bought, the buys add up to the plan's total
+  within one cent for each fund after the first: $100.00 across three funds may come to $99.99 or $100.02 when
+  you round each part yourself. A buy placed by **Confirm** that filled in full is exactly its part. A part fill
+  makes the total short; the finding names the fund and how much filled.
+- **Buy inside the window, only your plan's funds, and no selling**: as before.
+- **Explaining a missing fund.** Log a **Skip** in that month with the fund in **Symbol** and your reason in **Why**:
+  the finding reads "Explained by a skip". A skip with no symbol explains a month with no buy at all.
+- **A plan with one fund** is judged exactly as before, word for word.
+- **Months you already closed keep their version.** A month closed before 2026-11-03 was judged by version 1 and
+  keeps those findings, even after a reopen. The method page lists those months ("Judged by version 1 of the
+  rules ..."), and the month's review page says "Rules: version 1". Every month you have not closed, and every
+  month to come, is judged by version 2; closing a month records the version it was judged by.
+
 ## Settings (2026-11-03)
 
 **Settings**, in the header on every page while you are signed in (behind **Menu** on a phone), opens
@@ -1014,9 +1038,9 @@ account's method line) opens `/compare/`: your own accounts side by side. Nobody
 - **How to read it.** A few months prove nothing. 12-1 momentum buys only its top N of your list; index investing
   buys all of it. Same starting cash, same monthly amount and same list make it a fair test of the method. Past
   results do not predict future results.
-- **An index plan with several symbols** shows findings every month on its method page and "followed in 0 of N"
-  here, because the index rules expect one buy of the whole amount a month (backlog 23). Read its months on the
-  method page until that is fixed.
+- **An index plan with several symbols** is judged by version 2 of the index rules since 2026-11-03: one buy of
+  each fund a month, adding up to the plan's amount (see "How index plans are judged"). A month you closed
+  before then keeps the findings it was closed with, so "plan followed" counts it as it was.
 
 ## Draft a post for WitUS Outbox (2026-10-29)
 

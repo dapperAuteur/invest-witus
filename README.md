@@ -219,6 +219,13 @@ journal and the stored adjusted closes; the app keeps no cash ledger, so cash be
 and Alpaca's own equity is shown beside it as a cross-check for a linked account. A stretch under a year is never
 turned into a yearly rate. The walk-through is [chapter 15](docs/chapters/15-compare-your-methods.md).
 
+Since 2026-11-03 the index method's rules have a version 2 (decisions 173 and 174): a plan whose total is split
+across several funds is checked for one buy of each fund a month and a month's total equal to the plan's amount
+(within one cent for each fund after the first), with the reason when a fund's buy is missing; a plan with one fund
+is judged exactly as before. A month closed under version 1 keeps version 1's findings
+(`MonthlyReview.rules_version`); every other month is judged by the newest version. Version 2 ships beside version 1
+as `src/invest_witus/methods/index_dca.v2.toml`, checked by `src/invest_witus/adherence/index_dca_v2.py`.
+
 ## Post drafts to WitUS Outbox
 
 Not a chapter. The site owner's **Draft a post** in the admin sends a short post (the launch, once, or a

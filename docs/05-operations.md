@@ -227,6 +227,32 @@ falls back to DEFAULT.
 **The nightly check** reads each account's open orders with its own slot. An account whose slot is missing lists
 each of its open orders under `orders.failed` in the cron's JSON with that sentence; the others go on.
 
+## Index rules version 2 (decisions 173 and 174)
+
+**Migration:** `methods.0006_monthlyreview_rules_version`: one nullable column on `methods_monthlyreview` and a
+data step that writes 1 on every month review that is closed or was closed and reopened. It runs with the usual
+workflow on the merge (section above); by hand, the fallback above. Running it twice changes nothing (it only
+writes where the column is empty). Until it has run, method pages, month reviews and Compare answer 500.
+
+To see what it did, read-only, from the laptop with the same `.env.migrate`:
+
+```sh
+DJANGO_SECRET_KEY=only-for-this-shell-not-the-real-one VERCEL= \
+  uv run --env-file .env.migrate python manage.py shell -c \
+  "from invest_witus_site.methods.models import MonthlyReview as R; from django.db.models import Count; print(list(R.objects.using('direct').values('rules_version').annotate(n=Count('id')).order_by('rules_version')))"
+```
+
+Expected: one count for `1` (the months closed before version 2) and one for `None` (months never closed); `2`
+appears once a month is closed after the deploy. No variable and no other post-deploy step.
+
+After the deploy, signed in as the owner, on an index account with several funds (B_INDEX):
+
+1. The method page lists no `fixed-amount` or "3 buys" finding for a month whose buys were placed by Confirm and
+   filled; view B's Method line reads "version 2 (index-dca)".
+2. A month closed before the deploy still shows its old findings, and the page says "Judged by version 1 of the
+   rules, the version they were closed under: <months>."
+3. **Compare methods** counts the months closed from now on as followed when their buys match.
+
 ## Compare methods (chapter 15)
 
 No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes.

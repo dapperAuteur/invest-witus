@@ -27,6 +27,7 @@ updated: 2026-11-03
 ## In progress
 - Compare methods (chapter 15, decisions 167 to 171): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed; a Practice or Real badge beside every account name (decision 172; task 35, with task 34)
 - The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165, task 33)
+- Index rules version 2: one buy of each fund a month and the month's total, so a plan split across several funds reads followed; months already closed keep version 1 (decisions 173 and 174, backlog 23, task 37, which also lands tasks 35 and 34)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
@@ -42,7 +43,6 @@ updated: 2026-11-03
 - Learn.WitUS lessons inside the app
 - Foreign markets research
 - Owner usage dashboard (chapter 17)
-- Index rules for a plan with several symbols: one buy of the whole amount a month is expected, so a split month shows findings (backlog 23)
 - A small sibling API service in a second Python framework
 
 ## Blocked on
