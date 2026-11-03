@@ -10,6 +10,7 @@
     <li><a href="{% url 'account-detail' account.pk %}">{{ account.name }}</a> <span class="muted">({{ account.broker }}, {{ account.get_kind_display|lower }})</span>{% if account.is_alpaca_paper and user.is_superuser %} · <a href="{% url 'paper-account' account.pk %}">Paper account</a>{% endif %} · <a href="{% url 'logbook' account.pk %}">Logbook</a></li>
     {% endfor %}
   </ul>
+  <p><a href="{% url 'compare-methods' %}">Compare methods</a>: your accounts side by side, each line its value with the money put in left out, beside an index fund yardstick.</p>
   <p class="muted">Each page values the account's latest statement at the latest close the app has stored, with the close's date beside it. Information, not advice.</p>
   {% if user.is_superuser %}<p class="small"><a href="{% url 'alpaca-slots' %}">Alpaca key slots</a>: which Alpaca paper account each linked account trades in.</p>{% endif %}
   {% url 'fetch-prices' as fetch_action %}

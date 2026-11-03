@@ -113,6 +113,8 @@ INSTALLED_APPS = [
     "invest_witus_site.reports",
     # WitUS Outbox (2026-10-29): the owner's post drafts, saved, then sent to Outbox for review.
     "invest_witus_site.outbox",
+    # Compare methods (chapter 15): the person's accounts side by side. No models.
+    "invest_witus_site.compare",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.

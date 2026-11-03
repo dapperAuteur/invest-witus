@@ -324,6 +324,9 @@ class Line:
     points: str = ""
     ys: dict[date, Decimal] = field(default_factory=dict[date, Decimal])
     end_x: Decimal = Decimal(0)
+    # Chapter 15: a line that is not a symbol's closes (an account's value) brings each day's
+    # hover text, written here, and the script shows it instead of a close and an adjusted close.
+    readout: dict[date, str] = field(default_factory=dict[date, str])
 
     @property
     def first(self) -> DayRow:
@@ -422,6 +425,9 @@ class Plot:
     all_dates: list[date] = field(default_factory=list[date])
     # Chapter 14: shaded stretches, such as a 12-1 window; none unless a page adds them.
     bands: list[Band] = field(default_factory=list[Band])
+    # Chapter 15: a page whose lines are not all closes writes its own caption and description.
+    caption: str = ""
+    desc: str = ""
 
     @property
     def thinned(self) -> bool:
@@ -495,6 +501,9 @@ class Plot:
                         for row in rows
                     ],
                     "events": [row.events_text if row and row.events else None for row in rows],
+                    "text": (
+                        [line.readout.get(day) for day in self.dates] if line.readout else None
+                    ),
                 }
             )
         return {
@@ -550,6 +559,20 @@ def build_plot(
         color, dash, pattern = LINE_STYLES[len(lines) % MAX_LINES]
         basis, missing, days = line_days(series_input, rebase)
         lines.append(Line(series_input.symbol, basis, missing, color, dash, pattern, days))
+    return lay_out(lines, title, rebase, max_points)
+
+
+def lay_out(
+    lines: list[Line],
+    title: str,
+    rebase: bool,
+    max_points: int = MAX_POINTS,
+    noun: str = "close",
+) -> Plot | None:
+    """The axes, the points, the markers and the hover data for lines already made: by
+    `build_plot` from stored closes, or (chapter 15) by a page whose lines are worked out, such as
+    an account's value. Each line keeps the style it was given. `noun` names one point in the
+    chart's text title. No lines, no plot."""
     if not lines:
         return None
     all_dates = sorted({row.day for line in lines for row in line.days})
@@ -589,7 +612,7 @@ def build_plot(
         y_title = f"{'Adjusted close' if lines[0].basis == ADJUSTED else 'Close'}, US dollars"
     count = sum(len(line.days) for line in lines)
     svg_title = (
-        f"{title}: {count} close{'' if count == 1 else 's'} from {first:%Y-%m-%d} to "
+        f"{title}: {count} {noun}{'' if count == 1 else 's'} from {first:%Y-%m-%d} to "
         f"{last:%Y-%m-%d}, low {index_text(low) if rebase else money(low)}, "
         f"high {index_text(high) if rebase else money(high)}"
     )

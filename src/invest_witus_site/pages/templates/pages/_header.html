@@ -25,6 +25,8 @@
         {% if paper_account_id %}<li><a href="{% url 'paper-account' paper_account_id %}">Paper account</a></li>{% elif paper_accounts_several %}<li><a href="{% url 'alpaca-slots' %}">Paper accounts</a></li>{% endif %}
         {# The first account with a plan or an entry (`logbook_account_id`, decision 115). #}
         {% if logbook_account_id %}<li><a href="{% url 'logbook' logbook_account_id %}">Logbook</a></li>{% endif %}
+        {# Chapter 15: the person's accounts side by side, each running its own method. #}
+        <li><a href="{% url 'compare-methods' %}">Compare methods</a></li>
         {# Decision 163: the person's own settings (the method pages' default view, and later options). #}
         <li><a href="{% url 'settings' %}">Settings</a></li>
         {% endif %}

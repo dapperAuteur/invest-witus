@@ -1,0 +1,210 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Compare methods: Invest.WitUS{% endblock %}
+{% block content %}
+{# Compare methods (chapter 15, decisions 167 to 171): two to four of the signed-in person's own accounts on one #}
+{# chart, each line its value with the money put in left out, beside a do-nothing yardstick, and a table. #}
+<section class="container" aria-labelledby="compare-methods-heading">
+  <p class="eyebrow">Signed in</p>
+  <h1 id="compare-methods-heading">Compare methods</h1>
+  <p>Each account runs one method. Pick {{ min_accounts }} to {{ max_accounts }} of your accounts and a stretch of days: the chart puts them side by side, and the table says what each one put in, holds and gained.</p>
+  {% if owned %}
+  <form method="get" class="compare-form">
+    <fieldset class="field">
+      <legend>Accounts, {{ min_accounts }} to {{ max_accounts }}</legend>
+      <ul class="plain choice-list">
+        {% for account in owned %}
+        {% with plan=plans|item:account.pk %}
+        <li><label><input type="checkbox" name="accounts" value="{{ account.pk }}"{% if account.pk in picked_pks %} checked{% endif %}> {{ account.name }} <span class="muted small">({% if plan %}{{ plan.method.name }}{% if not plan.active %}, ended{% endif %}{% else %}no plan{% endif %})</span></label></li>
+        {% endwith %}
+        {% endfor %}
+      </ul>
+      <p class="small muted">Left empty, the page picks every account that runs or ran a plan, up to {{ max_accounts }}.</p>
+    </fieldset>
+    <fieldset class="field range-dates">
+      <legend>Dates</legend>
+      <div class="range-dates-row">
+        <div><label for="compare-from">From</label>
+        <input type="date" id="compare-from" name="from" value="{% if dates.typed_from %}{{ dates.typed_from }}{% else %}{{ dates.start|date:'Y-m-d' }}{% endif %}"{% if dates.error %} aria-describedby="range-error"{% endif %}></div>
+        <div><label for="compare-to">To</label>
+        <input type="date" id="compare-to" name="to" value="{% if dates.typed_to %}{{ dates.typed_to }}{% else %}{{ dates.end|date:'Y-m-d' }}{% endif %}"{% if dates.error %} aria-describedby="range-error"{% endif %}></div>
+      </div>
+      <p class="small muted">From starts at the earliest plan start of the accounts picked, To at today.</p>
+    </fieldset>
+    <div class="field">
+      <label for="compare-yardstick">Yardstick</label>
+      <select id="compare-yardstick" name="yardstick">
+        <option value=""{% if not yardstick %} selected{% endif %}>None</option>
+        {% for symbol in choices %}<option value="{{ symbol }}"{% if yardstick and yardstick.symbol == symbol %} selected{% endif %}>{{ symbol }}</option>{% endfor %}
+      </select>
+      <p class="small muted">A do-nothing line: what an S&amp;P 500 index fund did over the same days. The page starts on the first of {{ sp500_funds|join:", " }} that you hold, watch or name in a plan; any symbol of yours can stand in.</p>
+    </div>
+    <button type="submit">Compare</button>
+  </form>
+  {% else %}
+  <p>No accounts yet, so there is nothing to compare.</p>
+  {% endif %}
+
+  {% if dates.error %}<p class="message error" id="range-error">{{ dates.error }} Showing {{ dates.start|date:"Y-m-d" }} to {{ dates.end|date:"Y-m-d" }} instead.</p>{% endif %}
+  {% if picked.not_yours %}<p class="message error">Left out {{ picked.not_yours }} account{{ picked.not_yours|pluralize }} that {{ picked.not_yours|pluralize:"is,are" }} not yours.</p>{% endif %}
+  {% if picked.over_limit %}<p class="message{% if not picked.defaulted %} error{% endif %}">Up to {{ max_accounts }} accounts at once; left out: {% for account in picked.over_limit %}{{ account.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+  {% if owned and not picked.accounts %}<p class="message">None of your accounts runs a plan yet. Start one on an account's method page, or tick accounts above.</p>{% endif %}
+  {% if too_few %}<p class="message">Pick at least {{ min_accounts }} accounts to compare; the one picked is shown on its own.</p>{% endif %}
+
+  {% if yardstick and not yardstick.line %}
+  <div class="message" id="yardstick-missing">
+    <p>No closes stored for {{ yardstick.symbol }} from {{ dates.start|date:"Y-m-d" }} to {{ dates.end|date:"Y-m-d" }}, so the chart has no yardstick.</p>
+    {% if yardstick.watched_on %}
+    {% include "prices/_history_form.html" with account=yardstick.watched_on symbol=yardstick.symbol return_to="compare-methods" %}
+    {% else %}
+    <p>Add {{ yardstick.symbol }} to a watch list on an account page, then press <strong>Get history</strong> there.</p>
+    {% endif %}
+  </div>
+  {% elif not yardstick and asked_yardstick is None %}
+  <p class="message">No yardstick: none of {{ sp500_funds|join:", " }} is held, watched or named in a plan of yours. Add one to a watch list and press <strong>Get history</strong>, or pick any of your symbols above.</p>
+  {% endif %}
+
+  {% if plot %}
+  {% include "prices/_chart.html" %}
+  {% include "prices/_thinned.html" %}
+  {% endif %}
+
+  {% if results %}
+  <div class="table-scroll" role="region" aria-label="The accounts compared, scrolls sideways on a narrow screen" tabindex="0">
+  <table class="holdings">
+    <caption>Each account from {{ dates.start|date:"Y-m-d" }} to {{ dates.end|date:"Y-m-d" }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Account</th>
+        <th scope="col">Method</th>
+        <th scope="col" class="num">Money put in</th>
+        <th scope="col" class="num">Value now</th>
+        <th scope="col" class="num">Gain</th>
+        <th scope="col" class="num">Money-weighted return</th>
+        <th scope="col" class="num">Time-weighted return</th>
+        <th scope="col" class="num">Worst drop</th>
+        <th scope="col">Months running</th>
+        <th scope="col">How often the plan was followed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for result, check in rows %}
+      <tr>
+        <th scope="row"><a href="{% url 'account-detail' result.account.pk %}">{{ result.account.name }}</a></th>
+        <td>{% if result.plan %}<a href="{% url 'method-page' result.account.pk %}">{{ result.method }}</a>{% else %}{{ result.method }}{% endif %}</td>
+        {% if result.stretch %}
+        <td class="num">{{ result.put_in }}</td>
+        <td class="num">{{ result.value }}</td>
+        <td class="num">{{ result.gain }}</td>
+        <td class="num">{{ result.money_weighted|default:"one day only: no return yet" }}</td>
+        <td class="num">{{ result.time_weighted|default:"one day only: no return yet" }}</td>
+        <td class="num">{{ result.worst_drop|default:"needs two days" }}</td>
+        {% else %}
+        <td colspan="6">{{ result.reason }}</td>
+        {% endif %}
+        <td>{{ result.months|default:"no plan" }}</td>
+        <td>{{ result.followed }}</td>
+      </tr>
+      {% endfor %}
+      {% if yardstick and yardstick.line %}
+      <tr>
+        <th scope="row">{{ yardstick.symbol }}{% if yardstick.name %} <span class="muted small">({{ yardstick.name }})</span>{% endif %}</th>
+        <td>Yardstick: bought once, never touched</td>
+        <td colspan="3">No money put in: a price line, rebased to 100.</td>
+        <td class="num">no deposits</td>
+        <td class="num">{{ yardstick.twr|default:"one day only: no return yet" }}</td>
+        <td class="num">{{ yardstick.drop|default:"needs two days" }}</td>
+        <td colspan="2">Uses the {{ yardstick.line.basis }}.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  </div>
+  <p class="small"><strong>Money-weighted or time-weighted?</strong> The money-weighted return counts when your money went in, so it judges the method and the timing of your deposits together; the time-weighted return leaves the deposits out, so it judges the method alone, and it is what the chart draws. Under a year, both are the change over the days shown; from a year on, both are a yearly rate.</p>
+  {% for result in results %}{% if result.notes %}
+  <p class="small muted">{{ result.account.name }}: {{ result.notes|join:" " }}</p>
+  {% endif %}{% endfor %}
+  <p class="small muted">The value is what each account's trades bought, at the newest stored close on or before each day; the adjusted close counts dividends as if they bought more. Cash an account keeps beside its holdings is not in it: the app keeps no cash ledger, so the money put in is what the buys cost less what any sells brought back. A buy placed through Alpaca counts from the day it filled, with the shares Alpaca reported.</p>
+  {% endif %}
+
+  {% if any_check %}
+  <div class="table-scroll" role="region" aria-label="Alpaca's own numbers, scrolls sideways on a narrow screen" tabindex="0">
+  <table class="holdings" id="alpaca-check">
+    <caption>Cross-check: Alpaca's own numbers, read now</caption>
+    <thead>
+      <tr>
+        <th scope="col">Account</th>
+        <th scope="col" class="num">Value here</th>
+        <th scope="col" class="num">Alpaca: holdings now</th>
+        <th scope="col" class="num">Alpaca: equity</th>
+        <th scope="col" class="num">Alpaca: cash</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for result, check in rows %}{% if check %}
+      <tr>
+        <th scope="row">{{ result.account.name }}</th>
+        <td class="num">{{ result.value|default:"not worked out" }}</td>
+        {% if check.error %}
+        <td colspan="3">{{ check.error }}</td>
+        {% else %}
+        <td class="num">{{ check.in_positions|money }}</td>
+        <td class="num">{{ check.equity|money }}</td>
+        <td class="num">{{ check.cash|money }}</td>
+        {% endif %}
+      </tr>
+      {% endif %}{% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="small muted">Alpaca's holdings are its equity less its cash, at its own latest prices; the value here uses the app's newest stored close. They should be close, not equal: a difference of more than a few percent means a trade is missing from the journal or a close is missing from the app.</p>
+  {% endif %}
+
+  <aside class="how-to-read" aria-labelledby="how-to-read-heading">
+    <p id="how-to-read-heading"><strong>How to read this.</strong></p>
+    <ul>
+      <li><strong>A few months prove nothing.</strong> Over months, luck moves these lines more than any method does. Judge a method over years, and by whether you kept to it.</li>
+      <li><strong>The methods buy differently.</strong> 12-1 momentum buys only its top N of your list each month; index investing buys all of it. Holding fewer symbols makes the line swing more, up and down.</li>
+      <li><strong>Same cash, same amount, same list: a fair test.</strong> When the accounts start with the same money, put in the same amount each month and draw from the same symbols, the method is the one thing that differs.</li>
+      <li><strong>Past results do not predict future results.</strong> This page describes what happened; it is not a forecast and not advice. <span class="muted">Lesson coming.</span></li>
+    </ul>
+  </aside>
+
+  {% if plot %}
+  <details class="daily" id="daily"{% if daily_open %} open{% endif %}>
+    <summary>Every day's values</summary>
+    <div class="table-scroll" role="region" aria-labelledby="daily-caption" tabindex="0">
+    <table class="holdings">
+      <caption id="daily-caption">Each line's level (start = 100) and dollars per stored day, newest first{% if daily.paginator.num_pages > 1 %}, {{ rows_per_page }} a page{% endif %}</caption>
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          {% for line in plot.lines %}
+          <th scope="col" class="num">{{ line.symbol }} (start = 100)</th>
+          <th scope="col" class="num">{{ line.symbol }} {% if line.basis == "adjusted close" or line.basis == "close" %}close{% else %}value{% endif %}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for day, cells in daily %}
+        <tr>
+          <th scope="row">{{ day|date:"Y-m-d" }}</th>
+          {% for cell in cells %}
+          {% if cell %}
+          <td class="num">{{ cell.level }}</td>
+          <td class="num">{{ cell.amount }}</td>
+          {% else %}
+          <td class="num muted" colspan="2">no value</td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% include "prices/_pager.html" with page=daily base_query=base_query label="Every day's values" anchor="#daily" %}
+  </details>
+  {% endif %}
+  <p class="small muted">Your own accounts only, from your journal and the app's stored closes. The closes vendor's free plan is for the owner's own use, so this page is never public. A comparison of the past, not a forecast. Information, not advice.</p>
+</section>
+{% endblock %}

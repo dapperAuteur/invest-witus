@@ -44,6 +44,8 @@
   readout.textContent = "Point at the chart, or focus it and use the arrow keys, to read one day.";
 
   function lineText(line, index) {
+    // Chapter 15: a line the server wrote its own words for, such as an account's value.
+    if (line.text) return line.symbol + ": " + (line.text[index] === null ? "no value this day" : line.text[index]);
     if (line.close[index] === null) return line.symbol + ": no close stored this day";
     var parts = [];
     if (data.rebased) parts.push(line.index[index] + " (start = 100)");

@@ -159,8 +159,16 @@ class AlpacaPaper:
     """The paper Trading API with one key pair. Every call has a timeout, and every failure is one
     of the exceptions above, never an `httpx` error or a `KeyError` that would become a 500."""
 
-    def __init__(self, key_id: str, secret_key: str, base_url: str = PAPER_BASE_URL) -> None:
+    def __init__(
+        self,
+        key_id: str,
+        secret_key: str,
+        base_url: str = PAPER_BASE_URL,
+        timeout: float = REQUEST_TIMEOUT_SECONDS,
+    ) -> None:
         self.base_url = check_host(base_url)
+        # Chapter 15: a page that only cross-checks a number asks with a shorter wait.
+        self.timeout = timeout
         if not key_id or not secret_key:
             raise AlpacaNotConfigured(
                 "Alpaca paper keys are not set (ALPACA_PAPER_KEY_ID, ALPACA_PAPER_SECRET_KEY)."
@@ -181,7 +189,7 @@ class AlpacaPaper:
     ) -> object:
         try:
             with httpx.Client(
-                base_url=self.base_url, transport=transport, timeout=REQUEST_TIMEOUT_SECONDS
+                base_url=self.base_url, transport=transport, timeout=self.timeout
             ) as http:
                 response = http.request(
                     method, path, params=params, json=body, headers=self._headers
@@ -294,18 +302,18 @@ def credentials_for(slot: str) -> SlotKeys:
     return keys
 
 
-def client_for_slot(slot: str) -> AlpacaPaper:
+def client_for_slot(slot: str, timeout: float = REQUEST_TIMEOUT_SECONDS) -> AlpacaPaper:
     """A client with one slot's keys. The host is never a setting."""
     keys = credentials_for(slot)
-    return AlpacaPaper(keys.key_id, keys.secret_key)
+    return AlpacaPaper(keys.key_id, keys.secret_key, timeout=timeout)
 
 
-def client_for(account: Account) -> AlpacaPaper:
+def client_for(account: Account, timeout: float = REQUEST_TIMEOUT_SECONDS) -> AlpacaPaper:
     """The client for one Invest account: the keys of the slot it is linked through. Every page,
     command and cron step that talks to Alpaca for an account builds its client here."""
     if not account.is_alpaca_paper:
         raise AlpacaNotConfigured("This account is not linked to Alpaca paper.")
-    return client_for_slot(account.alpaca_slot)
+    return client_for_slot(account.alpaca_slot, timeout=timeout)
 
 
 def paper_client() -> AlpacaPaper:

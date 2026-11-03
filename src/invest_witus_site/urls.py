@@ -5,6 +5,7 @@ from django.urls import include, path
 
 from invest_witus_site import health
 from invest_witus_site.accounts import preferences
+from invest_witus_site.compare import views as compare_views
 
 urlpatterns = [
     # The owner's back office. Every page under it requires a staff login (chapter 05).
@@ -29,6 +30,9 @@ urlpatterns = [
     # Report a problem or ask a question, signed in or out; saved here, sent to WitUS Inbox
     # (chapter 13).
     path("report/", include("invest_witus_site.reports.urls")),
+    # Compare methods: two to four of the person's accounts on one chart, with a yardstick and
+    # a table of money put in, value, gain and returns (chapter 15).
+    path("compare/", compare_views.compare_methods, name="compare-methods"),
     # The signed-in person's own settings: the method pages' default view (decision 163).
     path("settings/", preferences.settings_page, name="settings"),
     # The nightly price pull, called by Vercel's cron with the bearer secret (chapter 08).

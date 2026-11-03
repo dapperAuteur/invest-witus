@@ -55,6 +55,8 @@
     <h2 id="method-line-heading">Method</h2>
     {% if method_plan %}
     <p><a href="{% url 'method-page' account.pk %}">{{ method_plan.method.name }}</a>: {{ method_plan.amount_text }} within the first {{ method_plan.buy_window_days }} day{{ method_plan.buy_window_days|pluralize }} of each month, since {{ method_plan.started_on|date:"Y-m-d" }}. The rules, the review and the journal are on the method page.</p>
+    {# Chapter 15: this account beside the person's other accounts. #}
+    <p class="small"><a href="{% url 'compare-methods' %}">Compare methods</a>: this account beside your other accounts that run a plan.</p>
     {% else %}
     <p>No method yet on this account. <a href="{% url 'method-page' account.pk %}?view=c">Read the rules and start one.</a></p>
     {% endif %}

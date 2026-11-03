@@ -12,8 +12,9 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -23,6 +24,9 @@ from invest_witus_site.prices.models import ManualRun, SymbolProfile
 from invest_witus_site.prices.pull import DAYS_BACK, pull
 from invest_witus_site.prices.sources import PriceSourceError, source_from_settings
 from invest_witus_site.watchlist.models import WatchItem, parse_symbols
+
+# The query parameters of the Compare methods page (chapter 15), the only ones a return keeps.
+COMPARE_PARAMETERS = frozenset({"accounts", "from", "to", "yardstick"})
 
 
 def run_fetch_now(request: HttpRequest) -> None:
@@ -74,6 +78,17 @@ def fetch_now_for_account(request: HttpRequest, pk: int) -> HttpResponse:
     return redirect("account-detail", pk=account.pk)
 
 
+def compare_methods_url(query: str) -> str:
+    """The Compare methods page with only its own parameters kept from `query`, re-encoded, so a
+    hidden field can never send the owner anywhere else."""
+    kept = QueryDict(mutable=True)
+    for key, values in QueryDict(query).lists():
+        if key in COMPARE_PARAMETERS:
+            kept.setlist(key, values)
+    encoded = kept.urlencode()
+    return reverse("compare-methods") + (f"?{encoded}" if encoded else "")
+
+
 @login_required
 @require_POST
 def fetch_history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
@@ -81,11 +96,14 @@ def fetch_history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
     sends the owner back to the symbol's history page; anything else to the account page."""
     account = get_object_or_404(Account, pk=pk, owner=request.user)
     item = get_object_or_404(WatchItem, account=account, symbol=symbol.strip().upper())
-    back = (
-        redirect("watch-history", pk=account.pk, symbol=item.symbol)
-        if request.POST.get("return_to") == "history"
-        else redirect("account-detail", pk=account.pk)
-    )
+    return_to = request.POST.get("return_to")
+    if return_to == "history":
+        back = redirect("watch-history", pk=account.pk, symbol=item.symbol)
+    elif return_to == "compare-methods":
+        # Chapter 15: back to Compare methods with the accounts, dates and yardstick it showed.
+        back = redirect(compare_methods_url(request.POST.get("return_query", "")))
+    else:
+        back = redirect("account-detail", pk=account.pk)
     choice = request.POST.get("range", "")
     today = timezone.localdate()
     since = manual.history_since(choice, today)

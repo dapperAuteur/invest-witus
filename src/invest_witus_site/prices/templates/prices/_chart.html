@@ -6,7 +6,7 @@
 <figure class="chart" aria-labelledby="chart-heading">
   <figcaption class="chart-caption">
     <p class="chart-title" id="chart-heading">{{ plot.title }}</p>
-    <p class="small muted">{% if plot.rebase %}Each line is its symbol's {{ plot.bases }}, rebased so its first day in the range is 100: 110 means ten percent above where it started, whatever the price.{% else %}{{ plot.y_title }}.{% endif %} Daily closes from {{ plot.sources }}, as of {{ plot.last|date:"Y-m-d" }}.</p>
+    <p class="small muted">{% if plot.caption %}{{ plot.caption }}{% elif plot.rebase %}Each line is its symbol's {{ plot.bases }}, rebased so its first day in the range is 100: 110 means ten percent above where it started, whatever the price.{% else %}{{ plot.y_title }}.{% endif %}{% if not plot.caption %} Daily closes from {{ plot.sources }}, as of {{ plot.last|date:"Y-m-d" }}.{% endif %}</p>
   </figcaption>
   <ul class="legend" aria-label="Key">
     {% for line in plot.lines %}
@@ -27,7 +27,7 @@
     <div class="chart-plot" data-chart="chart-data" data-readout="chart-readout">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-labelledby="chart-title chart-desc" data-points="{{ plot.count }}">
         <title id="chart-title">{{ plot.svg_title }}</title>
-        <desc id="chart-desc">{% if plot.rebase %}One line per symbol, oldest day on the left, each rebased to 100 on its first day in the range.{% else %}A line of the stored {{ plot.bases }}, oldest on the left.{% endif %}{% if plot.markers %} Letters on the line mark splits (S) and dividends (D).{% endif %}{% for shaded in plot.bands %} Shaded: {{ shaded.label }}, {{ shaded.first|date:"Y-m-d" }} to {{ shaded.last|date:"Y-m-d" }}.{% endfor %} The tables below list every value in the chart.</desc>
+        <desc id="chart-desc">{% if plot.desc %}{{ plot.desc }}{% elif plot.rebase %}One line per symbol, oldest day on the left, each rebased to 100 on its first day in the range.{% else %}A line of the stored {{ plot.bases }}, oldest on the left.{% endif %}{% if plot.markers %} Letters on the line mark splits (S) and dividends (D).{% endif %}{% for shaded in plot.bands %} Shaded: {{ shaded.label }}, {{ shaded.first|date:"Y-m-d" }} to {{ shaded.last|date:"Y-m-d" }}.{% endfor %} The tables below list every value in the chart.</desc>
         {% for shaded in plot.bands %}<rect class="chart-band-{{ shaded.kind }}" x="{{ shaded.x }}" y="0" width="{{ shaded.width }}" height="100" vector-effect="non-scaling-stroke"/>{% endfor %}
         {% for tick in plot.y_ticks %}<line class="grid" x1="0" x2="100" y1="{{ tick.at }}" y2="{{ tick.at }}" vector-effect="non-scaling-stroke"/>{% endfor %}
         {% for tick in plot.x_ticks %}<line class="grid" x1="{{ tick.at }}" x2="{{ tick.at }}" y1="0" y2="100" vector-effect="non-scaling-stroke"/>{% endfor %}
