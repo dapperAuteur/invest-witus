@@ -7,8 +7,13 @@
   <h1 id="paper-heading">Alpaca paper</h1>
   {# The environment as text (PRD 7.2 and 7.7): the host beside it, and the line about live trading. #}
   <p class="band">Alpaca paper ({{ host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+  {# Decision 159: the key slot this account trades through and the Alpaca account it reaches. #}
+  <p>Key slot <strong>{{ account.alpaca_slot_name }}</strong>{% if account.alpaca_account_number %}, Alpaca paper account <strong>{{ account.alpaca_account_number }}</strong>{% else %}; no Alpaca account number recorded yet{% endif %}. <a href="{% url 'paper-link' account.pk %}">Change the link</a>.</p>
   {% if error %}
   <p class="error">Alpaca did not answer. {{ error }}</p>
+  {% endif %}
+  {% if number_changed %}
+  <p class="error">Slot {{ account.alpaca_slot_name }}'s keys now reach Alpaca paper account {{ alpaca_account.account_number|default:"with no number" }}, not {{ account.alpaca_account_number }}, the one this account was linked to. Confirm places nothing until you <a href="{% url 'paper-link' account.pk %}">link the account again</a>.</p>
   {% endif %}
 
   <h2>Practice budget</h2>

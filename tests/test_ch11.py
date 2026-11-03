@@ -810,8 +810,10 @@ def test_an_alpaca_link_is_for_one_paper_account_per_owner(owner: User, account:
     )
     with pytest.raises(ValidationError, match="Only a paper account can be linked"):
         brokerage.full_clean()
+    # Decision 159 replaced "one per owner" with one per owner per key slot: a second account on
+    # the same slot (here DEFAULT) is refused; tests/test_key_slots.py links one through another.
     second = Account(name="Second", broker="Alpaca", kind="paper", alpaca="paper", owner=owner)
-    with pytest.raises(ValidationError, match="already has an account linked"):
+    with pytest.raises(ValidationError, match="linked through this key slot"):
         second.full_clean()
     with transaction.atomic(), pytest.raises(IntegrityError):
         second.save()

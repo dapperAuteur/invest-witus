@@ -1,23 +1,25 @@
 """`manage.py sync_paper_orders`: read every open paper order back from Alpaca and fix the rows
-and their journal entries. The nightly cron runs the same function after the price pull."""
+and their journal entries. The nightly cron runs the same function after the price pull. Since
+decision 159 each account's orders are read with its own key slot's client."""
 
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 
-from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_client
-from invest_witus_site.paper.orders import sync_orders
+from invest_witus_site.paper import slots
+from invest_witus_site.paper.alpaca import AlpacaError
+from invest_witus_site.paper.orders import sync_every_account
 
 
 class Command(BaseCommand):
     help = "Update open Alpaca paper orders to filled or cancelled, and their journal entries."
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if not keys_configured():
+        if not slots.any_configured():
             self.stdout.write("Alpaca paper keys are not set; nothing to sync.")
             return
         try:
-            result = sync_orders(paper_client())
+            result = sync_every_account()
         except AlpacaError as error:
             raise CommandError(error.message) from None
         self.stdout.write(

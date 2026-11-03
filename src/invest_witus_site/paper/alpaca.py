@@ -1,6 +1,7 @@
 """Alpaca's paper Trading API over httpx: the account, the positions, the market clock, one kind
 of order (a notional market buy), reading an order back, and (2026-11-02, decision 156) cancelling
-an open one.
+an open one. Since decision 159 the keys are per Invest account: `client_for(account)` builds the
+client from the account's key slot (`paper/slots.py`), and no app code reads one global pair.
 
 Read from Alpaca's own pages on October 29, 2026 (the decisions log, row 94, has every URL):
 
@@ -15,7 +16,10 @@ Read from Alpaca's own pages on October 29, 2026 (the decisions log, row 94, has
 - A day order "If submitted after the close, it is queued and submitted the following trading
   day."
 - `GET /v2/orders/{order_id}` and `GET /v2/orders:by_client_order_id?client_order_id=` read an
-  order back; `GET /v2/account` has `cash`, `buying_power`, `equity`; `GET /v2/clock` has
+  order back; `GET /v2/account` has `cash`, `buying_power`, `equity` (and `account_number`, the
+  paper account's number, which decision 159 stores to tell one Alpaca account from another; from
+  Alpaca's account reference as known before 2026-11-02, not re-read: read as optional, and a link
+  is refused without it); `GET /v2/clock` has
   `timestamp`, `is_open`, `next_open`, `next_close`; `GET /v2/positions` has `qty`,
   `current_price`, `lastday_price`, `market_value`.
 - `DELETE /v2/orders/{order_id}` asks Alpaca to cancel an open order. From Alpaca's order reference
@@ -34,11 +38,16 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from typing import cast
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
 
 import httpx
-from django.conf import settings
+
+from invest_witus_site.paper import slots
+from invest_witus_site.paper.slots import SlotKeys
+
+if TYPE_CHECKING:
+    from invest_witus_site.holdings.models import Account
 
 # The seam the tests use, as in chapters 07 and 08: a `MockTransport` here and nothing leaves the
 # process. It is never set outside a test.
@@ -93,6 +102,8 @@ class PaperAccount:
     equity: Decimal
     status: str
     trading_blocked: bool
+    # The paper account's number as Alpaca's dashboard shows it; "" when the answer had none.
+    account_number: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -201,6 +212,7 @@ class AlpacaPaper:
             equity=number(data, "equity"),
             status=text(data, "status"),
             trading_blocked=data.get("trading_blocked") is True,
+            account_number=optional_text(data, "account_number"),
         )
 
     def positions(self) -> list[PaperPosition]:
@@ -261,13 +273,49 @@ class AlpacaPaper:
         return order_state(self._request("GET", "/v2/orders:by_client_order_id", params=params))
 
 
+def credentials_for(slot: str) -> SlotKeys:
+    """The slot's complete key pair (blank or `DEFAULT` is the unsuffixed pair). A slot the server
+    does not have, or has only half of, is refused with its name, and nothing falls back to
+    another slot: an account linked to MOMENTUM never trades in DEFAULT's Alpaca account."""
+    name = slots.display_name(slots.normalize(slot))
+    keys = slots.find(name)
+    if keys is None:
+        raise AlpacaNotConfigured(f"Keys for slot {name} are not set on the server.")
+    if not keys.complete:
+        missing = keys.missing
+        verb = "is" if len(missing) == 1 else "are"
+        raise AlpacaNotConfigured(
+            f"Keys for slot {name} are incomplete on the server: {' and '.join(missing)} "
+            f"{verb} not set."
+        )
+    return keys
+
+
+def client_for_slot(slot: str) -> AlpacaPaper:
+    """A client with one slot's keys. The host is never a setting."""
+    keys = credentials_for(slot)
+    return AlpacaPaper(keys.key_id, keys.secret_key)
+
+
+def client_for(account: Account) -> AlpacaPaper:
+    """The client for one Invest account: the keys of the slot it is linked through. Every page,
+    command and cron step that talks to Alpaca for an account builds its client here."""
+    if not account.is_alpaca_paper:
+        raise AlpacaNotConfigured("This account is not linked to Alpaca paper.")
+    return client_for_slot(account.alpaca_slot)
+
+
 def paper_client() -> AlpacaPaper:
-    """The client with the owner's keys from settings. The host is never a setting."""
-    return AlpacaPaper(settings.ALPACA_PAPER_KEY_ID, settings.ALPACA_PAPER_SECRET_KEY)
+    """The DEFAULT slot's client, named explicitly. App code builds its client per account with
+    `client_for`; this stays for chapter 11's text and the tests written against one pair."""
+    return client_for_slot(slots.DEFAULT_SLOT)
 
 
 def keys_configured() -> bool:
-    return bool(settings.ALPACA_PAPER_KEY_ID and settings.ALPACA_PAPER_SECRET_KEY)
+    """Chapter 11's question, now about the DEFAULT slot only. The nightly check asks
+    `slots.any_configured()` instead."""
+    keys = slots.find(slots.DEFAULT_SLOT)
+    return keys is not None and keys.complete
 
 
 def refusal(response: httpx.Response) -> AlpacaError:
@@ -307,6 +355,11 @@ def text(data: dict[str, object], name: str) -> str:
     if not isinstance(value, str):
         raise AlpacaUnavailable(f"Alpaca's answer had no {name}.")
     return value
+
+
+def optional_text(data: dict[str, object], name: str) -> str:
+    value = data.get(name)
+    return value if isinstance(value, str) else ""
 
 
 def optional_number(data: dict[str, object], name: str) -> Decimal | None:

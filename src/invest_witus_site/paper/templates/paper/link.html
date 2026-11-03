@@ -1,0 +1,59 @@
+{% extends "pages/base.html" %}
+{% load holdings_extras %}
+{% block title %}Link to Alpaca paper: {{ account.name }}: Invest.WitUS{% endblock %}
+{% block content %}
+{# Decision 159: choose the key slot that reaches this account's own Alpaca paper account. No key is ever shown, only a slot's name and the last four characters of its key id. #}
+<section class="container narrow" aria-labelledby="link-heading">
+  <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
+  <h1 id="link-heading">Link to Alpaca paper</h1>
+  <p class="band">Alpaca paper ({{ host }}). Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+  {% if account.is_alpaca_paper %}
+  <p>Linked now through key slot <strong>{{ account.alpaca_slot_name }}</strong>, to Alpaca paper account {% if account.alpaca_account_number %}<strong>{{ account.alpaca_account_number }}</strong>{% else %}with no number recorded yet (linked before key slots; link it again through the same slot to record it){% endif %}.</p>
+  {% else %}
+  <p>Not linked. Choose the key slot whose keys belong to the Alpaca paper account this account's plan will trade in.</p>
+  {% endif %}
+  <p>One Alpaca paper account runs one plan, so two plans never buy from the same cash. Each Alpaca paper account has its own keys, and each pair of keys is a slot on the server. <a href="{% url 'alpaca-slots' %}">All key slots</a>.</p>
+
+  {% if check %}
+  <div class="band" role="status">
+    {% if check.reached %}
+    <p>Slot <strong>{{ check.slot }}</strong> reaches Alpaca paper account <strong>{{ check.reached.account_number|default:"with no number" }}</strong>: cash {{ check.reached.cash|money }}, equity {{ check.reached.equity|money }}, {{ check.reached.status }}{% if check.reached.trading_blocked %}, trading blocked{% endif %}.</p>
+    {% endif %}
+    {% if check.refusal %}
+    <p class="error">{% if not check.reached %}Alpaca did not answer, or the slot cannot be used. {% endif %}{{ check.refusal }}</p>
+    {% elif check.ok %}
+    <p>No other Invest account is linked to it. Link to save.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if form.rows %}
+  <form method="post" action="{% url 'paper-link' account.pk %}">
+    {% csrf_token %}
+    {% include "methods/_form_fields.html" %}
+    <button type="submit" name="action" value="check">Check this slot</button>
+    <button type="submit" name="action" value="link">Link</button>
+  </form>
+  <p class="small muted">Check reads Alpaca's account with the slot's keys and saves nothing. Link checks again, then saves the slot's name and the account number Alpaca reports; it never stores a key.</p>
+  {% else %}
+  <p>The server has no Alpaca keys yet. Add a slot's two variables on Vercel and redeploy; the runbook has the steps.</p>
+  {% endif %}
+  {% if ignored %}
+  <p class="small">Ignored for a bad slot name (1 to 40 of A to Z, 0 to 9 and _; DEFAULT is the pair with no suffix): {{ ignored|join:", " }}.</p>
+  {% endif %}
+
+  {% if account.is_alpaca_paper %}
+  <h2>Unlink</h2>
+  {% if open_orders %}
+  <p>{{ open_orders }} order{{ open_orders|pluralize }} of this account {{ open_orders|pluralize:"is,are" }} still open at Alpaca, so the link stays until {{ open_orders|pluralize:"it ends,they end" }}.</p>
+  {% else %}
+  <form method="post" action="{% url 'paper-link' account.pk %}">
+    {% csrf_token %}
+    <button type="submit" name="action" value="unlink">Unlink from Alpaca paper</button>
+  </form>
+  <p class="small muted">The app's order rows and the journal stay. Alpaca keeps its own records.</p>
+  {% endif %}
+  {% endif %}
+  <p>{% if account.is_alpaca_paper %}<a href="{% url 'paper-account' account.pk %}">The paper page</a> · {% endif %}<a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>
+</section>
+{% endblock %}

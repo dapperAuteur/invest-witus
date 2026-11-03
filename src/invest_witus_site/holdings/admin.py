@@ -29,7 +29,9 @@ class AccountAdmin(admin.ModelAdmin[Account]):
     list_display = ("name", "broker", "kind", "alpaca", "currency", "owner", "statements")
     list_filter = ("kind",)
     search_fields = ("name", "broker")
-    readonly_fields = ("created_at",)
+    # Decision 159: the link is made on the account's Link to Alpaca page, which checks the key
+    # slot's Alpaca account first; the admin shows it and never sets it.
+    readonly_fields = ("created_at", "alpaca", "alpaca_slot", "alpaca_account_number")
 
     def get_urls(self) -> list[URLPattern]:
         """One page of our own under the account's admin URLs. `admin_view` wraps it in the

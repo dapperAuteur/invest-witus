@@ -68,26 +68,56 @@ class Account(models.Model):
         choices=Alpaca.choices,
         blank=True,
         default="",
-        help_text="Chapter 11. Paper accounts only, one per owner.",
+        help_text="Chapter 11. Paper accounts only; linked on the Link to Alpaca page.",
     )
+    # Decision 159: which key slot on the server reaches this account's own Alpaca paper account,
+    # by name only ("MOMENTUM"; blank is the unsuffixed DEFAULT pair, chapter 11's link). Never a
+    # key. And the Alpaca paper account number the link check read back with those keys, so two
+    # Invest accounts can never trade in one Alpaca account. A database default on both, so the
+    # previous release can still write a row while the migration runs.
+    alpaca_slot: models.CharField[str, str] = models.CharField(
+        max_length=40,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="The key slot's name; blank is DEFAULT. Set by the Link to Alpaca page.",
+    )
+    alpaca_account_number: models.CharField[str, str] = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="Alpaca's paper account number, read back when the link was checked.",
+    )
+
+    # The foreign key's own column, which Django adds; declared so pyright can read it.
+    owner_id: int
 
     class Meta:
         ordering = ["name"]
         constraints = [
             models.UniqueConstraint(fields=["owner", "name"], name="account_name_once_per_owner"),
-            # Chapter 11: a link to Alpaca's paper environment only on a paper account, and one per
-            # owner, because the server holds one pair of paper keys and two linked rows would
-            # count the same orders twice.
+            # Chapter 11: a link to Alpaca's paper environment only on a paper account.
             models.CheckConstraint(
                 condition=Q(alpaca="") | Q(kind="paper"),
                 name="alpaca_link_on_paper_accounts_only",
                 violation_error_message="Only a paper account can be linked to Alpaca paper.",
             ),
+            # Decision 159 (replacing chapter 11's one linked account per owner): one linked
+            # account per owner per key slot, because one slot's keys reach one Alpaca account
+            # and two linked rows would count the same orders twice; and one Invest account per
+            # Alpaca paper account, whatever slot reached it, so two plans never share its cash.
             models.UniqueConstraint(
-                fields=["owner"],
+                fields=["owner", "alpaca_slot"],
                 condition=Q(alpaca="paper"),
-                name="one_alpaca_paper_account_per_owner",
-                violation_error_message="This owner already has an account linked to Alpaca paper.",
+                name="one_alpaca_link_per_owner_and_slot",
+                violation_error_message="Another of your accounts is linked through this key slot.",
+            ),
+            models.UniqueConstraint(
+                fields=["alpaca_account_number"],
+                condition=~Q(alpaca_account_number=""),
+                name="one_invest_account_per_alpaca_account",
+                violation_error_message="Another Invest account uses this Alpaca paper account.",
             ),
         ]
 
@@ -104,6 +134,11 @@ class Account(models.Model):
     @property
     def is_alpaca_paper(self) -> bool:
         return self.alpaca == "paper"
+
+    @property
+    def alpaca_slot_name(self) -> str:
+        """The key slot as pages name it: blank is DEFAULT (decision 159)."""
+        return self.alpaca_slot or "DEFAULT"
 
 
 class Holding(models.Model):

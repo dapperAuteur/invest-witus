@@ -54,7 +54,7 @@ from invest_witus_site.methods.reviews import (
     open_due_reviews,
     reopen_review,
 )
-from invest_witus_site.paper.alpaca import AlpacaError, paper_client
+from invest_witus_site.paper.alpaca import AlpacaError, client_for
 from invest_witus_site.paper.orders import (
     Withdrawal,
     alpaca_allowed,
@@ -270,7 +270,8 @@ def withdraw_open_orders(request: HttpRequest, account: Account, state: PlanStat
         )
         return False
     try:
-        client = paper_client()
+        # Decision 159: the account's own key slot, never another account's keys.
+        client = client_for(account)
     except AlpacaError as error:
         messages.error(request, f"Nothing changed. {error.message}")
         return False

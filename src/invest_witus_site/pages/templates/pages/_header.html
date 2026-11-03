@@ -22,7 +22,7 @@
         {# Chapter 08: the link to their accounts, valued, on this branch only; no public page links it. #}
         <li><a href="{% url 'account-list' %}">Accounts</a></li>
         {# The Alpaca paper page, for the owner of the account linked to it (`paper_account_id`). #}
-        {% if paper_account_id %}<li><a href="{% url 'paper-account' paper_account_id %}">Paper account</a></li>{% endif %}
+        {% if paper_account_id %}<li><a href="{% url 'paper-account' paper_account_id %}">Paper account</a></li>{% elif paper_accounts_several %}<li><a href="{% url 'alpaca-slots' %}">Paper accounts</a></li>{% endif %}
         {# The first account with a plan or an entry (`logbook_account_id`, decision 115). #}
         {% if logbook_account_id %}<li><a href="{% url 'logbook' logbook_account_id %}">Logbook</a></li>{% endif %}
         {% endif %}

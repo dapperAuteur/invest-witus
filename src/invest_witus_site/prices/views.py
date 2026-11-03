@@ -20,8 +20,9 @@ from django.views.decorators.http import require_GET
 
 from invest_witus_site.outbox.client import configured as outbox_configured
 from invest_witus_site.outbox.delivery import send_unsent as send_unsent_posts
-from invest_witus_site.paper.alpaca import AlpacaError, keys_configured, paper_client
-from invest_witus_site.paper.orders import sync_orders
+from invest_witus_site.paper import slots
+from invest_witus_site.paper.alpaca import AlpacaError
+from invest_witus_site.paper.orders import sync_every_account
 from invest_witus_site.prices.profiles import profile_source_from_settings, refresh_profiles
 from invest_witus_site.prices.pull import DAYS_BACK, REQUESTS_PER_RUN, pull, symbol_universe
 from invest_witus_site.prices.sources import source_from_settings
@@ -59,9 +60,10 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
         body["profiles"] = refresh_profiles(metadata, result.symbols, left).as_dict()
     # Chapter 11: then the paper orders, once the owner's Alpaca paper keys are set. Without them
     # the body is chapter 08's, unchanged. A failure is reported in the body; the prices stand.
-    if keys_configured():
+    # Decision 159: once any key slot is complete, each account's orders with its own slot's keys.
+    if slots.any_configured():
         try:
-            body["orders"] = sync_orders(paper_client()).as_dict()
+            body["orders"] = sync_every_account().as_dict()
         except AlpacaError as error:
             body["orders"] = {"error": error.message}
     # Chapter 13: then every report and waitlist copy WitUS Inbox has not taken yet, once Inbox is

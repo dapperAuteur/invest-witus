@@ -11,6 +11,7 @@
     {% endfor %}
   </ul>
   <p class="muted">Each page values the account's latest statement at the latest close the app has stored, with the close's date beside it. Information, not advice.</p>
+  {% if user.is_superuser %}<p class="small"><a href="{% url 'alpaca-slots' %}">Alpaca key slots</a>: which Alpaca paper account each linked account trades in.</p>{% endif %}
   {% url 'fetch-prices' as fetch_action %}
   {% include "prices/_fetch_now.html" with action=fetch_action %}
   {% else %}

@@ -46,3 +46,12 @@ def no_real_outbox(settings: Settings, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def refuse_real_outbox(request: httpx.Request) -> httpx.Response:
     raise AssertionError(f"a test tried to reach {request.url.host}")
+
+
+@pytest.fixture(autouse=True)
+def no_shell_alpaca_slots(settings: Settings) -> None:
+    """Decision 159: the Alpaca key slots a test sees are the ones it sets, never a suffixed pair
+    the shell happens to export. The unsuffixed DEFAULT pair is left as chapter 11's tests set
+    it."""
+    settings.ALPACA_PAPER_KEY_SLOTS = {}
+    settings.ALPACA_PAPER_KEY_SLOT_IGNORED = ()

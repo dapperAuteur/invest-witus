@@ -1,0 +1,50 @@
+{% extends "pages/base.html" %}
+{% block title %}Alpaca key slots: Invest.WitUS{% endblock %}
+{% block content %}
+{# Decision 159: the slots the server has, for the site owner. A slot's name, the last four characters of its key id, and whether both halves are set; never a key. #}
+<section class="container" aria-labelledby="slots-heading">
+  <p class="eyebrow">Alpaca paper</p>
+  <h1 id="slots-heading">Alpaca key slots</h1>
+  <p>Each Alpaca paper account has its own keys. A slot is one pair on the server: <code>ALPACA_PAPER_KEY_ID__NAME</code> and <code>ALPACA_PAPER_SECRET_KEY__NAME</code>, or the pair with no suffix, which is <strong>DEFAULT</strong>. Each Invest account that trades on paper is linked through one slot, so each plan has an Alpaca account and cash of its own.</p>
+  {% if rows %}
+  <div class="table-scroll" role="region" aria-label="Key slots table, scrolls sideways on a narrow screen" tabindex="0">
+  <table class="holdings">
+    <caption class="sr-only">Alpaca key slots on the server and the accounts linked through each</caption>
+    <thead>
+      <tr>
+        <th scope="col">Slot</th>
+        <th scope="col">Key id ends</th>
+        <th scope="col">Keys</th>
+        <th scope="col">Linked accounts</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <th scope="row">{{ row.name }}</th>
+        <td>{{ row.key_hint|default:"none" }}</td>
+        <td>{% if row.complete %}complete{% elif row.on_server %}<span class="error">keys incomplete</span>: {{ row.missing|join:" and " }} not set{% else %}<span class="error">not set on the server</span>: {{ row.missing|join:" and " }}; the accounts below cannot trade{% endif %}</td>
+        <td>{% for linked in row.accounts %}{% if linked.owner_id == user.pk %}<a href="{% url 'paper-account' linked.pk %}">{{ linked.name }}</a>{% if linked.alpaca_account_number %} (Alpaca {{ linked.alpaca_account_number }}){% endif %}{% else %}another owner's account{% endif %}{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">none</span>{% endfor %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>No slot is set on the server yet.</p>
+  {% endif %}
+  {% if ignored %}
+  <p>Ignored for a bad slot name (1 to 40 of A to Z, 0 to 9 and _; DEFAULT is the pair with no suffix): {{ ignored|join:", " }}.</p>
+  {% endif %}
+  <p class="small muted">To add a slot: create a paper account in Alpaca, generate its keys, add both variables on Vercel for Production with <code>vercel env add</code>, and redeploy. The runbook, docs/05-operations.md, has the steps.</p>
+  {% if paper_accounts %}
+  <h2>Your paper accounts</h2>
+  <ul>
+    {% for paper in paper_accounts %}
+    <li>{{ paper.name }}: {% if paper.is_alpaca_paper %}slot {{ paper.alpaca_slot_name }}{% if paper.alpaca_account_number %}, Alpaca {{ paper.alpaca_account_number }}{% endif %}{% else %}not linked{% endif %} · <a href="{% url 'paper-link' paper.pk %}">{% if paper.is_alpaca_paper %}Change the link{% else %}Link to Alpaca paper{% endif %}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <p><a href="{% url 'account-list' %}">All accounts</a></p>
+</section>
+{% endblock %}

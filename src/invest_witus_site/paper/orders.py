@@ -44,7 +44,7 @@ from invest_witus_site.paper.alpaca import (
     AlpacaRefused,
     MarketClock,
     PaperOrderState,
-    paper_client,
+    client_for,
 )
 from invest_witus_site.paper.models import PaperOrder, client_order_id
 
@@ -63,9 +63,9 @@ def month_of(day: date) -> str:
 
 
 def alpaca_allowed(user: AbstractBaseUser | AnonymousUser, account: Account) -> bool:
-    """Alpaca is the site owner's: the server holds one pair of paper keys, so only a superuser,
-    on an account linked to Alpaca paper, may read it or place orders through it. The caller has
-    already fetched the account with `owner=request.user`."""
+    """Alpaca is the site owner's: the server holds the paper keys (one pair per key slot,
+    decision 159), so only a superuser, on an account linked to Alpaca paper, may read it or place
+    orders through it. The caller has already fetched the account with `owner=request.user`."""
     return account.is_alpaca_paper and getattr(user, "is_superuser", False) is True
 
 
@@ -285,7 +285,7 @@ def paper_section(plan: MethodPlan) -> PaperSection:
     day = today()
     stage = month_buys(plan.in_force(day), day)
     try:
-        clock = paper_client().clock()
+        clock = client_for(plan.account).clock()
     except AlpacaError as error:
         return PaperSection(stage, None, error.message)
     return PaperSection(stage, clock, "")
@@ -296,6 +296,26 @@ def paper_section(plan: MethodPlan) -> PaperSection:
 
 class ConfirmRefused(Exception):
     """The staged buys may not be placed; the message is `MonthBuys.refusal`."""
+
+
+class LinkMismatch(AlpacaError):
+    """The slot's keys now reach a different Alpaca paper account from the one the account was
+    linked to (decision 159): the keys were replaced on the server. Nothing is placed."""
+
+
+def check_link(account: Account, client: AlpacaPaper) -> None:
+    """Before anything is placed, the keys must still reach the Alpaca account this Invest account
+    was linked to. One request (the account), and only when a number was recorded: an account
+    linked before decision 159 has none until it is linked again on the Link to Alpaca page."""
+    if not account.alpaca_account_number:
+        return
+    reached = client.account().account_number
+    if reached != account.alpaca_account_number:
+        raise LinkMismatch(
+            f"Slot {account.alpaca_slot_name}'s keys now reach Alpaca paper account "
+            f"{reached or 'with no number'}, not {account.alpaca_account_number}, the one this "
+            "account was linked to. Link the account again to choose."
+        )
 
 
 @dataclass(slots=True)
@@ -314,6 +334,7 @@ def confirm(plan: MethodPlan, day: date, client: AlpacaPaper) -> ConfirmResult:
     stage = month_buys(plan, day)
     if stage.refusal:
         raise ConfirmRefused(stage.refusal)
+    check_link(plan.account, client)
     # Asked first, so a closed market is known before anything is sent; an error here stops the
     # whole confirm with nothing placed.
     result = ConfirmResult(clock=client.clock())
@@ -505,6 +526,32 @@ def sync_orders(client: AlpacaPaper, account: Account | None = None) -> SyncResu
         else:
             result.ended_unfilled += 1
     return result
+
+
+def sync_every_account() -> SyncResult:
+    """The nightly check across accounts (decision 159): each account's open orders read back with
+    that account's own client, because each linked account trades in its own Alpaca paper account
+    through its own key slot. An account whose slot is not set on the server records each of its
+    orders as failed with that sentence, and the rest go on; nothing falls back to another slot.
+    The counts add up across accounts, so the cron's body keeps chapter 11's shape."""
+    total = SyncResult()
+    account_ids = PaperOrder.open_orders().values_list("account_id", flat=True).distinct()
+    for account in Account.objects.filter(pk__in=list(account_ids)).order_by("pk"):
+        try:
+            client = client_for(account)
+        except AlpacaError as error:
+            for order in PaperOrder.open_orders(account):
+                total.failed[order.client_order_id] = error.message
+            continue
+        result = sync_orders(client, account)
+        total.checked += result.checked
+        total.changed += result.changed
+        total.filled += result.filled
+        total.ended_part_filled += result.ended_part_filled
+        total.ended_unfilled += result.ended_unfilled
+        total.still_open += result.still_open
+        total.failed.update(result.failed)
+    return total
 
 
 # --- 4. Withdraw (2026-11-02, decision 156) ------------------------------------------------------

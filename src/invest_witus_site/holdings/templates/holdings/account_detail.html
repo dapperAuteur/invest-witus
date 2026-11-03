@@ -64,6 +64,13 @@
   <section aria-labelledby="paper-line-heading">
     <h2 id="paper-line-heading">Alpaca paper</h2>
     <p><a href="{% url 'paper-account' account.pk %}">Positions, cash and orders on Alpaca paper</a>. Paper money. Live trading needs the checklist in a later chapter and separate keys.</p>
+    <p class="small">Key slot {{ account.alpaca_slot_name }}{% if account.alpaca_account_number %}, Alpaca paper account {{ account.alpaca_account_number }}{% endif %}. <a href="{% url 'paper-link' account.pk %}">Change the link</a>.</p>
+  </section>
+  {% elif account.kind == "paper" and user.is_superuser %}
+  {# Decision 159: a paper account not linked yet, for the site owner: one Alpaca paper account per plan. #}
+  <section aria-labelledby="paper-line-heading">
+    <h2 id="paper-line-heading">Alpaca paper</h2>
+    <p>Not linked. <a href="{% url 'paper-link' account.pk %}">Link to Alpaca paper</a> through a key slot, so this account's plan trades in an Alpaca paper account of its own.</p>
   </section>
   {% endif %}
   {# The watch list (chapter 09): the symbols followed here, the latest close beside each, the add form. #}
