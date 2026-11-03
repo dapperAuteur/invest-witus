@@ -81,7 +81,7 @@ class ReviewEventInline(admin.TabularInline[ReviewEvent, MonthlyReview]):
 
 @admin.register(MonthlyReview)
 class MonthlyReviewAdmin(admin.ModelAdmin[MonthlyReview]):
-    list_display = ("month", "plan", "opened_on", "closed_at")
+    list_display = ("month", "plan", "opened_on", "closed_at", "rules_version")
     list_filter = ("plan__account",)
     inlines = [ReviewEventInline]
 
