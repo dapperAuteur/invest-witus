@@ -147,12 +147,13 @@ calls Alpaca. Everything here is for the site owner's superuser only. The walk-t
 
 **One Alpaca paper account per method** (2026-11-02, decisions 159 and 160). Each Alpaca paper account has its
 own keys, so the server holds any number of key slots: `ALPACA_PAPER_KEY_ID__<SLOT>` and
-`ALPACA_PAPER_SECRET_KEY__<SLOT>`, found when the settings load, with the unsuffixed pair as the slot `DEFAULT`.
+`ALPACA_PAPER_SECRET_KEY__<SLOT>` (one underscore is read too; both forms with different values make the slot
+conflicting and unused, decision 166), found when the settings load, with the unsuffixed pair as the slot `DEFAULT`.
 An account stores only its slot's name and the Alpaca account number its link check read; every call for it
 uses that slot's keys (`paper.alpaca.client_for`), and a slot missing from the server blocks the account's
 trading instead of falling back. The **Link to Alpaca paper** page checks what a slot reaches and refuses an
 Alpaca account another Invest account already trades in; **Alpaca key slots** lists the slots by name and the
-last four characters of each key id. Adding a slot: [the runbook](docs/05-operations.md), "Alpaca key slots".
+last four characters of each key id, then every `ALPACA_PAPER_` variable it could not use with the reason. Adding a slot: [the runbook](docs/05-operations.md), "Alpaca key slots".
 
 ## The journal and the monthly close
 

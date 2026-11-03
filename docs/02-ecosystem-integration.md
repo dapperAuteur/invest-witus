@@ -227,7 +227,7 @@ as the list. Fields collected: name and email only.
 | `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | `createsuperuser --noinput`, once, in the owner's shell | Django's names (chapter 06) |
 | `CRON_SECRET` | Bearer token Vercel cron sends to `/api/cron/pull-prices/` once a day (chapter 08); unset, the route answers 503 | Vercel's name |
 | `ALPACA_PAPER_KEY_ID`, `ALPACA_PAPER_SECRET_KEY` | Alpaca paper Trading API, phase 1; the `DEFAULT` key slot since decision 159 | used since chapter 11 (2026-10-29) |
-| `ALPACA_PAPER_KEY_ID__<SLOT>`, `ALPACA_PAPER_SECRET_KEY__<SLOT>` | One pair per further Alpaca paper account, any number, found at startup; an account stores only the slot's name (decision 159) | used since 2026-11-02 |
+| `ALPACA_PAPER_KEY_ID__<SLOT>`, `ALPACA_PAPER_SECRET_KEY__<SLOT>` | One pair per further Alpaca paper account, any number, found at startup; an account stores only the slot's name (decision 159). `ALPACA_PAPER_KEY_ID_<SLOT>` (one underscore) is the same slot; both forms with different values make it conflicting and unused (decision 166) | used since 2026-11-02 |
 | `ALPACA_LIVE_KEY_ID`, `ALPACA_LIVE_SECRET_KEY` | Alpaca live, only after the checklist | *proposed*; absent by default |
 | `TIINGO_API_KEY` | End-of-day prices, phase 1 (owner's own key); unset, the pull reads `PRICES_CSV_DIR` | This app's name (chapter 08; this table said `TIINGO_API_TOKEN` until then) |
 | `OUTBOX_TRIGGER_ENABLED` | WitUS Outbox's kill switch (section 10): exactly `true` sends the owner's drafts, anything else keeps them here | The guide's name |

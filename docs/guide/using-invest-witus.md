@@ -932,10 +932,25 @@ keeps working as it was.
 - **Add a slot.** In Alpaca, create another paper account and generate its keys; put them on Vercel under the
   slot's two names and redeploy. The runbook (`docs/05-operations.md`, "Alpaca key slots") has the exact steps;
   the keys never go into the app, a chat or a file.
+- **The two names.** For a slot named `MOMENTUM`: `ALPACA_PAPER_KEY_ID__MOMENTUM` and
+  `ALPACA_PAPER_SECRET_KEY__MOMENTUM`, two underscores before the slot's name. One underscore
+  (`ALPACA_PAPER_KEY_ID_MOMENTUM`) is read as the same slot too (decision 166). If both forms of one name are set
+  with different values, the slot shows as **conflicting** and is not used until you delete one of them; the app
+  never guesses which one you meant.
+- **How many.** The app has no limit of its own. Alpaca's article "How to Start Paper Trading with Alpaca's
+  Trading API" says "Paper Trading allows up to 3 distinct simulated accounts with separate balances and
+  positions" (https://alpaca.markets/learn/start-paper-trading, last updated March 23, 2026 per the page, read
+  2026-11-03). Alpaca's paper-trading docs page (https://docs.alpaca.markets/docs/paper-trading, read 2026-11-03)
+  gives no number and links no FAQ. So one Alpaca login holds three paper accounts, the DEFAULT slot's included;
+  check Alpaca's page before planning more.
 - **See the slots.** **Accounts** → **Alpaca key slots** lists each slot: its name, the last four characters of
   its key id, **complete**, **keys incomplete** (one of the two names is missing, with the name) or **not set on
   the server** (an account is linked through a slot whose keys were removed), and the accounts linked through
-  it, each with its Alpaca account number. No page ever shows a key.
+  it, each with its Alpaca account number. No page ever shows a key. Below the slots, **Variables the app could
+  not use** lists every variable starting `ALPACA_PAPER_` that no slot reads, by name with the reason (an empty
+  or `DEFAULT` suffix, a bad character, one half of a pair, conflicting forms, an unknown prefix such as
+  `ALPACA_PAPER_KEY_MOMENTUM`), and **How to add a slot** gives the two exact names for an example slot. If a
+  slot you added is missing from the list, look there first.
 - **Link an account.** Make a paper account for the method (admin → Accounts → add, **Kind** Paper (practice)),
   open it, and press **Link to Alpaca paper**. Choose the slot, then **Check this slot**: the page shows the
   Alpaca paper account number those keys reach, with its cash and status, and saves nothing. If the number is

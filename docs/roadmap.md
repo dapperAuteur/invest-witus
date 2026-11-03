@@ -16,6 +16,7 @@ updated: 2026-11-03
 - Index investing with a fixed monthly amount, and 12-1 momentum
 - Paper trading through Alpaca, with orders placed once and synced to the journal
 - One Alpaca paper account per method: any number of key slots on the server, each account linked through its own (decisions 159, 160)
+- Key slot names: the single-underscore form read too, conflicting forms refused, every unusable `ALPACA_PAPER_` name listed with its reason (decision 166)
 - Journal with hold and skip reasons, monthly close and CSV export
 - A default view saved per person; a plan edited or deleted before anything happens under it
 - Report a problem or ask a question, sent to WitUS Inbox; a Help bubble on every page

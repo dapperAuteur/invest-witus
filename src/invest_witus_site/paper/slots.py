@@ -9,8 +9,9 @@ account, so the server holds one key pair per Alpaca account:
 - `ALPACA_PAPER_KEY_ID` and `ALPACA_PAPER_SECRET_KEY`, unsuffixed, are the `DEFAULT` slot: the
   pair chapter 11 read, so an account linked before slots existed keeps working unchanged.
 - `ALPACA_PAPER_KEY_ID__<SLOT>` and `ALPACA_PAPER_SECRET_KEY__<SLOT>` are the slot `<SLOT>`, where
-  the name is 1 to 40 of `A-Z`, `0-9` and `_` (`MOMENTUM`, `DCA`, `QUALITY_MOMENTUM`). The settings
-  find every such name in the environment at startup, so there is no list to edit and no limit.
+  the name is 1 to 40 of `A-Z`, `0-9` and `_`, not starting with `_` (`MOMENTUM`, `DCA`,
+  `QUALITY_MOMENTUM`). The settings find every such name in the environment at startup, so there
+  is no list to edit and no limit.
 
 Since 2026-11-03 (decision 166) the single-underscore form `ALPACA_PAPER_KEY_ID_<SLOT>` /
 `ALPACA_PAPER_SECRET_KEY_<SLOT>` is read too, for the same slot `<SLOT>`, because a pair added that
