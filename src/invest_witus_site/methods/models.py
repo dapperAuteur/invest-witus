@@ -213,6 +213,42 @@ class MethodPlan(models.Model):
     def is_momentum(self) -> bool:
         return self.method_id == MOMENTUM
 
+    # 2026-11-03 (decision 161): the amount is the month's total across the plan's symbols, never
+    # an amount per symbol. These three say so wherever the plan is shown.
+
+    @property
+    def buys_each_month(self) -> int:
+        """How many parts the month's amount is split into: the top N of a 12-1 momentum plan,
+        every symbol an index plan names. A momentum month with fewer candidates ranked than N
+        splits into fewer, larger parts; the month's buys box shows the parts it really staged."""
+        if self.is_momentum and self.top_n:
+            return self.top_n
+        return max(len(self.symbol_list()), 1)
+
+    @property
+    def amount_each(self) -> Decimal:
+        """One part, to the cent: the largest, because the split gives the cents that do not
+        divide to the first symbols ($500.00 over three is $166.67, $166.67 and $166.66)."""
+        cents = int(to_money(self.amount) * 100)
+        each, left_over = divmod(cents, self.buys_each_month)
+        return Decimal(each + (1 if left_over else 0)) / 100
+
+    def amount_text(self) -> str:
+        """The plan's amount in words that say it is a total: "$500.00 a month in all, split
+        equally across ALPHA BETA GAMMA (about $166.67 each)". One symbol needs no split."""
+        amount = holdings_extras.money(self.amount)
+        each = holdings_extras.money(self.amount_each)
+        if self.is_momentum:
+            return (
+                f"{amount} a month in all, split equally across the top {self.top_n} of "
+                f"{self.symbols} (about {each} each)"
+            )
+        if self.buys_each_month > 1:
+            return (
+                f"{amount} a month in all, split equally across {self.symbols} (about {each} each)"
+            )
+        return f"{amount} into {self.symbols}"
+
     def to_plan(self) -> Plan:
         """Chapter 03's `Plan`, so `review` runs unchanged."""
         return Plan(

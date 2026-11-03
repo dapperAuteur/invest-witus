@@ -419,7 +419,11 @@ def test_the_owner_starts_a_method_from_the_form(
     assert client.session[SESSION_KEY] == "a" and VIEW_HEADINGS["a"] in html
     assert "You are on plan" in html and "0 of 0 scheduled buys made" in html
     window_end = start.replace(day=7).isoformat()
-    assert f"Buy $100.00 of INDEX, OTHER between {start.isoformat()} and {window_end}." in html
+    # Decision 161 (2026-11-03): the amount is the month's total, so two symbols read "in all".
+    assert (
+        f"Buy $100.00 in all, split equally across INDEX, OTHER between {start.isoformat()} "
+        f"and {window_end}."
+    ) in html
     assert html.count("lesson coming") == 5
 
 

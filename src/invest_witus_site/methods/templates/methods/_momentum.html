@@ -72,6 +72,8 @@
     {% for symbol, part in momentum.rebalance.parts %}<li>Buy {{ part|money }} of {{ symbol }}</li>{% endfor %}
     {% for symbol in momentum.rebalance.sells %}<li>Sell all of {{ symbol }}: it left the top {{ momentum.top_n }}</li>{% endfor %}
   </ul>
+  {# Decision 161: the parts add up to the plan's amount, which is the month's total, not an amount per symbol. #}
+  <p class="small">The buys add up to the plan's {{ plan.amount|money }}: the amount is the month's total, split equally between the symbols bought, not an amount for each.</p>
   {% if momentum.rebalance.sells %}<p class="small">The app does not place sells yet. On a paper account, sell in Alpaca's paper dashboard; anywhere else, at your broker. Then log the sale here with its amount, inside the window.</p>{% endif %}
   {% for warning in momentum.rebalance.warnings %}<p class="error" role="note">Wash-sale warning. {{ warning }}</p>{% endfor %}
   {% else %}

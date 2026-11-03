@@ -6,7 +6,7 @@
 <section class="container" aria-labelledby="delete-heading">
   <p class="eyebrow">{{ account.name }} <span class="muted">({{ account.broker }})</span></p>
   <h1 id="delete-heading">Delete the plan</h1>
-  <p>{{ plan.method.name }}: {% if plan.is_momentum %}{{ plan.amount|money }} a month, in equal parts, into the top {{ plan.top_n }} of {{ plan.symbols }}{% else %}{{ plan.amount|money }} into {{ plan.symbols }}{% endif %} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
+  <p>{{ plan.method.name }}: {{ plan.amount_text }} within the first {{ plan.buy_window_days }} day{{ plan.buy_window_days|pluralize }} of each month, from {{ plan.started_on|date:"Y-m-d" }}.</p>
   {% if plan_state.can_delete %}
   <p>Nothing has been bought or logged under this plan, so it can be deleted to start over. Deleting cannot be undone. These go with it:</p>
   <ul>

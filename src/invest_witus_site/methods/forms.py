@@ -33,6 +33,26 @@ from invest_witus_site.methods.models import (
 from invest_witus_site.methods.momentum import ensure_watched
 
 SYMBOL_BOX = {"autocomplete": "off", "autocapitalize": "characters", "spellcheck": "false"}
+# 2026-11-03 (decision 161): the amount is the month's total across every symbol the plan buys,
+# never an amount per symbol (BAM chose $500 expecting $500 of each).
+AMOUNT_HELP = (
+    "The total spent on each month's buy date, across all the plan's symbols together, not an "
+    "amount for each symbol. It is split equally between the symbols bought that month (for 12-1 "
+    "momentum, the top N): $500 across 3 symbols is about $166.67 each. In dollars, to the cent."
+)
+
+
+def amount_help(plan: MethodPlan) -> str:
+    """The help under the amount on the edit and change pages, worked for the plan's own symbols."""
+    if plan.buys_each_month == 1:
+        return (
+            f"The total spent on each month's buy date. Now: {plan.amount_text()}. "
+            "In dollars, to the cent."
+        )
+    return (
+        "The total spent on each month's buy date, across all the plan's symbols together, not "
+        f"an amount for each symbol. Now: {plan.amount_text()}. In dollars, to the cent."
+    )
 
 
 def method_choices() -> list[tuple[str, str]]:
@@ -48,11 +68,11 @@ class StartMethodForm(forms.Form):
 
     method_id = forms.ChoiceField(label="Method", choices=method_choices)
     amount = forms.DecimalField(
-        label="Amount each month",
+        label="Total amount each month",
         min_value=ONE_CENT,
         max_digits=14,
         decimal_places=2,
-        help_text="In dollars, to the cent.",
+        help_text=AMOUNT_HELP,
     )
     buy_window_days = forms.IntegerField(
         label="Buy window, in days",
@@ -154,6 +174,7 @@ class PlanEditForm(StartMethodForm):
             "practice_budget": plan.practice_budget,
             "top_n": plan.top_n,
         }
+        self.fields["amount"].help_text = amount_help(plan)
 
     def check_running_plan(self) -> None:
         """The plan being edited is the account's running plan; any other is refused."""
@@ -274,7 +295,7 @@ class PlanChangeForm(forms.Form):
         initial=CHANGE,
     )
     amount = forms.DecimalField(
-        label="Amount each month",
+        label="Total amount each month",
         required=False,
         min_value=ONE_CENT,
         max_digits=14,
@@ -313,6 +334,7 @@ class PlanChangeForm(forms.Form):
         self.plan = plan
         self.today = today
         self.watched: list[str] = []
+        self.fields["amount"].help_text = amount_help(plan)
         if not plan.is_momentum:
             del self.fields["top_n"]
         this, following = first_of_month(today), first_of_next_month(today)

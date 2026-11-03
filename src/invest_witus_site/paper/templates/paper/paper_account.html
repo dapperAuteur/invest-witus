@@ -21,7 +21,7 @@
   <dl class="status" aria-label="Practice budget">
     <dt>Budget</dt><dd>{% if plan.practice_budget is not None %}{{ plan.practice_budget|money }}{% else %}not set{% endif %}</dd>
     <dt>Spent</dt><dd>{{ spent|money }}</dd>
-    <dt>Plan</dt><dd>{{ plan.amount|money }} into {{ plan.symbols }} within the first {{ plan.buy_window_days }} days of each month</dd>
+    <dt>Plan</dt><dd>{{ plan.amount_text }} within the first {{ plan.buy_window_days }} days of each month</dd>
   </dl>
   <p>The budget is the app's own number. Alpaca's paper balance cannot be set, so the plan spends from this budget and Alpaca's cash below is not the plan's.</p>
   {% else %}

@@ -117,7 +117,11 @@ class StagedBuy:
 
 @dataclass(frozen=True, slots=True)
 class MonthBuys:
-    """This month's buys for one plan, and why Confirm is not offered, in words, when it is not."""
+    """This month's buys for one plan, and why Confirm is not offered, in words, when it is not.
+
+    2026-11-03 (decision 162): `plan_amount` is the month's total the buys split, and
+    `ranked_in_later` the top-N symbols the month did not buy because its buys were placed before
+    they ranked in (the staged list keeps the placed orders, see `month_parts`)."""
 
     month: str
     window_closes: date
@@ -126,6 +130,8 @@ class MonthBuys:
     budget: Decimal | None
     spent: Decimal
     refusal: str
+    plan_amount: Decimal = ZERO
+    ranked_in_later: list[str] = field(default_factory=list[str])
 
     @property
     def left(self) -> Decimal | None:
@@ -144,6 +150,24 @@ class MonthBuys:
         """The button says "Place again" when what it places replaces an unfilled order."""
         return any(buy.previous is not None for buy in self.to_place)
 
+    @property
+    def started(self) -> bool:
+        """Something was sent for the month already: an order placed, refused or ended unfilled."""
+        return any(buy.order is not None or buy.previous is not None for buy in self.buys)
+
+    @property
+    def bought(self) -> Decimal:
+        """The month's money in orders that are open or filled, as the journal books it: an open
+        order at its notional, an order that ended part filled at what it filled."""
+        counted = [order for buy in self.buys if (order := counted_order(buy)) is not None]
+        return sum((journal_amount(order) for order in counted), ZERO)
+
+    @property
+    def shortfalls(self) -> list[str]:
+        """Each staged buy that is not in `bought` in full, with the reason, in words: what the
+        page prints beside "$417 of $500"."""
+        return [line for buy in self.buys if (line := shortfall(buy))]
+
 
 def staged(plan: MethodPlan, month: str, symbol: str, notional: Decimal) -> StagedBuy:
     """The buy for one symbol: the newest attempt's row, or, when that attempt ended with nothing
@@ -161,6 +185,51 @@ def staged(plan: MethodPlan, month: str, symbol: str, notional: Decimal) -> Stag
     return StagedBuy(symbol, notional, cid, latest, attempt)
 
 
+def counted_order(buy: StagedBuy) -> PaperOrder | None:
+    """The buy's order when its money counts this month: placed, and open or filled."""
+    order = buy.order
+    return order if order is not None and order.placed and not order.ended_unfilled else None
+
+
+def shortfall(buy: StagedBuy) -> str:
+    """Why one buy is not, or not all, in the month's money: "" when it is."""
+    order, part = buy.order, money(buy.notional)
+    counted = counted_order(buy)
+    if counted is not None:
+        spent = journal_amount(counted)
+        if spent < buy.notional:
+            return (
+                f"{buy.symbol}: {money(spent)} of {part}. The order ended part filled "
+                f"({counted.status}); Alpaca's paper trading fills part of an order at random "
+                "about one time in ten."
+            )
+        return ""
+    if order is not None and order.message:
+        return f"{buy.symbol}: {part} not placed. Alpaca's answer: {order.message}"
+    if buy.previous is not None:
+        return (
+            f"{buy.symbol}: {part} not bought. The order ended with nothing filled "
+            f"({buy.previous.status})."
+        )
+    return f"{buy.symbol}: {part} not placed yet."
+
+
+def month_parts(plan: MethodPlan, month: str, split: list[str]) -> list[tuple[str, Decimal]]:
+    """The month's buys: the plan's amount split across `split` to the cent, until something is
+    bought. Once the month has an order that is open or filled, the month's buys are its orders,
+    each at its own amount, in the order first placed (decision 162): a ranking that changes after
+    the buys were placed (a candidate's history stored later) must not re-split money already
+    spent or stage a buy beyond the plan's amount. A month whose orders all ended with nothing
+    filled is split again, so an edited plan and "Place again" stage from the plan's numbers."""
+    rows = list(PaperOrder.objects.filter(plan=plan, month=month).order_by("pk"))
+    if not any(row.placed and not row.ended_unfilled for row in rows):
+        return split_amount(plan.amount, split) if split else []
+    parts: dict[str, Decimal] = {}
+    for row in rows:
+        parts[row.symbol] = row.notional
+    return list(parts.items())
+
+
 def month_symbols(plan: MethodPlan, day: date) -> list[str]:
     """What the month buys: every symbol an index plan names; a momentum plan's top N for the
     month's ranking, in rank order (chapter 14), which is empty while nothing is ranked."""
@@ -172,7 +241,8 @@ def month_symbols(plan: MethodPlan, day: date) -> list[str]:
 def month_buys(plan: MethodPlan, day: date) -> MonthBuys:
     month = month_of(day)
     symbols = month_symbols(plan, day)
-    parts = split_amount(plan.amount, symbols) if symbols else []
+    parts = month_parts(plan, month, symbols)
+    bought = {symbol for symbol, _ in parts}
     buys = [staged(plan, month, symbol, notional) for symbol, notional in parts]
     window_closes = date(day.year, day.month, plan.buy_window_days)
     spent = practice_spent(plan)
@@ -186,6 +256,8 @@ def month_buys(plan: MethodPlan, day: date) -> MonthBuys:
         budget=budget,
         spent=spent,
         refusal=refusal_for(plan, day, window_closes, buys, unplaced, budget, spent),
+        plan_amount=plan.amount,
+        ranked_in_later=[symbol for symbol in symbols if symbol not in bought],
     )
 
 
