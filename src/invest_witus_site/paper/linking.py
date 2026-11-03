@@ -164,6 +164,8 @@ class SlotRow:
     missing: list[str]
     on_server: bool
     accounts: list[Account]
+    # Set in both name forms with different values (decision 166): shown, never used.
+    conflicting: bool = False
 
 
 def slot_rows() -> list[SlotRow]:
@@ -179,7 +181,17 @@ def slot_rows() -> list[SlotRow]:
     for keys in slots.all_slots():
         seen.add(keys.name)
         users = [a for a in linked if a.alpaca_slot_name == keys.name]
-        rows.append(SlotRow(keys.name, keys.key_hint, keys.complete, keys.missing, True, users))
+        rows.append(
+            SlotRow(
+                keys.name,
+                keys.key_hint,
+                keys.complete,
+                keys.missing,
+                True,
+                users,
+                keys.conflicting,
+            )
+        )
     for name in sorted({a.alpaca_slot_name for a in linked} - seen):
         users = [a for a in linked if a.alpaca_slot_name == name]
         missing = list(slots.env_names(name))

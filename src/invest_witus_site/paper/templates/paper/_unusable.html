@@ -1,0 +1,24 @@
+{# Decision 166: every ALPACA_PAPER_ variable the app could not use, by name with the reason. Names only, never a value. #}
+{% if unusable %}
+<h2 id="unusable-heading">Variables the app could not use</h2>
+<p>These variables start with <code>ALPACA_PAPER_</code> but no slot reads them. Rename or delete each on Vercel, then redeploy.</p>
+<div class="table-scroll" role="region" aria-labelledby="unusable-heading" tabindex="0">
+<table class="holdings">
+  <caption class="sr-only">Alpaca variables on the server that the app could not use, and why</caption>
+  <thead>
+    <tr>
+      <th scope="col">Variable</th>
+      <th scope="col">Why it is not used</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in unusable %}
+    <tr>
+      <th scope="row"><code>{{ item.name }}</code></th>
+      <td>{{ item.reason }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}

@@ -164,6 +164,8 @@ def slot_label(row: linking.SlotRow, account: Account) -> str:
     the accounts already linked through it. Never more of a key than four characters."""
     if row.complete:
         state = f"key id ending {row.key_hint}" if row.key_hint else "keys set"
+    elif row.conflicting:
+        state = "conflicting: set in both name forms with different values, not used"
     else:
         state = f"keys incomplete: {' and '.join(row.missing)} not set"
     users = [a.name for a in row.accounts if a.pk != account.pk and a.owner_id == account.owner_id]
@@ -183,6 +185,7 @@ class LinkForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.rows = [row for row in linking.slot_rows() if row.on_server]
         self.complete = {row.name for row in self.rows if row.complete}
+        self.conflicting = {row.name for row in self.rows if row.conflicting}
         slot = self.fields["slot"]
         assert isinstance(slot, forms.ChoiceField)
         slot.choices = [(row.name, slot_label(row, account)) for row in self.rows]
@@ -191,6 +194,10 @@ class LinkForm(forms.Form):
 
     def clean_slot(self) -> str:
         chosen: str = self.cleaned_data["slot"]
+        if chosen in self.conflicting:
+            raise forms.ValidationError(
+                slots.SlotKeys(chosen, "", "", conflicting=True).conflict_message
+            )
         if chosen not in self.complete:
             key_name, secret_name = slots.env_names(chosen)
             raise forms.ValidationError(
@@ -237,7 +244,7 @@ def link_alpaca(request: HttpRequest, pk: int) -> HttpResponse:
         "account": account,
         "form": form,
         "check": check,
-        "ignored": slots.ignored_names(),
+        "unusable": slots.unusable(),
         "open_orders": PaperOrder.open_orders(account).count() if account.is_alpaca_paper else 0,
         "host": PAPER_HOST,
     }
@@ -247,11 +254,15 @@ def link_alpaca(request: HttpRequest, pk: int) -> HttpResponse:
 @login_required
 def key_slots(request: HttpRequest) -> HttpResponse:
     """The site owner's list of key slots: name, last four of the key id, complete or not, and
-    the Invest accounts linked through each. Reads the environment and the database only."""
+    the Invest accounts linked through each; then every `ALPACA_PAPER_` variable the app could not
+    use, by name with the reason (decision 166). Reads the settings and the database only."""
     superuser_or_404(request)
+    example_key, example_secret = slots.example_names()
     context = {
         "rows": linking.slot_rows(),
-        "ignored": slots.ignored_names(),
+        "unusable": slots.unusable(),
+        "example_key": example_key,
+        "example_secret": example_secret,
         "paper_accounts": Account.objects.filter(owner=request.user, kind=Account.Kind.PAPER),
     }
     return render(request, "paper/key_slots.html", context)

@@ -275,12 +275,15 @@ class AlpacaPaper:
 
 def credentials_for(slot: str) -> SlotKeys:
     """The slot's complete key pair (blank or `DEFAULT` is the unsuffixed pair). A slot the server
-    does not have, or has only half of, is refused with its name, and nothing falls back to
+    does not have, has only half of, or has in two conflicting forms (decision 166) is refused
+    with its name, and nothing falls back to
     another slot: an account linked to MOMENTUM never trades in DEFAULT's Alpaca account."""
     name = slots.display_name(slots.normalize(slot))
     keys = slots.find(name)
     if keys is None:
         raise AlpacaNotConfigured(f"Keys for slot {name} are not set on the server.")
+    if keys.conflicting:
+        raise AlpacaNotConfigured(keys.conflict_message)
     if not keys.complete:
         missing = keys.missing
         verb = "is" if len(missing) == 1 else "are"

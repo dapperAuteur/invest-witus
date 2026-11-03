@@ -303,9 +303,14 @@ ALPACA_PAPER_SECRET_KEY = os.environ.get("ALPACA_PAPER_SECRET_KEY", "")
 # DEFAULT slot; every `ALPACA_PAPER_KEY_ID__<SLOT>` / `ALPACA_PAPER_SECRET_KEY__<SLOT>` in the
 # environment is the slot <SLOT> (1 to 40 of A-Z, 0-9 and _), found here at startup, so any number
 # can be added on Vercel without touching this file. `{slot: (key_id, secret_key)}`, either half
-# possibly empty (incomplete, never used); the second name holds the variable names ignored for a
-# bad slot name, never a value. An account stores only the slot's name (`paper/slots.py`).
-ALPACA_PAPER_KEY_SLOTS, ALPACA_PAPER_KEY_SLOT_IGNORED = discover_alpaca_key_slots(os.environ)
+# possibly empty (incomplete, never used). Since decision 166 the single-underscore form
+# `ALPACA_PAPER_KEY_ID_<SLOT>` is the same slot; a slot set in both forms with different values is
+# in ..._CONFLICTS and never used. ..._IGNORED lists every `ALPACA_PAPER_` variable the app cannot
+# use as (name, reason), never a value. An account stores only the slot's name (`paper/slots.py`).
+_alpaca_key_slots = discover_alpaca_key_slots(os.environ)
+ALPACA_PAPER_KEY_SLOTS = _alpaca_key_slots.found
+ALPACA_PAPER_KEY_SLOT_IGNORED = _alpaca_key_slots.unusable
+ALPACA_PAPER_KEY_SLOT_CONFLICTS = _alpaca_key_slots.conflicts
 # Alpaca's own tools read the host from APCA_API_BASE_URL (its paper trading page, read October
 # 29, 2026). This app does not, but a value pointing anywhere except the paper host means someone
 # expects live trading here, so the settings refuse to start rather than run beside that belief.

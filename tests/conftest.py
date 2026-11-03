@@ -55,3 +55,4 @@ def no_shell_alpaca_slots(settings: Settings) -> None:
     it."""
     settings.ALPACA_PAPER_KEY_SLOTS = {}
     settings.ALPACA_PAPER_KEY_SLOT_IGNORED = ()
+    settings.ALPACA_PAPER_KEY_SLOT_CONFLICTS = frozenset()

@@ -38,9 +38,7 @@
   {% else %}
   <p>The server has no Alpaca keys yet. Add a slot's two variables on Vercel and redeploy; the runbook has the steps.</p>
   {% endif %}
-  {% if ignored %}
-  <p class="small">Ignored for a bad slot name (1 to 40 of A to Z, 0 to 9 and _; DEFAULT is the pair with no suffix): {{ ignored|join:", " }}.</p>
-  {% endif %}
+  {% include "paper/_unusable.html" %}
 
   {% if account.is_alpaca_paper %}
   <h2>Unlink</h2>

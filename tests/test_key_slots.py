@@ -176,22 +176,30 @@ def test_discovery_finds_any_number_of_slots_and_reports_bad_names() -> None:
         "ALPACA_PAPER_KEY_IDX__NOPE": "a different prefix",
         "PATH": "/usr/bin",
     }
-    found, ignored = discover(environ)
+    discovered = discover(environ)
+    found, unusable = discovered.found, discovered.unusable
     assert len([name for name in found if name.startswith("METHOD_")]) == 25
     assert found["METHOD_7"] == ("KEY7", "SECRET7")
     assert found["QUALITY_MOMENTUM"] == ("QKEY", "QSECRET")
     assert found["ONLYKEY"] == ("OKEY", "") and found["ONLYSECRET"] == ("", "OSECRET")
     assert found["EMPTY"] == ("", "")
-    assert set(ignored) == {
+    # Decision 166: every ALPACA_PAPER_ name the app cannot use is listed, with the reason.
+    assert {item.name for item in unusable} == {
         "ALPACA_PAPER_KEY_ID__momentum",
         "ALPACA_PAPER_SECRET_KEY__DASH-NAME",
         "ALPACA_PAPER_KEY_ID__" + "L" * 41,
         "ALPACA_PAPER_KEY_ID__DEFAULT",
         "ALPACA_PAPER_KEY_ID__",
+        "ALPACA_PAPER_KEY_ID__ONLYKEY",
+        "ALPACA_PAPER_SECRET_KEY__ONLYSECRET",
+        "ALPACA_PAPER_KEY_ID",
+        "ALPACA_PAPER_KEY_IDX__NOPE",
     }
-    assert "x" not in ignored, "names only, never a value"
+    assert all(item.reason for item in unusable)
+    for value in ("OKEY", "OSECRET", "unsuffixed, not a slot here", "a different prefix"):
+        assert all(value not in item.reason for item in unusable), "names only, never a value"
     assert SlotKeys("L" * 40, "a", "b").name in {"L" * 40}, "forty characters is allowed"
-    assert discover({"ALPACA_PAPER_KEY_ID__" + "L" * 40: "k"})[0] == {"L" * 40: ("k", "")}
+    assert discover({"ALPACA_PAPER_KEY_ID__" + "L" * 40: "k"}).found == {"L" * 40: ("k", "")}
 
 
 def test_the_settings_discover_slots_from_the_environment_at_startup(
@@ -211,7 +219,11 @@ def test_the_settings_discover_slots_from_the_environment_at_startup(
         "DCA": (DCA_KEY, ""),
         "MOMENTUM": (MOMENTUM_KEY, MOMENTUM_SECRET),
     }
-    assert loaded.ALPACA_PAPER_KEY_SLOT_IGNORED == ("ALPACA_PAPER_KEY_ID__bad",)
+    assert [item.name for item in loaded.ALPACA_PAPER_KEY_SLOT_IGNORED] == [
+        "ALPACA_PAPER_KEY_ID__DCA",  # one half only
+        "ALPACA_PAPER_KEY_ID__bad",
+    ]
+    assert loaded.ALPACA_PAPER_KEY_SLOT_CONFLICTS == frozenset()
     assert (loaded.ALPACA_PAPER_KEY_ID, loaded.ALPACA_PAPER_SECRET_KEY) == ("", "")
 
 
@@ -503,3 +515,201 @@ def test_no_app_code_builds_a_client_from_the_global_pair() -> None:
                 and path not in allowed_reads
             ):
                 pytest.fail(f"{path} reads settings.{node.attr}")
+
+
+# --- Name near misses (decision 166) --------------------------------------------------------------
+# On 2026-11-03 a pair added as ALPACA_PAPER_KEY_ID_B_MOMENTUM (one underscore) was ignored without
+# a word, so only DEFAULT showed. The single-underscore form is now the same slot, a slot set in
+# both forms with different values is refused, and every ALPACA_PAPER_ name the app cannot use is
+# listed by name with the reason.
+
+ONE_KEY, ONE_SECRET = "SINGLEFORMKEY09J8K", "single-form-secret-not-a-real-key"
+OTHER_KEY = "OTHERFORMKEY07L6M"
+
+
+def reasons(environ: dict[str, str]) -> dict[str, str]:
+    return {item.name: item.reason for item in discover(environ).unusable}
+
+
+def test_the_single_underscore_form_is_the_same_slot() -> None:
+    discovered = discover(
+        {
+            "ALPACA_PAPER_KEY_ID_B_MOMENTUM": ONE_KEY,
+            "ALPACA_PAPER_SECRET_KEY_B_MOMENTUM": ONE_SECRET,
+            # Mixed forms make one pair; the double underscore is never read as a leading _.
+            "ALPACA_PAPER_KEY_ID__B_INDEX": MOMENTUM_KEY,
+            "ALPACA_PAPER_SECRET_KEY_B_INDEX": MOMENTUM_SECRET,
+        }
+    )
+    assert discovered.found == {
+        "B_MOMENTUM": (ONE_KEY, ONE_SECRET),
+        "B_INDEX": (MOMENTUM_KEY, MOMENTUM_SECRET),
+    }
+    assert discovered.unusable == () and discovered.conflicts == frozenset()
+
+
+def test_both_forms_with_one_value_are_one_value() -> None:
+    discovered = discover(
+        {
+            "ALPACA_PAPER_KEY_ID_DCA": DCA_KEY,
+            "ALPACA_PAPER_KEY_ID__DCA": DCA_KEY,
+            "ALPACA_PAPER_SECRET_KEY__DCA": DCA_SECRET,
+        }
+    )
+    assert discovered.found == {"DCA": (DCA_KEY, DCA_SECRET)}
+    assert discovered.unusable == ()
+
+
+def test_both_forms_with_different_values_make_the_slot_conflicting_and_unusable() -> None:
+    environ = {
+        "ALPACA_PAPER_KEY_ID_B_MOMENTUM": ONE_KEY,
+        "ALPACA_PAPER_KEY_ID__B_MOMENTUM": OTHER_KEY,
+        "ALPACA_PAPER_SECRET_KEY__B_MOMENTUM": ONE_SECRET,
+    }
+    discovered = discover(environ)
+    assert discovered.found == {}, "never one of the two picked silently"
+    assert discovered.conflicts == frozenset({"B_MOMENTUM"})
+    listed = reasons(environ)
+    assert set(listed) == set(environ), "every variable of the slot is listed"
+    assert all(
+        reason.startswith("conflicting forms: slot B_MOMENTUM") for reason in listed.values()
+    )
+    for value in environ.values():
+        assert all(value not in reason for reason in listed.values())
+
+
+def test_every_name_the_app_cannot_use_is_listed_with_its_reason() -> None:
+    listed = reasons(
+        {
+            "ALPACA_PAPER_KEY_ID_": "x1",
+            "ALPACA_PAPER_KEY_ID_DEFAULT": "x2",
+            "ALPACA_PAPER_KEY_ID_b-momentum": "x3",
+            "ALPACA_PAPER_KEY_ID___MOMENTUM": "x4",
+            "ALPACA_PAPER_KEY_MOMENTUM": "x5",
+            "ALPACA_PAPER_SECRET_MOMENTUM": "x6",
+            "ALPACA_PAPER_SECRET_KEY": "x7",  # DEFAULT's secret with no key id
+            "ALPACA_PAPER_KEY_ID_ONLYKEY": "x8",
+            "ALPACA_PAPER_KEY_ID_SKIPPED": "",  # empty counts as not set: not listed
+            "ALPACA_LIVE_KEY_ID": "x9",  # not the paper family
+            "APCA_API_KEY_ID": "x10",
+        }
+    )
+    assert listed == {
+        "ALPACA_PAPER_KEY_ID_": "empty suffix: nothing after the prefix",
+        "ALPACA_PAPER_KEY_ID_DEFAULT": (
+            "DEFAULT as a suffix: the DEFAULT slot is the pair with no suffix, "
+            "ALPACA_PAPER_KEY_ID and ALPACA_PAPER_SECRET_KEY"
+        ),
+        "ALPACA_PAPER_KEY_ID_b-momentum": (
+            "bad characters in the slot name: only A to Z, 0 to 9 and _ (no lower case, no dash)"
+        ),
+        "ALPACA_PAPER_KEY_ID___MOMENTUM": (
+            "one underscore too many: the slot's name may not start with _"
+        ),
+        "ALPACA_PAPER_KEY_MOMENTUM": (
+            "unknown prefix: a slot's two names start ALPACA_PAPER_KEY_ID_ and "
+            "ALPACA_PAPER_SECRET_KEY_"
+        ),
+        "ALPACA_PAPER_SECRET_MOMENTUM": (
+            "unknown prefix: a slot's two names start ALPACA_PAPER_KEY_ID_ and "
+            "ALPACA_PAPER_SECRET_KEY_"
+        ),
+        "ALPACA_PAPER_SECRET_KEY": "only one half of the pair: ALPACA_PAPER_KEY_ID is not set",
+        "ALPACA_PAPER_KEY_ID_ONLYKEY": (
+            "only one half of the pair: ALPACA_PAPER_SECRET_KEY__ONLYKEY is not set"
+        ),
+    }
+    assert discover({"ALPACA_PAPER_KEY_ID": "", "ALPACA_PAPER_SECRET_KEY": ""}).unusable == (), (
+        ".env.example's empty DEFAULT pair is not a problem"
+    )
+
+
+def test_the_settings_read_the_single_form_and_the_conflicts_at_startup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    loaded = fresh_settings(
+        monkeypatch,
+        {
+            "DJANGO_DEBUG": "1",
+            "ALPACA_PAPER_KEY_ID_B_MOMENTUM": ONE_KEY,
+            "ALPACA_PAPER_SECRET_KEY_B_MOMENTUM": ONE_SECRET,
+            "ALPACA_PAPER_KEY_ID_B_INDEX": DCA_KEY,
+            "ALPACA_PAPER_KEY_ID__B_INDEX": OTHER_KEY,
+            "ALPACA_PAPER_SECRET_KEY__B_INDEX": DCA_SECRET,
+        },
+    )
+    assert loaded.ALPACA_PAPER_KEY_SLOTS == {"B_MOMENTUM": (ONE_KEY, ONE_SECRET)}
+    assert loaded.ALPACA_PAPER_KEY_SLOT_CONFLICTS == frozenset({"B_INDEX"})
+    assert [item.name for item in loaded.ALPACA_PAPER_KEY_SLOT_IGNORED] == [
+        "ALPACA_PAPER_KEY_ID_B_INDEX",
+        "ALPACA_PAPER_KEY_ID__B_INDEX",
+        "ALPACA_PAPER_SECRET_KEY__B_INDEX",
+    ]
+
+
+@pytest.fixture
+def conflicting(accounts: AlpacaAccounts, settings: Settings) -> None:
+    """The accounts fixture plus a conflicting slot TWIN and the names listed for it."""
+    environ = {
+        "ALPACA_PAPER_KEY_ID_TWIN": TWIN_KEY,
+        "ALPACA_PAPER_KEY_ID__TWIN": OTHER_KEY,
+        "ALPACA_PAPER_SECRET_KEY__TWIN": TWIN_SECRET,
+        "ALPACA_PAPER_KEY_MOMENTUM": MOMENTUM_KEY,
+    }
+    discovered = discover(environ)
+    settings.ALPACA_PAPER_KEY_SLOT_CONFLICTS = discovered.conflicts
+    settings.ALPACA_PAPER_KEY_SLOT_IGNORED = discovered.unusable
+    accounts.add(TWIN_KEY, "PA0TWIN00001")
+    accounts.add(OTHER_KEY, "PA0OTHER0001")
+
+
+@pytest.mark.django_db
+def test_a_conflicting_slot_never_trades_and_never_falls_back(
+    accounts: AlpacaAccounts, conflicting: None, owner_client: Client, owner: User
+) -> None:
+    with pytest.raises(AlpacaNotConfigured, match="Keys for slot TWIN conflict on the server"):
+        credentials_for("TWIN")
+    twin = paper(owner, "Twin", slot="TWIN", number="PA0TWIN00001")
+    plan_for(twin)
+    response = owner_client.post(f"/accounts/{twin.pk}/paper/confirm/", follow=True)
+    assert "Keys for slot TWIN conflict on the server" in words(response)
+    assert all(fake.posted == [] for fake in accounts.by_key.values())
+
+
+@pytest.mark.django_db
+def test_the_link_page_shows_a_conflicting_slot_and_refuses_it(
+    accounts: AlpacaAccounts, conflicting: None, owner_client: Client, owner: User
+) -> None:
+    fresh = paper(owner, "Twin")
+    page = words(owner_client.get(link_url(fresh)))
+    assert "TWIN (conflicting: set in both name forms with different values, not used)" in page
+    assert "ALPACA_PAPER_KEY_MOMENTUM" in page and "unknown prefix" in page
+    refused = words(owner_client.post(link_url(fresh), {"slot": "TWIN", "action": "check"}))
+    assert "Keys for slot TWIN conflict on the server" in refused
+    fresh.refresh_from_db()
+    assert not fresh.is_alpaca_paper
+    assert all(fake.requests == [] for fake in accounts.by_key.values()), "nothing was asked"
+
+
+@pytest.mark.django_db
+def test_the_slots_page_lists_unusable_names_and_how_to_add_a_slot(
+    accounts: AlpacaAccounts, conflicting: None, owner_client: Client
+) -> None:
+    html = text(owner_client.get("/accounts/alpaca-slots/"))
+    page = words(owner_client.get("/accounts/alpaca-slots/"))
+    assert "Variables the app could not use" in page
+    for name in (
+        "ALPACA_PAPER_KEY_ID_TWIN",
+        "ALPACA_PAPER_KEY_ID__TWIN",
+        "ALPACA_PAPER_SECRET_KEY__TWIN",
+        "ALPACA_PAPER_KEY_MOMENTUM",
+    ):
+        assert f"<code>{name}</code>" in html
+    assert "conflicting forms: slot TWIN is set as both __TWIN and _TWIN" in page
+    assert "TWIN none conflicting: set as both __TWIN and _TWIN with different values" in page
+    assert (
+        "How to add a slot: for a slot named MOMENTUM, set ALPACA_PAPER_KEY_ID__MOMENTUM and "
+        "ALPACA_PAPER_SECRET_KEY__MOMENTUM (two underscores before the name)"
+    ) in page
+    for value in (*SECRETS, *KEY_IDS, ONE_KEY, ONE_SECRET, OTHER_KEY):
+        assert value not in html, "a page shows names, never a value"
