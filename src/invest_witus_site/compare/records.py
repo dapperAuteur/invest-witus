@@ -38,7 +38,6 @@ from invest_witus.compare import (
     line_return,
     max_drawdown,
     months_running,
-    over_days,
     period,
     time_weighted_line,
     value_series,
@@ -255,17 +254,15 @@ def method_text(plan: MethodPlan | None) -> str:
     return f"{name}, {len(plan.symbol_list())} symbol{'s' if len(plan.symbol_list()) != 1 else ''}"
 
 
-def return_text(total: Decimal | None, days: int, yearly_rate: Decimal | None = None) -> str:
-    """A return in words: over the days under a year, a year at a year or more. A span of one
-    day has none. `yearly_rate` is given for the money-weighted return, which XIRR finds as a
-    yearly rate; the time-weighted one comes as a total."""
-    if days <= 0 or (total is None and yearly_rate is None):
+def return_text(total: Decimal | None, days: int) -> str:
+    """A change over `days` calendar days in words: as it is under a year ("-10.00% over 3
+    days"), as a yearly rate from a year on ("+7.20% a year"), never stretched from a few months
+    to a year. A stretch of one day has none."""
+    if days <= 0 or total is None:
         return ""
     if days < YEAR_DAYS:
-        change = total if total is not None else over_days(yearly_rate or Decimal(0), days)
-        return f"{percent(change * HUNDRED)} over {days} days"
-    rate = yearly_rate if yearly_rate is not None else yearly(total or Decimal(0), days)
-    return f"{percent(rate * HUNDRED)} a year"
+        return f"{percent(total * HUNDRED)} over {days} days"
+    return f"{percent(yearly(total, days) * HUNDRED)} a year"
 
 
 def drawdown_text(drop: Drawdown | None) -> str:
@@ -320,11 +317,13 @@ class AccountResult:
 
     @property
     def money_weighted(self) -> str:
-        if self.stretch is None:
+        if self.stretch is None or self.stretch.length <= 0:
             return ""
         if self.mwr is None:
             return "not worked out: no single rate fits these deposits"
-        return return_text(None, self.stretch.length, yearly_rate=self.mwr)
+        if self.stretch.length < YEAR_DAYS:
+            return return_text(self.mwr, self.stretch.length)
+        return f"{percent(self.mwr * HUNDRED)} a year"
 
     @property
     def time_weighted(self) -> str:
@@ -405,7 +404,10 @@ def account_result(account: Account, start: date, end: date, today: date) -> Acc
     )
     if stretch is not None:
         result.twr = line_return(line)
-        result.mwr = xirr(cash_flows(stretch))
+        # Under a year the rate is solved per the stretch's own length, so it is the change over
+        # the days; from a year on, per year (`return_text` says which).
+        unit = stretch.length if 0 < stretch.length < YEAR_DAYS else YEAR_DAYS
+        result.mwr = xirr(cash_flows(stretch), days_per_unit=unit)
         result.drawdown = max_drawdown(line)
     return result
 

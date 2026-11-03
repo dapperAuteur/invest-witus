@@ -292,21 +292,28 @@ def cash_flows(stretch: Period) -> list[tuple[date, Decimal]]:
     return flows
 
 
-def present_value(rate: Decimal, flows: Sequence[tuple[date, Decimal]]) -> Decimal:
-    """Every flow moved back to the first flow's day at `rate` a year."""
+def present_value(
+    rate: Decimal, flows: Sequence[tuple[date, Decimal]], days_per_unit: int = DAYS_A_YEAR
+) -> Decimal:
+    """Every flow moved back to the first flow's day at `rate` per `days_per_unit` days."""
     first = flows[0][0]
     log = (ONE + rate).ln()
     total = ZERO
     for day, amount in flows:
-        years = Decimal((day - first).days) / DAYS_A_YEAR
-        total += amount * (-years * log).exp()
+        units_of_time = Decimal((day - first).days) / days_per_unit
+        total += amount * (-units_of_time * log).exp()
     return total
 
 
-def xirr(flows: Sequence[tuple[date, Decimal]]) -> Decimal | None:
-    """The yearly rate at which the flows' present value is zero, found by halving an interval,
-    or None: no money in or no money out, every flow on one day, or no single rate in the
-    interval that fits (possible when deposits and withdrawals alternate)."""
+def xirr(
+    flows: Sequence[tuple[date, Decimal]], days_per_unit: int = DAYS_A_YEAR
+) -> Decimal | None:
+    """The rate per `days_per_unit` days (a year unless told otherwise) at which the flows'
+    present value is zero, found by halving an interval, or None: no money in or no money out,
+    every flow on one day, or no single rate in the interval that fits (possible when deposits
+    and withdrawals alternate). A short stretch is solved per its own length, not per year: a
+    loss of 14% in three days is a yearly rate of -99.99999998%, too close to -100% to find or to
+    mean anything, while "-14% over 3 days" is both."""
     if not any(amount < 0 for _, amount in flows) or not any(amount > 0 for _, amount in flows):
         return None
     ordered = sorted(flows, key=lambda flow: flow[0])
@@ -314,7 +321,8 @@ def xirr(flows: Sequence[tuple[date, Decimal]]) -> Decimal | None:
         return None
     low, high = LOWEST_RATE, HIGHEST_RATE
     try:
-        at_low, at_high = present_value(low, ordered), present_value(high, ordered)
+        at_low = present_value(low, ordered, days_per_unit)
+        at_high = present_value(high, ordered, days_per_unit)
     except InvalidOperation:
         return None
     if at_low == 0:
@@ -323,7 +331,7 @@ def xirr(flows: Sequence[tuple[date, Decimal]]) -> Decimal | None:
         return None
     for _ in range(MAX_HALVINGS):
         middle = (low + high) / 2
-        at_middle = present_value(middle, ordered)
+        at_middle = present_value(middle, ordered, days_per_unit)
         if at_middle == 0 or high - low < RATE_TOLERANCE:
             return middle
         if (at_middle > 0) == (at_low > 0):
