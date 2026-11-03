@@ -20,6 +20,10 @@ Nothing here runs without the owner's click except the sync, which only reads.
 Chapter 14: a 12-1 momentum plan stages a buy for each of this month's top N, the plan's amount in
 equal parts in rank order, through the same ids, Confirm and sync. Only buys: a holding that left
 the top N is listed on the method page to be sold by hand (decision 146).
+
+2026-11-03 (decision 162): once a month has an order that is open or filled, its buys are its
+orders, at their own amounts, so a ranking that changes later never re-splits money already spent;
+the box says what the month bought against the plan's amount and why any part is missing.
 """
 
 from dataclasses import dataclass, field

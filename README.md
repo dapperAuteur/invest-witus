@@ -122,7 +122,9 @@ every month of the plan done, missed or open with amounts and shares, the findin
 C, The Lesson Lab (the rules read before the start form, then each rule's lesson and how often it was flagged).
 The switch is three links, `?view=a|b|c`, remembered in the session; the page opens on C until a method runs and
 on A after. Since 2026-11-02, **Make this my default view** under the switch saves the view per person
-(`ViewPreference`), and the page opens on it in every later sign-in while a method runs. Starting a method and logging an entry are POST forms behind the sign-in and the ownership check;
+(`ViewPreference`), and the page opens on it in every later sign-in while a method runs; since 2026-11-03 the
+signed-in person's **Settings** page (`/settings/`, in the header) sets or clears the same default, and is where
+later per-person options go. Starting a method and logging an entry are POST forms behind the sign-in and the ownership check;
 nothing on the page is a price, and no public page links it. The walk-through is
 [chapter 10](docs/chapters/10-the-method-engine-and-the-three-views.md), section 10.10.
 
@@ -130,7 +132,9 @@ nothing on the page is a price, and no public page links it. The walk-through is
 
 Chapter 11 adds a `paper` app. An account linked to Alpaca's paper environment (paper accounts only; since
 2026-11-02 linked on the account's **Link to Alpaca paper** page through a key slot, below) gets "This month's buys" on its method page: the plan's amount split across
-its symbols to the cent, the practice budget the app keeps beside Alpaca's own balance (which cannot be set), and
+its symbols to the cent (the amount is the month's total, not an amount per symbol; since 2026-11-03 the box shows
+what the month bought against it and why any part is missing, and a month keeps the buys it placed when its
+ranking changes later), the practice budget the app keeps beside Alpaca's own balance (which cannot be set), and
 a **Confirm** button that sends one notional market day order per symbol to `https://paper-api.alpaca.markets`
 with a `client_order_id` made of the account, the plan, the month and the symbol, so a second click or a retry
 never buys twice. Each order goes into the journal at once; `manage.py sync_paper_orders`, the paper page's
@@ -170,7 +174,8 @@ decision 9). Migrations run from the merge workflow; the walk-through is chapter
 
 Chapter 13 adds **Report a problem or ask a question** to the header and the footer of every page, signed in or
 out (and since 2026-10-30 a floating **Help** bubble: a plain link to `/report/` signed out, so public pages still
-carry no script; signed in, `pages/help.js` opens the form in a `<dialog>`): a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
+carry no script; signed in, `pages/help.js` opens the form in a `<dialog>`, whose **Open the full form** carries what was typed to
+the full form through the session since 2026-11-03): a kind (bug, feature or question), a message and the page, filled in from the referrer. Each report is saved
 in a `reports` app first, then sent to WitUS Inbox as a signed request (`X-Witus-Source`, `X-Witus-Timestamp`,
 and `X-Witus-Signature`, an HMAC-SHA256 of the timestamp and the exact body, per Inbox's
 `docs/webhook-contract.md`); a new waitlist signup is copied the same way. A send that fails keeps its reason on

@@ -710,7 +710,7 @@ Since 2026-11-02 the link is made on the account's own **Link to Alpaca paper** 
 each method can have an Alpaca paper account of its own: see
 [Running more than one method](#running-more-than-one-method-one-alpaca-paper-account-each).
 
-- **The method page** shows "This month's buys" above the view switch: the plan's amount for each symbol, the
+- **The method page** shows "This month's buys" above the view switch: each symbol's part of the plan's amount, the
   budget spent and left, and **Confirm** inside the buy window. One click places one market order per symbol for
   the dollar amount on Alpaca paper and writes it into the journal. A second click sends nothing. With the market
   closed the button reads "Confirm: queue for the open". If Confirm is missing, the box says why in one sentence.
@@ -771,8 +771,11 @@ column under **Report a bad actor**. It works signed in or out.
   form's page (the public pages run no JavaScript). Signed in it opens the same form in a panel over the page: the
   first choice is ready for the keyboard, **Close**, **Escape** or a tap outside the panel closes it, and the
   keyboard returns to **Help**. **What page were you on?** is filled in with the page under the panel. **Send**
-  goes to the same thank-you page; **Open the full form** opens the form's page instead. With JavaScript off, or in
-  a browser without panels, the bubble stays a link. The header and footer links stay as well.
+  goes to the same thank-you page; **Open the full form** opens the form's page instead, with what you already
+  chose and typed in the panel filled in and the line "What you typed in the Help bubble is filled in below.
+  Nothing has been sent yet." (since 2026-11-03; before, the panel's text was lost on the way). Nothing is sent
+  until you press **Send** on the full form. With JavaScript off, or in a browser without panels, the bubble stays
+  a link. The header and footer links stay as well.
 
 - **The form.** Pick what it is about: **Something is broken (a bug)**, **An idea for the app (a feature)** or
   **A question**. Write **Your message**; leave out passwords and keys. **What page were you on?** is filled in
@@ -802,7 +805,7 @@ symbols below (`ALPHA`, `BETA`, `GAMMA`, `DELTA`) are placeholders.
 
 - **Start it.** On an account with no method, the method page opens on **C: The Lesson Lab**, which lists both
   methods with their rules. In the start form pick **12-1 momentum, monthly top N in equal parts**, type your
-  candidates in **Symbols**, the month's money in **Amount each month**, and **Top N to hold**, a number smaller
+  candidates in **Symbols**, the month's money in **Total amount each month**, and **Top N to hold**, a number smaller
   than the number of candidates. Leave **Top N to hold** empty for index investing. Press **Start this method**.
   The message names the candidates it added to the watch list, so the nightly pull stores their closes.
 - **Fetch enough history.** A candidate is ranked only when it has a close in the month 13 months back and in the
@@ -850,6 +853,41 @@ Written for the app at `v14a`. Two more pictures on an account that runs 12-1 mo
 - Both read the adjusted close, as the ranking does, and both say how many stored closes had none. Each has a
   **How to read this** note and "Lesson coming".
 
+## The plan's amount is the month's total (2026-11-03)
+
+**Total amount each month** (it read **Amount each month** before 2026-11-03) is what the plan spends on each
+month's buy date across all its symbols together, not an amount for each symbol. It is split equally between the
+symbols bought that month, to the cent, with the odd cents going to the first symbols: $500 across 3 symbols is
+$166.67, $166.67 and $166.66. For 12-1 momentum the symbols bought are the month's top N (fewer, and so larger
+parts, while fewer candidates are ranked). To put $500 into each of 3 symbols, the total is $1,500.
+
+- **Where it says so.** The start form's help under the box; the edit and change pages' help, worked for your own
+  plan ("Now: $500.00 a month in all, split equally across ALPHA BETA GAMMA (about $166.67 each)"); the plan line
+  in views A, B and C, on the account page, the paper page, the change, delete and month review pages; "Next"
+  ("Buy $500.00 in all, split equally across ..."); and the momentum rebalance ("The buys add up to the plan's
+  $500.00").
+- **This month's buys** says "$500.00 in all this month, split across 3 symbols" under the list. Once anything
+  was sent for the month, it adds **Bought or queued this month: $416.67 of $500.00.** and lists each missing part
+  with its reason: an order Alpaca refused ("not placed. Alpaca's answer: ..."), an order that ended with nothing
+  filled ("not bought ... (canceled)"), an order that ended part filled ("$30.00 of $83.33"; Alpaca's paper trading
+  fills part of an order at random about one time in ten), or a part not placed yet.
+- **A ranking that changes after you confirm.** If a candidate's history arrives after the month's buys were placed
+  and moves it into the top N, the month keeps the buys it placed, at their own amounts, and the box says
+  "Ranked into the top N after this month's buys were placed: BETA". The app never re-splits money already spent
+  or buys past the plan's amount for the month. (Before 2026-11-03 the box re-split the month and offered Confirm
+  again for the newcomer.) A month whose orders all ended with nothing filled is split again from the plan.
+
+## Settings (2026-11-03)
+
+**Settings**, in the header on every page while you are signed in (behind **Menu** on a phone), opens
+`/settings/`: your own settings, for every account you hold here. It has one now, **Default view on method
+pages**: **No default** (A while a method runs, C while none) or one of the three views. **Save settings** saves it;
+your next sign-in opens method pages on it. Later per-person options will be added to this page.
+
+**Tables** (2026-11-03): every table's rows alternate between the page's shade and a slightly lighter one, so a
+long row is easy to follow across; the row under the pointer is tinted blue, and a watch-list row whose box is
+ticked for **Fetch history for selected** keeps a stronger tint with a blue bar at its left edge.
+
 ## Your default view, and editing or deleting a new plan (2026-11-02)
 
 Everything here is on the method page (`/accounts/<id>/method/`), for the account's owner only.
@@ -859,6 +897,8 @@ Everything here is on the method page (`/accounts/<id>/method/`), for the accoun
   a method runs; the switch says "This is your default view." when you are on it. Picking another view with the
   switch still works for the rest of that sign-in. An account with no method still opens on **C: The Lesson
   Lab**, because that is where a method starts. To choose another default, go to that view and press its button.
+  Since 2026-11-03 the button has your current default beside it ("Your default now: view C." or "No default
+  saved") and a link to [Settings](#settings-2026-11-03), where the default can also be chosen or cleared.
 - **Edit a plan before anything happens under it.** Until something is bought or logged under the plan, and
   before its first month's buy window closes, the method page says "its numbers can still be edited" with **Edit
   the plan**. On a paper account the box "This month's buys" also says "Want different numbers first? Edit the

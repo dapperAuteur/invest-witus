@@ -158,6 +158,13 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
   back. A cancel Alpaca has not finished (`pending_cancel`) stops the edit or delete with nothing changed; **Check
   orders now** or the nightly cron finishes the row, then the owner presses Save or Delete again.
 
+- The plan's amount as a total, Settings, striped tables and the Help bubble's draft (2026-11-03, decisions 161
+  to 165): no migration and nothing to run after the deploy. `/settings/` is a new signed-in route; the Help
+  bubble's **Open the full form** keeps the draft in the session (`report_draft`, the database session table
+  already in use), read once by the next `GET /report/`. A month whose ranking changed after its buys were placed
+  now keeps those buys (decision 162): to buy a newcomer anyway, buy it by hand at Alpaca and log it, or wait for
+  next month's ranking.
+
 ## Alpaca key slots: one paper account per method
 
 Decisions 159 and 160 (2026-11-02). Each method runs in its own Invest account, and each Invest account that
