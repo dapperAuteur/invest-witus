@@ -1,0 +1,4 @@
+{# 2026-11-03 (decision 174): months closed under an older version of the method's rules keep that version's findings. #}
+{% if plan and review.older_rules %}
+<p class="small older-rules">{% for version, months in review.older_rules %}Judged by version {{ version }} of the rules, the version they were closed under: {{ months }}.{% if not forloop.last %} {% endif %}{% endfor %} Every other month is judged by version {{ review.method.version }}.</p>
+{% endif %}

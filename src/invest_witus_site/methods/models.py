@@ -36,7 +36,13 @@ from django.db.models import Q
 
 from invest_witus.adherence.journal import Action, Entry
 from invest_witus.adherence.plan import Plan
-from invest_witus.methods.rulebook import Method, UnknownMethodError, load_method
+from invest_witus.methods.rulebook import (
+    Method,
+    UnknownMethodError,
+    latest_method,
+    load_method,
+    load_method_version,
+)
 from invest_witus.money import to_money, to_shares
 from invest_witus_site.holdings.models import MONEY_PLACES, SHARE_PLACES, Account
 from invest_witus_site.holdings.templatetags import holdings_extras
@@ -203,8 +209,13 @@ class MethodPlan(models.Model):
         return cls.objects.filter(account=account, active=True).first()
 
     def method(self) -> Method:
-        """The rules, read from the package now, never copied into the row."""
-        return load_method(self.method_id)
+        """The rules, read from the package now, never copied into the row. Since decision 174,
+        the newest version of them: what every month that is not closed is judged by."""
+        return latest_method(self.method_id)
+
+    def method_version(self, version: int) -> Method:
+        """One version of the rules, for a month closed under it (decision 174)."""
+        return load_method_version(self.method_id, version)
 
     def symbol_list(self) -> list[str]:
         return self.symbols.split()
@@ -554,6 +565,18 @@ class MonthlyReview(models.Model):
         null=True, blank=True
     )
     created_at: models.DateTimeField[datetime, datetime] = models.DateTimeField(auto_now_add=True)
+    # 2026-11-03 (decision 174): the version of the method's rules the month was closed under,
+    # written by the first close and kept from then on (a reopen does not clear it), so a month
+    # reviewed under version 1 keeps version 1's findings. Empty: never closed, judged by the
+    # newest rules. Nullable, so the column is additive; migration 0006 writes 1 on every month
+    # closed (or closed and reopened) before version 2 shipped.
+    rules_version: models.PositiveSmallIntegerField[int | None, int | None] = (
+        models.PositiveSmallIntegerField(
+            null=True,
+            blank=True,
+            help_text="The rules version the month was first closed under. Empty: the newest.",
+        )
+    )
 
     class Meta:
         ordering = ["month", "pk"]

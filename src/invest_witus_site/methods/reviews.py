@@ -8,6 +8,10 @@ owner first looked. Closing asks three questions (what I did, what the rules sai
 next month) and is refused while the month has a missed buy with no skip to explain it: the PRD's
 "a review cannot be closed with an unexplained skip". Every close and every reopen is a
 `ReviewEvent`, so the history of a month survives a reopen and a second close.
+
+2026-11-03 (decision 174): the first close also writes the version of the method's rules the month
+was judged by (`MonthlyReview.rules_version`); a reopen keeps it, so a month reviewed under version
+1 of the index rules keeps version 1's findings after version 2 ships.
 """
 
 from datetime import date
@@ -65,6 +69,13 @@ def close_refusal(review: MonthlyReview, context: MethodReview) -> str:
     return ""
 
 
+def rules_version_of(review: MonthlyReview, context: MethodReview) -> int:
+    """Decision 174: the version of the rules the month is judged by as it closes, which the row
+    keeps from the first close on, so the month keeps these findings when newer rules ship."""
+    row = context.month(review.month)
+    return row.rules_version if row is not None else context.method.version
+
+
 def written(review: MonthlyReview) -> str:
     """The three answers as one text, the way the audit trail keeps them."""
     return (
@@ -89,6 +100,8 @@ def close_review(
     with transaction.atomic():
         review.did, review.rules_said, review.next_month = did, rules_said, next_month
         review.closed_at = timezone.now()
+        if review.rules_version is None:
+            review.rules_version = rules_version_of(review, context)
         review.save()
         ReviewEvent.objects.create(
             review=review, action=ReviewEvent.CLOSED, text=written(review), by=user_or_none(by)

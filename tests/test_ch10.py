@@ -21,7 +21,13 @@ from django.utils import timezone
 from invest_witus.adherence.journal import Action, Entry
 from invest_witus.adherence.plan import Plan
 from invest_witus.adherence.review import CHECKED_RULES
-from invest_witus.methods.rulebook import Method, Rule, available_methods, load_method
+from invest_witus.methods.rulebook import (
+    Method,
+    Rule,
+    available_methods,
+    latest_method,
+    load_method,
+)
 from invest_witus.prices.csv_file import PricePoint
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.engine import (
@@ -514,7 +520,8 @@ def test_view_b_tables_every_month_with_amounts_and_shares(
     )
     assert entries[1] == ("2026-01-02", "Buy", "INDEX", "$100.00", "0.5", "first buy")
     assert entries[2] == ("2026-02-12", "Buy", "INDEX", "$100.00", "not recorded", "")
-    assert "Paper (practice) (Example Broker)" in html and "version 1 (index-dca)" in html
+    # Decision 174: view B names the version of the rules in force, version 2 since decision 173.
+    assert "Paper (practice) (Example Broker)" in html and "version 2 (index-dca)" in html
 
 
 # --- Three views, one toggle -----------------------------------------------------------------
@@ -579,7 +586,8 @@ def test_every_view_shows_the_same_plan_rules_findings_and_journal_and_no_price(
 ) -> None:
     DailyClose.upsert("INDEX", [PricePoint(date(2026, 2, 27), D("123.456789"))], "csv")
     client.force_login(owner)
-    rules = [rule.text for rule in load_method("index-dca").rules]
+    # Decision 174: the page prints the newest version of the rules (version 2 since decision 173).
+    rules = [rule.text for rule in latest_method("index-dca").rules]
     for view in VIEW_HEADINGS:
         html = text(client.get(page_url(account, f"?view={view}&through=2026-02-28")))
         assert "100.00" in html and "INDEX" in html and "2026-01-01" in html, view

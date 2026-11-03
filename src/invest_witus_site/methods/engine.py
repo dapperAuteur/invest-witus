@@ -24,6 +24,14 @@ passes the rankings in. Everything else is the same arrangement: the spans, the 
 month with any trade is done, since a rebalance may be only a sale), a skip explaining a month
 with no trade, and the next action, whose symbols are that month's top N. An index plan takes
 exactly the path it took before.
+
+2026-11-03 (decisions 173 and 174): the index rules have a version 2, one buy of each fund and the
+month's total, because chapter 03's version 1 flags every buy of a plan split across several funds.
+Each month is judged by one version: a month closed under version 1 (its `MonthlyReview` says so)
+keeps version 1's findings; every other month is judged by the newest version. So the review runs
+once per version a span uses, and each month takes its findings from its own version. Version 2's
+findings name a missing fund, so a skip that names that fund explains it, and the paper orders'
+reasons (decision 162) are passed in as words for the messages.
 """
 
 from collections.abc import Mapping
@@ -31,13 +39,22 @@ from dataclasses import dataclass, field, replace
 from datetime import date
 from decimal import Decimal
 
+from invest_witus.adherence import index_dca_v2
 from invest_witus.adherence import momentum as momentum_rules
+from invest_witus.adherence.index_dca_v2 import Reasons, SymbolFinding
 from invest_witus.adherence.journal import Action, Entry
 from invest_witus.adherence.plan import Plan
 from invest_witus.adherence.review import Finding, months_due, review
 from invest_witus.methods.momentum_12_1 import Month, Ranking
 from invest_witus.methods.rulebook import LESSON_COMING, Method
-from invest_witus_site.methods.models import SKIP, JournalEntry, MethodPlan, Span, version_spans
+from invest_witus_site.methods.models import (
+    SKIP,
+    JournalEntry,
+    MethodPlan,
+    MonthlyReview,
+    Span,
+    version_spans,
+)
 from invest_witus_site.methods.momentum import (
     MomentumView,
     PriceSeries,
@@ -46,6 +63,7 @@ from invest_witus_site.methods.momentum import (
     ranking_for,
     series_since,
 )
+from invest_witus_site.paper.orders import order_shortfalls
 
 ZERO = Decimal("0")
 # The one rule a skip can explain: a month with no buy. The id is the TOML file's.
@@ -73,6 +91,9 @@ class FindingLine:
     rule: RuleLine
     message: str
     explanation: str = ""
+    # Decision 173: the fund a version 2 "No buy of BETA" finding is about, so a skip naming it
+    # explains it; "" for every other finding.
+    symbol: str = ""
 
     @property
     def explained(self) -> bool:
@@ -126,6 +147,8 @@ class MonthRow:
     skip_reason: str = ""
     # Chapter 14: the month's top N in rank order, or why there is none (12-1 momentum only).
     ranking: str = ""
+    # Decision 174: the version of the method's rules that judged the month.
+    rules_version: int = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,6 +209,16 @@ class MethodReview:
     def months_due(self) -> int:
         return sum(1 for row in self.months if row.status != "open")
 
+    @property
+    def older_rules(self) -> list[tuple[int, str]]:
+        """Decision 174: each older version of the rules that still judges some months, with
+        those months ("2026-09, 2026-10"), for the line that says so on the page."""
+        older: dict[int, list[str]] = {}
+        for row in self.months:
+            if row.rules_version != self.method.version:
+                older.setdefault(row.rules_version, []).append(row.label)
+        return [(version, ", ".join(labels)) for version, labels in sorted(older.items())]
+
 
 def month_label(year: int, month: int) -> str:
     return f"{year}-{month:02d}"
@@ -202,7 +235,13 @@ def rule_lines(method: Method) -> list[RuleLine]:
 
 def finding_lines(findings: list[Finding], rules: dict[str, RuleLine]) -> list[FindingLine]:
     return [
-        FindingLine(f.day, month_label(f.day.year, f.day.month), rules[f.rule_id], f.message)
+        FindingLine(
+            f.day,
+            month_label(f.day.year, f.day.month),
+            rules[f.rule_id],
+            f.message,
+            symbol=f.symbol if isinstance(f, SymbolFinding) else "",
+        )
         for f in findings
     ]
 
@@ -223,6 +262,8 @@ def month_rows(
     version: int = 1,
     any_trade: bool = False,
     rankings: Mapping[Month, str] | None = None,
+    rules_versions: Mapping[str, int] | None = None,
+    newest_rules: int = 1,
 ) -> list[MonthRow]:
     """Every month from the plan's start through `through`: the months whose window has closed
     (chapter 03's `months_due`) and, if the review date falls inside a window that is still open,
@@ -231,7 +272,9 @@ def month_rows(
     left shares blank, so a partial total is never printed as a whole. A month with no buy and a
     skip in the journal reads "skipped", with the skip's reason.
     Chapter 14: with `any_trade`, a month with a sale and no buy is done too (a momentum
-    rebalance can be a sale alone), and `rankings` gives each month's top N in words."""
+    rebalance can be a sale alone), and `rankings` gives each month's top N in words.
+    Decision 174: `rules_versions` maps a month closed under an older version of the rules to that
+    version; every other month was judged by `newest_rules`."""
     due = months_due(plan, through)
     months = list(due)
     if through >= plan.start:
@@ -272,6 +315,7 @@ def month_rows(
                 version=version,
                 skip_reason=skipped[0].reason if skipped and not done else "",
                 ranking=(rankings or {}).get((year, month), ""),
+                rules_version=(rules_versions or {}).get(label, newest_rules),
             )
         )
     return rows
@@ -320,6 +364,72 @@ def explain(
     ]
 
 
+def explain_funds(findings: list[FindingLine], entries: list[JournalEntry]) -> list[FindingLine]:
+    """Decision 173: attach a skip's reason to a version 2 "No buy of BETA" finding when the
+    journal has a skip in that month that names BETA. A skip naming no fund explains a month with
+    no buy at all (`explain`), not one fund of a month that had buys."""
+    reasons = {
+        (month_label(e.date.year, e.date.month), e.symbol): e.reason
+        for e in entries
+        if e.kind == SKIP and e.symbol
+    }
+    return [
+        replace(finding, explanation=reasons[(finding.month, finding.symbol)])
+        if finding.symbol and not finding.explained and (finding.month, finding.symbol) in reasons
+        else finding
+        for finding in findings
+    ]
+
+
+def closed_under(version: MethodPlan) -> dict[str, int]:
+    """Decision 174: the months of this plan version that were closed under a version of the
+    rules, by month ("2026-09": 1). A month never closed is not here: the newest rules judge it."""
+    if version.pk is None:
+        return {}
+    rows = MonthlyReview.objects.filter(plan=version, rules_version__isnull=False)
+    return {month: number for month, number in rows.values_list("month", "rules_version") if number}
+
+
+def index_findings(
+    method: Method, plan: Plan, trades: list[Entry], through: date, reasons: Reasons
+) -> list[Finding]:
+    """The index rules of one version: chapter 03's `review` for version 1, decision 173's for
+    version 2. A version this function does not know is an error, never the nearest one."""
+    if method.version == 1:
+        return review(method, plan, trades, through)
+    if method.version == 2:
+        return index_dca_v2.review(method, plan, trades, through, reasons)
+    raise ValueError(f"no checks for {method.id} version {method.version}")
+
+
+def judged_by_version(
+    span_plan: MethodPlan,
+    plan: Plan,
+    trades: list[Entry],
+    through: date,
+    pins: Mapping[str, int],
+    newest: int,
+) -> list[FindingLine]:
+    """Each month's findings from the version of the rules that judges it: the version it was
+    closed under, else the newest. The review runs once per version the span uses."""
+    later = newest > 1 or any(number > 1 for number in pins.values())
+    reasons: Reasons = shortfall_reasons(span_plan) if later else {}
+    found: list[FindingLine] = []
+    for number in sorted({newest, *pins.values()}):
+        rules = span_plan.method_version(number)
+        by_id = {line.id: line for line in rule_lines(rules)}
+        lines = finding_lines(index_findings(rules, plan, trades, through, reasons), by_id)
+        found += [line for line in lines if pins.get(line.month, newest) == number]
+    return sorted(found, key=lambda line: (line.day, line.rule.id))
+
+
+def shortfall_reasons(version: MethodPlan) -> Reasons:
+    """Why a fund's buy of a month is missing or short, from the version's paper orders, in the
+    words of the month's buys box (decision 162): refused by Alpaca, ended with nothing filled,
+    or ended part filled. Empty for an account with no paper orders."""
+    return order_shortfalls(version) if version.pk is not None else {}
+
+
 def span_through(span: Span, through: date) -> date:
     return through if span.last is None else min(through, span.last)
 
@@ -346,9 +456,18 @@ def build_review(plan: MethodPlan, entries: list[JournalEntry], through: date) -
     for span in spans:
         upto = span_through(span, through)
         version = span.plan.to_plan()
+        pins = closed_under(span.plan)
         if series is None:
-            found = finding_lines(review(span.plan.method(), version, trades, upto), by_id)
-            months_found = month_rows(version, entries, found, upto, span.plan.version)
+            found = judged_by_version(span.plan, version, trades, upto, pins, method.version)
+            months_found = month_rows(
+                version,
+                entries,
+                found,
+                upto,
+                span.plan.version,
+                rules_versions=pins,
+                newest_rules=method.version,
+            )
         else:
             rankings = span_rankings(span.plan, version, upto, series)
             checked = momentum_rules.review(
@@ -363,13 +482,22 @@ def build_review(plan: MethodPlan, entries: list[JournalEntry], through: date) -
             found = finding_lines(checked, by_id)
             words = {month: ranking_words(ranking) for month, ranking in rankings.items()}
             months_found = month_rows(
-                version, entries, found, upto, span.plan.version, any_trade=True, rankings=words
+                version,
+                entries,
+                found,
+                upto,
+                span.plan.version,
+                any_trade=True,
+                rankings=words,
+                rules_versions=pins,
+                newest_rules=method.version,
             )
         findings += found
         months += months_found
     findings = explain(
         findings, months, momentum_rules.MISSED_MONTH if series is not None else ONE_BUY
     )
+    findings = explain_funds(findings, entries)
     skipped = frozenset(
         (e.date.year, e.date.month) for e in entries if e.kind == SKIP and e.date >= spans[0].first
     )

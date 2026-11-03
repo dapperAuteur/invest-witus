@@ -218,6 +218,23 @@ def shortfall(buy: StagedBuy) -> str:
     return f"{buy.symbol}: {part} not placed yet."
 
 
+def order_shortfalls(plan: MethodPlan) -> dict[tuple[tuple[int, int], str], str]:
+    """Decision 173: why each symbol's buy of a month fell short, from this plan version's orders,
+    by ((year, month), symbol), in `shortfall`'s words without the leading "SYMBOL: ": refused by
+    Alpaca, ended with nothing filled, or ended part filled. A buy that filled in full, or is still
+    open, has no entry. The index review adds these words to its findings; it judges nothing by
+    them."""
+    reasons: dict[tuple[tuple[int, int], str], str] = {}
+    rows = PaperOrder.objects.filter(plan=plan).order_by("pk")
+    latest = {(row.month, row.symbol): row.notional for row in rows}
+    for (month, symbol), notional in latest.items():
+        line = shortfall(staged(plan, month, symbol, notional))
+        if line:
+            year, number = (int(part) for part in month.split("-"))
+            reasons[((year, number), symbol)] = line.removeprefix(f"{symbol}: ")
+    return reasons
+
+
 def month_parts(plan: MethodPlan, month: str, split: list[str]) -> list[tuple[str, Decimal]]:
     """The month's buys: the plan's amount split across `split` to the cent, until something is
     bought. Once the month has an order that is open or filled, the month's buys are its orders,

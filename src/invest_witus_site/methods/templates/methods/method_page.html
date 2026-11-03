@@ -18,6 +18,7 @@
   {% if review.momentum %}{% include "methods/_momentum.html" with momentum=review.momentum %}{% endif %}
   {# Chapter 14a: how each candidate's place moved since last month, and its places over twelve months. #}
   {% if rank_changes %}{% include "methods/_rank_changes.html" with changes=rank_changes %}{% endif %}
+  {% include "methods/_older_rules.html" %}
   {# The same context, one of three arrangements (chapter 10). The view's letter is the research's. #}
   {% include view_template %}
   <p><a href="{% url 'account-detail' account.pk %}">Back to the account</a></p>

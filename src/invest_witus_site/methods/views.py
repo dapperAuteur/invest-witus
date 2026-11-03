@@ -430,6 +430,7 @@ def render_review_page(
         "review": review,
         "version": review.plan,
         "row": row,
+        "rules_newest": context.method.version,
         "findings": [f for f in context.findings if f.month == review.month],
         "entries": entries,
         "events": list(ReviewEvent.objects.filter(review=review).select_related("by")),

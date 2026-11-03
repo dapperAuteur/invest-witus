@@ -21,7 +21,7 @@ from django.utils import timezone
 from pytest_django.fixtures import Settings
 
 from invest_witus.adherence.review import CHECKED_RULES
-from invest_witus.methods.rulebook import load_method
+from invest_witus.methods.rulebook import latest_method, load_method
 from invest_witus_site.holdings.models import Account
 from invest_witus_site.methods.engine import build_review, next_action
 from invest_witus_site.methods.forms import PlanChangeForm, first_of_next_month
@@ -267,7 +267,7 @@ def test_the_page_shows_the_skip_as_explained_in_every_view(
     checks, months, findings, entries = tables_in(html)
     assert f"Explained by a skip: {SKIP_REASON}" in findings[1][2]
     assert checks[1][:3] == (
-        load_method("index-dca").rules[0].text,
+        latest_method("index-dca").rules[0].text,  # decision 174: the newest rules' text
         "explained",
         "1 finding: 2026-02 (1 explained)",
     )

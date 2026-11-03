@@ -1,0 +1,38 @@
+# Index investing with a fixed monthly contribution, version 2 of its rules (decision 173).
+# Version 1 (`index_dca.toml`, chapter 03) expects one buy of the plan's whole amount each month.
+# Since decision 161 the amount is the month's total, split across the plan's funds, so version 2
+# asks for one buy of each fund and judges the month's total. The rule ids are version 1's, so a
+# lesson written for a rule fits both versions, and a plan with one fund is judged exactly as before.
+# The Learn.WitUS lesson and the code read this same file. A rule's `lesson` is the URL of the
+# lesson that teaches it; leave it empty until that lesson is published. Never guess a URL.
+
+id = "index-dca"
+name = "Index investing with a fixed monthly contribution"
+version = 2
+summary = "Put the same total into the same index funds at the start of every month, split across them, and don't sell because prices fell."
+lesson = ""
+
+[[rules]]
+id = "one-buy-each-month"
+text = "Buy once in every month of the plan: one buy of each fund the plan names. A fund left out is a finding, with the reason when the app knows it."
+lesson = ""
+
+[[rules]]
+id = "buy-in-window"
+text = "Buy within the plan's buy window at the start of the month, not when the news makes you feel ready."
+lesson = ""
+
+[[rules]]
+id = "fixed-amount"
+text = "Put in the plan's amount every month: the month's buys add up to the plan's total, within one cent for each fund after the first. No more after a good month, no less after a bad one."
+lesson = ""
+
+[[rules]]
+id = "plan-symbols-only"
+text = "Buy only the fund or funds named in your plan."
+lesson = ""
+
+[[rules]]
+id = "no-selling"
+text = "This method has no sell rule. A sale is a change of plan and needs a written reason."
+lesson = ""
