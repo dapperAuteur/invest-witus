@@ -321,17 +321,18 @@ def edit_plan(request: HttpRequest, pk: int) -> HttpResponse:
         if not form.has_changed():
             messages.info(request, "Nothing changed: these are the plan's numbers already.")
             return redirect("method-page", pk=account.pk)
-        if withdraw_open_orders(request, account, state):
-            state = plan_state(plan)
-            if state.can_edit and not state.open_orders:
-                saved = form.save()
-                messages.success(
-                    request,
-                    f"Saved the plan's new numbers. Nothing was bought or logged under the old "
-                    f"ones, so this is still version {saved.version}, not a new one.",
-                )
-                watched_message(request, form.watched)
-                return redirect("method-page", pk=account.pk)
+        withdrawn = withdraw_open_orders(request, account, state)
+        # Read again either way: a cancel may have removed an entry or recorded a fill.
+        state = plan_state(plan)
+        if withdrawn and state.can_edit and not state.open_orders:
+            saved = form.save()
+            messages.success(
+                request,
+                f"Saved the plan's new numbers. Nothing was bought or logged under the old "
+                f"ones, so this is still version {saved.version}, not a new one.",
+            )
+            watched_message(request, form.watched)
+            return redirect("method-page", pk=account.pk)
     context = {"account": account, "plan": plan, "form": form, "plan_state": state}
     return render(request, "methods/plan_edit.html", context)
 

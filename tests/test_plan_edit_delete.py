@@ -367,6 +367,8 @@ def test_a_cancel_alpaca_has_not_finished_saves_nothing(
         owner_client.post(url(account, "edit/"), edit_form(plan, amount="150"), follow=True)
     )
     assert "Alpaca took the cancel of INDEX but has not finished it (pending_cancel)." in html
+    assert "Buy $100.00 of INDEX, pending_cancel (queued at Alpaca)" in html, "read again"
+    assert 'value="150"' in html or 'value="150.00"' in html, "the typed numbers stay in the form"
     assert MethodPlan.objects.get().amount == D("100.00")
     assert JournalEntry.objects.count() == 1
     # Later the cancel lands; the nightly sync removes the entry, and the edit goes through.
