@@ -9,6 +9,10 @@
   {# the owner reads it in the admin; nothing is forwarded. Said plainly, because it is true. #}
   <p class="report-off">On this copy of the app, reports are saved for the owner to read in the admin. Forwarding to WitUS Inbox is off.</p>
   {% endif %}
+  {% if carried %}
+  {# Decision 165: the Help bubble's "Open the full form" brought what was typed there. #}
+  <p class="callout" role="status">What you typed in the Help bubble is filled in below. Nothing has been sent yet.</p>
+  {% endif %}
   <form method="post" action="{% url 'report' %}" class="report-form" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}

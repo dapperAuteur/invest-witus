@@ -38,7 +38,10 @@
         <label for="{{ help_form.website.id_for_label }}">Leave this field empty</label>
         {{ help_form.website }}
       </div>
-      <p class="help-dialog-actions"><button type="submit">Send</button> <a href="{% url 'report' %}">Open the full form</a></p>
+      {# Decision 165: "Open the full form" submits what is typed here to /report/ (POST, with the CSRF token), #}
+      {# which keeps it in the session and shows the full form filled in. Nothing is saved or sent, nothing goes #}
+      {# in the URL, and no script is needed. `formnovalidate` lets an empty message go across too. #}
+      <p class="help-dialog-actions"><button type="submit">Send</button> <button type="submit" name="open_full" value="1" formnovalidate class="link-button">Open the full form</button></p>
     </form>
   </div>
 </dialog>

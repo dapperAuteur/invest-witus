@@ -10,6 +10,7 @@ reports already in the database, because Vercel's functions share no memory to c
 import hashlib
 import hmac
 from datetime import timedelta
+from typing import cast
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -24,7 +25,7 @@ from invest_witus_site.health import app_version
 from invest_witus_site.reports.delivery import deliver
 from invest_witus_site.reports.forms import ReportForm, page_path
 from invest_witus_site.reports.inbox import configured
-from invest_witus_site.reports.models import PAGE_LIMIT, Report
+from invest_witus_site.reports.models import MESSAGE_LIMIT, PAGE_LIMIT, Report
 
 # Five reports an hour from one address, and five from one signed-in person. Enough for anyone
 # writing by hand; a script hits it on the sixth.
@@ -36,11 +37,22 @@ LIMITED = (
 )
 
 
+# The Help bubble's "Open the full form" (2026-11-03, decision 165): what was typed in the bubble,
+# kept in the session for the one GET that follows, so it never travels in a URL.
+DRAFT_KEY = "report_draft"
+OPEN_FULL = "open_full"
+
+
 def report(request: HttpRequest) -> HttpResponse:
     signed_in = request.user.is_authenticated
     if request.method != "POST":
-        form = ReportForm(initial={"page": referrer_path(request)}, signed_in=signed_in)
-        return page(request, form)
+        draft = take_draft(request)
+        initial = {"page": referrer_path(request), **draft}
+        form = ReportForm(initial=initial, signed_in=signed_in)
+        return page(request, form, carried=bool(draft))
+    if OPEN_FULL in request.POST:
+        keep_draft(request)
+        return redirect("report")
     form = ReportForm(request.POST, signed_in=signed_in)
     if not form.is_valid():
         return page(request, form)
@@ -70,12 +82,42 @@ def report(request: HttpRequest) -> HttpResponse:
     return redirect("report-thanks")
 
 
+def keep_draft(request: HttpRequest) -> None:
+    """The bubble's kind, message and page, cut to the form's limits, for the full form to show.
+    Nothing is saved as a report and nothing is sent. The email (never in the bubble, which is for
+    signed-in people) and the honeypot are not carried; a filled honeypot carries nothing."""
+    if request.POST.get("website"):
+        return
+    kind = request.POST.get("kind", "")
+    request.session[DRAFT_KEY] = {
+        "kind": kind if kind in Report.Kind.values else "",
+        "message": request.POST.get("message", "")[:MESSAGE_LIMIT],
+        "page": page_path(request.POST.get("page", "")),
+    }
+
+
+def take_draft(request: HttpRequest) -> dict[str, str]:
+    """The draft `keep_draft` left, once: read and removed, so a later visit starts empty."""
+    draft: object = request.session.pop(DRAFT_KEY, None)
+    if not isinstance(draft, dict):
+        return {}
+    fields = cast(dict[object, object], draft)
+    kept: dict[str, str] = {}
+    for name in ("kind", "message", "page"):
+        value = fields.get(name)
+        if isinstance(value, str) and value:
+            kept[name] = value
+    return kept
+
+
 def thanks(request: HttpRequest) -> HttpResponse:
     return render(request, "reports/thanks.html")
 
 
-def page(request: HttpRequest, form: ReportForm, status: int = 200) -> HttpResponse:
-    context = {"form": form, "inbox_on": configured()}
+def page(
+    request: HttpRequest, form: ReportForm, status: int = 200, carried: bool = False
+) -> HttpResponse:
+    context = {"form": form, "inbox_on": configured(), "carried": carried}
     return render(request, "reports/report.html", context, status=status)
 
 
