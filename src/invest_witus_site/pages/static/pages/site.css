@@ -269,6 +269,9 @@ fieldset.field legend { font-weight: 600; margin-bottom: 0.25rem; padding: 0; }
 .holdings caption:not(.sr-only) { text-align: left; caption-side: top; font-size: 0.875rem; color: var(--muted); padding: 0.25rem 0; }
 .choice-list { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
 .choice-list label { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; }
+/* Chapter 15: `.field input` makes text boxes full width; a checkbox in a choice list keeps its own
+   size, so a long label (an account and its method) wraps beside it instead of stretching it. */
+.choice-list input[type="checkbox"] { width: auto; min-height: 0; flex: none; padding: 0; }
 .compare-form { margin: 1rem 0; }
 .compare-form select { min-height: 2.75rem; padding: 0 0.5rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0.375rem; font: inherit; }
 .bulk-history { margin: 0.5rem 0; }

@@ -10,7 +10,7 @@
   </figcaption>
   <ul class="legend" aria-label="Key">
     {% for line in plot.lines %}
-    <li><svg class="swatch" viewBox="0 0 36 10" width="36" height="10" aria-hidden="true" focusable="false"><line x1="1" y1="5" x2="35" y2="5" stroke="{{ line.color }}" stroke-width="3"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %}/></svg>{{ line.symbol }} <span class="muted">({{ line.basis }}, {{ line.pattern }} line)</span></li>
+    <li><svg class="swatch" viewBox="0 0 36 10" width="36" height="10" aria-hidden="true" focusable="false"><line x1="1" y1="5" x2="35" y2="5" stroke="{{ line.color }}" stroke-width="3"{% if line.dash %} stroke-dasharray="{{ line.dash }}"{% endif %}/></svg><span>{{ line.symbol }} <span class="muted">({{ line.basis }}, {{ line.pattern }} line)</span></span></li>
     {% endfor %}
     {% for shaded in plot.bands %}
     <li><span class="band-key band-key-{{ shaded.kind }}" aria-hidden="true"></span>{{ shaded.label }}, {{ shaded.first|date:"Y-m-d" }} to {{ shaded.last|date:"Y-m-d" }}</li>

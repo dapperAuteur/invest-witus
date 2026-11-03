@@ -15,7 +15,7 @@
       <ul class="plain choice-list">
         {% for account in owned %}
         {% with plan=plans|item:account.pk %}
-        <li><label><input type="checkbox" name="accounts" value="{{ account.pk }}"{% if account.pk in picked_pks %} checked{% endif %}> {{ account.name }} <span class="muted small">({% if plan %}{{ plan.method.name }}{% if not plan.active %}, ended{% endif %}{% else %}no plan{% endif %})</span></label></li>
+        <li><label><input type="checkbox" name="accounts" value="{{ account.pk }}"{% if account.pk in picked_pks %} checked{% endif %}> <span>{{ account.name }} <span class="muted small">({% if plan %}{{ plan.method.name }}{% if not plan.active %}, ended{% endif %}{% else %}no plan{% endif %})</span></span></label></li>
         {% endwith %}
         {% endfor %}
       </ul>
@@ -84,7 +84,7 @@
         <th scope="col" class="num">Time-weighted return</th>
         <th scope="col" class="num">Worst drop</th>
         <th scope="col">Months running</th>
-        <th scope="col">How often the plan was followed</th>
+        <th scope="col">Plan followed</th>
       </tr>
     </thead>
     <tbody>
