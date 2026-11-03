@@ -845,6 +845,36 @@ Written for the app at `v14a`. Two more pictures on an account that runs 12-1 mo
 - Both read the adjusted close, as the ranking does, and both say how many stored closes had none. Each has a
   **How to read this** note and "Lesson coming".
 
+## Your default view, and editing or deleting a new plan (2026-11-02)
+
+Everything here is on the method page (`/accounts/<id>/method/`), for the account's owner only.
+
+- **Choose your default view.** Under the view switch, **Make A: The Plan and the Logbook my default view** (the
+  button names whichever view you are on). From then on, every sign-in opens your method pages on that view while
+  a method runs; the switch says "This is your default view." when you are on it. Picking another view with the
+  switch still works for the rest of that sign-in. An account with no method still opens on **C: The Lesson
+  Lab**, because that is where a method starts. To choose another default, go to that view and press its button.
+- **Edit a plan before anything happens under it.** Until something is bought or logged under the plan, and
+  before its first month's buy window closes, the method page says "its numbers can still be edited" with **Edit
+  the plan**. On a paper account the box "This month's buys" also says "Want different numbers first? Edit the
+  plan before you confirm." The edit page is the start form filled in with your numbers (method, amount, window,
+  symbols, start, practice budget, top N); **Save the plan** changes the same plan, with no new version and no
+  reason to write.
+- **If you already pressed Confirm** (or **Confirm: queue for the open** while the market was closed), the edit
+  page lists the queued order and says that saving cancels it at Alpaca paper first and removes its journal
+  entry. After the save, "This month's buys" offers the buy again with the new numbers (**Place again**, a new
+  order id ending in `-r2`). If Alpaca has already filled the order, nothing is saved and the plan keeps its
+  numbers; if Alpaca has not finished cancelling it, the page says so: try again in a minute.
+- **Delete a plan to start over.** **delete it** (from the same line, or the change page) opens a page that lists
+  what goes with the plan: its versions, any month review the app opened that nobody wrote in, and the app's
+  record of paper orders that ended with nothing bought, plus any queued order it cancels at Alpaca first.
+  **Delete this plan** deletes them; your journal, watch list and account stay. You land in the Lesson Lab to
+  start again.
+- **When a plan has history** (a paper order bought shares, the journal has an entry the plan judges, or a month
+  review was written, closed or reopened), it cannot be edited in place or deleted. The edit, delete and change
+  pages list exactly why. Use **Change or end this plan**: a change is a new version with a reason, and ending
+  keeps the plan's months, reviews and journal.
+
 ## Draft a post for WitUS Outbox (2026-10-29)
 
 For the site owner only. When you want to tell people something about Invest.WitUS (that it is live, or a

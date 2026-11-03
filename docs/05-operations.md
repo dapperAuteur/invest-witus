@@ -147,6 +147,14 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
 - By hand on the laptop: `uv run --env-file .env python manage.py sync_paper_orders`. With no keys in `.env` it
   prints `Alpaca paper keys are not set; nothing to sync.` and calls nothing.
 
+- Default view, plan edit and delete (2026-11-02, decisions 155 to 158): migration
+  `methods/0005_view_preference` adds the `ViewPreference` table (a new table, additive, safe to run twice),
+  applied by the migrate workflow on merge; by hand, the fallback above. Until it runs, method pages answer 500
+  for about a minute, because they read the table. Edit and Delete call Alpaca only on the owner's click, and only
+  for a plan with orders still open: `DELETE /v2/orders/{id}` to cancel, then `GET /v2/orders/{id}` to read it
+  back. A cancel Alpaca has not finished (`pending_cancel`) stops the edit or delete with nothing changed; **Check
+  orders now** or the nightly cron finishes the row, then the owner presses Save or Delete again.
+
 ## Reports and the waitlist's copies to WitUS Inbox (chapter 13)
 
 Nothing to run after a deploy: migration `reports/0001` is applied by the migrate workflow on merge.

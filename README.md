@@ -121,7 +121,8 @@ findings, the rules, the logbook); B, Method Console (rule checks with status, e
 every month of the plan done, missed or open with amounts and shares, the findings and the journal as tables);
 C, The Lesson Lab (the rules read before the start form, then each rule's lesson and how often it was flagged).
 The switch is three links, `?view=a|b|c`, remembered in the session; the page opens on C until a method runs and
-on A after. Starting a method and logging an entry are POST forms behind the sign-in and the ownership check;
+on A after. Since 2026-11-02, **Make this my default view** under the switch saves the view per person
+(`ViewPreference`), and the page opens on it in every later sign-in while a method runs. Starting a method and logging an entry are POST forms behind the sign-in and the ownership check;
 nothing on the page is a price, and no public page links it. The walk-through is
 [chapter 10](docs/chapters/10-the-method-engine-and-the-three-views.md), section 10.10.
 
@@ -149,7 +150,10 @@ explains a month with no buy: the review keeps the finding, shows the reason bes
 (what I did, what the rules said, what I'll do next month); a closed month's entries are read-only until the review
 is reopened with a reason, and every close and reopen is kept. **Change or end this plan** on the method page writes
 a new dated version with its reason, and each month is judged by the version in force then. On a paper account, a
-month whose order ended unfilled offers **Place again**. The logbook at `/accounts/<id>/logbook/` filters by month,
+month whose order ended unfilled offers **Place again**. Since 2026-11-02 a plan with no history yet (nothing
+bought, no journal entry it judges, no review written or closed) can be edited in place before its first window
+closes, or deleted to start over; either cancels its queued paper orders at Alpaca first. A plan with history
+offers Change or End instead, and the page says why (decisions 155 to 158). The logbook at `/accounts/<id>/logbook/` filters by month,
 kind and tag and exports CSV (the columns are in [chapter 12](docs/chapters/12-the-journal-and-closing-the-month.md),
 decision 9). Migrations run from the merge workflow; the walk-through is chapter 12, section 12.10.
 

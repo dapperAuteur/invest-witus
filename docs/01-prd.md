@@ -267,7 +267,8 @@ templates, A (The Plan and the Logbook: next action, on-plan status with finding
 and shares, findings, journal, all captioned tables with header `scope`) and C (The Lesson Lab: the rules read before
 the start form, then each rule's lesson and how often it was flagged, this month's lab, the lab notebook); the switch
 is three links with `aria-current`, `?view=a|b|c` kept in the session, C by default until a method runs and A after;
-the account's kind is printed as text on the page. Deferred: the choice saved per user across sign-ins and the toggle
+the account's kind is printed as text on the page. Deferred: the choice saved per user across sign-ins (built
+2026-11-02 as a saved default view, decision 155) and the toggle
 in the header (it is on the method page, per account), B's order queue, envelope chart and promotion checklist
 (chapter 11), A's Confirm and Skip (chapters 11 and 12), C's rules switching on one at a time (needs course content),
 charts (none yet); decisions log, rows 90 to 93.*

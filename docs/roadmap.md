@@ -16,6 +16,7 @@ updated: 2026-11-02
 - Index investing with a fixed monthly amount, and 12-1 momentum
 - Paper trading through Alpaca, with orders placed once and synced to the journal
 - Journal with hold and skip reasons, monthly close and CSV export
+- A default view saved per person; a plan edited or deleted before anything happens under it
 - Report a problem or ask a question, sent to WitUS Inbox; a Help bubble on every page
 - Owner drafts posts to WitUS Outbox
 - Tutorial chapters 00 to 14a, one git tag per chapter (14a merged 2026-10-31)
@@ -30,6 +31,7 @@ updated: 2026-11-02
 - Python tutorial course built from the chapters
 
 ## Backlog
+- Running several methods at once to compare them (BAM's design decision first; one active plan per account today)
 - Practice simulator for classes, after a vetting analysis
 - More momentum views: relative strength, quintiles, heatmap, path smoothness
 - Quarterly momentum with a quality screen as its own method
