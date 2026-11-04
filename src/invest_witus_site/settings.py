@@ -149,6 +149,8 @@ TEMPLATES = [
                 "invest_witus_site.paper.context_processors.paper_link",
                 # The header's "Logbook" link for an owner with a plan or an entry (decision 115).
                 "invest_witus_site.methods.context_processors.logbook_link",
+                # PostHog page views on signed-in pages only (decision 176).
+                "invest_witus_site.pages.context_processors.posthog",
             ],
         },
     },
@@ -253,6 +255,38 @@ if not VERCEL_ANALYTICS_SCRIPT_PATH.startswith("/"):
     raise ImproperlyConfigured(
         "VERCEL_ANALYTICS_SCRIPT_PATH must be a path on this site, starting with /, such as "
         "/<unique-path>/script.js from the Analytics page of the Vercel project."
+    )
+
+# PostHog (2026-11-04, decision 176, not a chapter): page views from signed-in pages to the WitUS
+# ecosystem's one shared PostHog project (witus plan 26), labelled `app: invest`, the slug of this
+# app's Sign in with WitUS client. On only where all three hold: the app runs on Vercel, it is the
+# Production deployment (VERCEL_ENV, a Vercel system variable), and a key is set. So previews and
+# `runserver` never send anything. The key is the project's PUBLIC key (`phc_...`), the same value
+# the Next apps read as NEXT_PUBLIC_POSTHOG_KEY, so either name works here; anything else (a
+# personal `phx_` key would be a secret printed into a page) is refused at start. The browser never
+# talks to PostHog's host: it posts to POSTHOG_API_HOST on this site, which vercel.json rewrites to
+# PostHog at Vercel's edge, so ad blockers have no vendor host to match (plan 26 decision 5).
+# POSTHOG_HOST names the region that rewrite points at; the shared project is in the US, and a US
+# key sent to another region fails silently (plan 26), so any other value is refused too: change
+# vercel.json and this check together.
+POSTHOG_PROXY_UPSTREAM = "https://us.i.posthog.com"
+POSTHOG_KEY = (
+    os.environ.get("POSTHOG_KEY") or os.environ.get("NEXT_PUBLIC_POSTHOG_KEY") or ""
+).strip()
+POSTHOG_HOST = (os.environ.get("POSTHOG_HOST") or POSTHOG_PROXY_UPSTREAM).strip().rstrip("/")
+POSTHOG_API_HOST = "/ingest"
+POSTHOG_UI_HOST = "https://us.posthog.com"
+POSTHOG_APP = "invest"
+POSTHOG_ENABLED = ON_VERCEL and os.environ.get("VERCEL_ENV") == "production" and bool(POSTHOG_KEY)
+if POSTHOG_KEY and not POSTHOG_KEY.startswith("phc_"):
+    raise ImproperlyConfigured(
+        "POSTHOG_KEY (or NEXT_PUBLIC_POSTHOG_KEY) does not start with phc_. Only the PostHog "
+        "project's public key belongs in a page; set the project key, never a personal API key."
+    )
+if POSTHOG_HOST != POSTHOG_PROXY_UPSTREAM:
+    raise ImproperlyConfigured(
+        f"POSTHOG_HOST must be {POSTHOG_PROXY_UPSTREAM}, the host vercel.json's /ingest rewrite "
+        "sends events to (the shared WitUS project is in the US). Unset it or set that value."
     )
 
 # Sign in with WitUS (chapter 07): OpenID Connect against the ecosystem's identity provider. The

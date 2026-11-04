@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.urls import reverse
 
-from invest_witus_site.pages import ecosystem
+from invest_witus_site.pages import analytics, ecosystem
 from invest_witus_site.reports.forms import ReportForm
 
 
@@ -19,6 +19,26 @@ def site(request: HttpRequest) -> dict[str, object]:
         # when the first is True, and names the script by the second.
         "vercel_analytics_enabled": settings.VERCEL_ANALYTICS_ENABLED,
         "vercel_analytics_script_path": settings.VERCEL_ANALYTICS_SCRIPT_PATH,
+    }
+
+
+def posthog(request: HttpRequest) -> dict[str, object]:
+    """PostHog's settings for this page (2026-11-04, decision 176), or None. Only signed-in pages
+    get them: decision 151 keeps every public page free of the app's own scripts, and Vercel Web
+    Analytics already counts those (chapter 06a). The base template prints the dict as JSON for
+    `pages/posthog.js`; it holds the public project key, the `/ingest` path on this site, the
+    app's label and the page's path with every id and symbol replaced (`analytics.page_path`).
+    Nothing about the person or their money is in it."""
+    if not settings.POSTHOG_ENABLED or not request.user.is_authenticated:
+        return {"posthog": None}
+    return {
+        "posthog": {
+            "key": settings.POSTHOG_KEY,
+            "api_host": settings.POSTHOG_API_HOST,
+            "ui_host": settings.POSTHOG_UI_HOST,
+            "app": settings.POSTHOG_APP,
+            "path": analytics.page_path(request),
+        }
     }
 
 

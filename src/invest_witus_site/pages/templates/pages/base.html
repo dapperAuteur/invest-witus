@@ -33,6 +33,12 @@
   {% include "pages/_help_bubble.html" %}
   {# The header's Menu button (decision 115), for signed-in pages only: the public pages carry no script. #}
   {% if user.is_authenticated %}<script src="{% static 'pages/menu.js' %}" defer></script>{% endif %}
+  {% if posthog %}
+  {# PostHog page views (decision 176): signed-in pages of the Production deployment with a key only. #}
+  {# The JSON holds the public project key, /ingest, the app label and the path with ids replaced. #}
+  {{ posthog|json_script:"posthog-config" }}
+  <script src="{% static 'pages/posthog.js' %}" defer></script>
+  {% endif %}
   {% if vercel_analytics_enabled %}
   {# Vercel Web Analytics (chapter 06a): the snippet from Vercel's quickstart for plain HTML sites, read #}
   {# October 28, 2026. The first tag queues calls until the deferred script loads. The path is the setting #}

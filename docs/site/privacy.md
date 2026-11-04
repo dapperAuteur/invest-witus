@@ -1,6 +1,6 @@
 # Privacy
 
-Last updated: October 29, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
+Last updated: November 4, 2026. Plain language on purpose. A securities lawyer reviews this page and the Terms before anyone other than the operator is admitted to the app; until then it describes what the app does today and what it is built to do.
 
 Not advice. Invest.WitUS is a learning tool. It is not a broker, not an investment adviser, and it never recommends a security.
 
@@ -32,7 +32,7 @@ Paper trading keys are the default. Any broker key you give the app stays on the
 
 ## Vendors
 
-Vendors the app uses or is built to use, each named so you can read its own terms: Alpaca (paper trading and, if you choose it, live trading), Tiingo (end-of-day prices), Neon (the database), Vercel (hosting and page-view analytics), Mailgun (email), and WitUS Inbox (where the waitlist and in-app reports are mirrored for the operator). Each vendor sees only what it needs: Alpaca sees the orders you place through it, Tiingo sees the symbols whose prices are asked for, Mailgun sees the address an email goes to.
+Vendors the app uses or is built to use, each named so you can read its own terms: Alpaca (paper trading and, if you choose it, live trading), Tiingo (end-of-day prices), Neon (the database), Vercel (hosting and page-view analytics), PostHog (page views on signed-in pages), Mailgun (email), and WitUS Inbox (where the waitlist and in-app reports are mirrored for the operator). Each vendor sees only what it needs: Alpaca sees the orders you place through it, Tiingo sees the symbols whose prices are asked for, Mailgun sees the address an email goes to.
 
 ## Market data
 
@@ -44,11 +44,13 @@ Added October 29, 2026: when the operator presses Confirm on an account linked t
 
 ## Cookies
 
-The public pages set one cookie, for the form protection Django uses (CSRF). Signing in adds a session cookie, which holds only a session id; the sign-in in progress and who is signed in live on the server. There are no advertising or analytics cookies.
+The public pages set one cookie, for the form protection Django uses (CSRF). Signing in adds a session cookie, which holds only a session id; the sign-in in progress and who is signed in live on the server. There are no advertising or analytics cookies, and nothing for analytics is kept in your browser's storage.
 
 ## Analytics
 
 Added October 28, 2026: the hosted site uses Vercel Web Analytics, which counts page views. Vercel's privacy page (read October 28, 2026) says the script sets no third-party cookies, tells visitors apart by a hash made from the request that is discarded after 24 hours, and ties no page view to an individual or an IP address. Each page view records the page, the referrer, the country, region and city, the browser, the operating system, and the device type. A copy you run on your own machine from the tutorial sends nothing.
+
+Added November 4, 2026: on signed-in pages only, the hosted site also sends PostHog one page view per page, to the analytics project shared by the WitUS family of apps. Public pages (this one, the landing page, the FAQ, the waitlist) send nothing to PostHog. A page view says which kind of page it was, with every account number, symbol, month and entry number replaced by a placeholder name (an account number becomes ":id", a symbol ":symbol"), that it came from Invest.WitUS, and what PostHog's script reads from the browser: its name and version, the operating system, the device type, the screen and window size, the language and the time zone. It carries no page title, no amount, no symbol, no account name, no query string, nothing you typed, and no WitUS user id, email or name: the visit is anonymous and is not linked to you or to your use of other WitUS apps. Nothing is stored in your browser for it (no cookie, no local storage), so each page load counts as a new visit. Clicks, typing, screen recordings and errors are not collected. The request goes through this site's own address (`/ingest`), which passes it on to PostHog's servers in the United States; like any web request it reaches them with your IP address and your browser's description of itself, and with the referring site's address cut to its domain. Previews and a copy run from the tutorial send nothing.
 
 ## Deleting your data
 
