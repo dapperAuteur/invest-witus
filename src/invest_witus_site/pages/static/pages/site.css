@@ -13,18 +13,22 @@
   --danger: #fda4af;
   --max: 64rem;
   --gutter: 1rem;
-  /* Table rows (2026-11-03, decision 164): the stripe, the hover and the selected row. Plain rgba
-     first; where color-mix() works they are mixed from --text and --accent instead, so the
-     stripes follow any theme that redefines those two. */
-  --row-alt: rgba(241, 245, 249, 0.05);
-  --row-hover: rgba(56, 189, 248, 0.12);
+  /* Table rows (decisions 164 and 175): the stripe, the hover, the selected row and the line under
+     each row. Plain rgba first; where color-mix() works they are mixed from --text and --accent
+     instead, so the stripes follow any theme that redefines those two. Decision 175 (BAM: "more
+     contrast between lines on tables") doubled the stripe to 10% and made the line 22% of --text;
+     tests/test_table_rows.py holds the minimums. */
+  --row-alt: rgba(241, 245, 249, 0.1);
+  --row-hover: rgba(56, 189, 248, 0.18);
   --row-selected: rgba(56, 189, 248, 0.2);
+  --row-line: rgba(241, 245, 249, 0.22);
 }
 @supports (background: color-mix(in srgb, red 5%, transparent)) {
   :root {
-    --row-alt: color-mix(in srgb, var(--text) 5%, transparent);
-    --row-hover: color-mix(in srgb, var(--accent) 12%, transparent);
+    --row-alt: color-mix(in srgb, var(--text) 10%, transparent);
+    --row-hover: color-mix(in srgb, var(--accent) 18%, transparent);
     --row-selected: color-mix(in srgb, var(--accent) 20%, transparent);
+    --row-line: color-mix(in srgb, var(--text) 22%, transparent);
   }
 }
 
@@ -166,16 +170,17 @@ button[type="submit"].secondary:hover { background: rgba(56, 189, 248, 0.08); }
 
 /* The owner's account page (chapter 08): one table, numbers right-aligned in tabular figures. */
 .holdings { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-.holdings th, .holdings td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.holdings th, .holdings td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--row-line); text-align: left; vertical-align: top; }
 .holdings .num { text-align: right; font-variant-numeric: tabular-nums; }
 .holdings tfoot th, .holdings tfoot td { border-bottom: 0; font-weight: 700; }
-/* Zebra rows on every table (decision 164): every table in the app is a `.holdings` table, so one rule
-   stripes them all. Even body rows get a 5% tint; text keeps well over 4.5:1 on it. Hover tints the
-   row with the accent and wins over the stripe; a row whose checkbox is ticked (the watch list's
-   Fetch history for selected) keeps a stronger tint and an accent bar at its left edge. */
+/* Zebra rows on every table (decisions 164 and 175): every table in the app is a `.holdings` table, so
+   one rule stripes them all. Even body rows get a 10% tint and every row a 1px line under it
+   (--row-line); text keeps 4.5:1 or more on every row color. Hover tints the row with the accent and
+   wins over the stripe; a row whose checkbox is ticked (the watch list's Fetch history for selected)
+   keeps the strongest tint and a 4px accent bar at its left edge. */
 .holdings tbody tr:nth-child(even) { background: var(--row-alt); }
 .holdings tbody tr:hover { background: var(--row-hover); }
-.holdings tbody tr:has(input:checked) { background: var(--row-selected); box-shadow: inset 3px 0 0 var(--accent); }
+.holdings tbody tr:has(input:checked) { background: var(--row-selected); box-shadow: inset 4px 0 0 var(--accent); }
 .stale { color: var(--danger); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
 
 /* FAQ: each question is a <details>; the question line is the handle. */

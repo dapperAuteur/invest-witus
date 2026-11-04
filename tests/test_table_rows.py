@@ -1,9 +1,14 @@
-"""Alternating row colors on every table (2026-11-03, decision 164).
+"""Alternating row colors on every table (2026-11-03, decision 164; stronger, decision 175).
 
 Every table the app draws is a `.holdings` table with a `<tbody>`, so one rule in `site.css`
 stripes them all; the admin's own tables keep Django's stripes. The hover and the ticked-checkbox
 row stay visible over the stripe, and text keeps WCAG 2.2's 4.5:1 on every row color (the
-fallback rgba values are checked, which the color-mix() values equal on this theme)."""
+fallback rgba values are checked, and a test keeps the color-mix() values equal to them).
+
+Decision 175's minimums (BAM, 2026-11-04: "more contrast between lines on tables"), as WCAG
+contrast ratios between two background colors: a striped row against a plain one at least
+`STRIPE_MIN`, and the 1px line under every row against each row color it sits on at least
+`LINE_MIN`, on the page (`--bg`) and inside a card (`--surface`)."""
 
 import re
 from pathlib import Path
@@ -15,6 +20,10 @@ CSS = (SITE / "pages" / "static" / "pages" / "site.css").read_text()
 TEMPLATES = sorted(
     path for path in SITE.rglob("templates/**/*.html") if "/templates/admin/" not in str(path)
 )
+ROWS = ["row-alt", "row-hover", "row-selected"]
+BASES = ["bg", "surface"]
+STRIPE_MIN = 1.2  # decision 164's 5% stripe was 1.08:1 on the page; decision 175's 10% is 1.22:1
+LINE_MIN = 1.75  # decision 164's line (--border) was 1.38:1 on the page, 1.22:1 in a card
 
 
 def hex_color(value: str) -> tuple[float, float, float]:
@@ -69,11 +78,54 @@ def test_one_rule_stripes_every_body_row_and_hover_and_selection_win() -> None:
     picked = ".holdings tbody tr:has(input:checked) { background: var(--row-selected);"
     assert stripe in CSS and hover in CSS and picked in CSS
     assert CSS.index(stripe) < CSS.index(hover) < CSS.index(picked), "later rules win the tie"
-    assert "color-mix(in srgb, var(--text) 5%, transparent)" in CSS
+    assert "box-shadow: inset 4px 0 0 var(--accent);" in CSS, "the selected row's bar"
 
 
-@pytest.mark.parametrize("base", ["bg", "surface"])
-@pytest.mark.parametrize("row", ["row-alt", "row-hover", "row-selected"])
+def test_every_cell_has_the_row_line_under_it() -> None:
+    cells = re.search(r"\.holdings th, \.holdings td \{([^}]*)\}", CSS)
+    assert cells is not None
+    assert "border-bottom: 1px solid var(--row-line);" in cells.group(1)
+
+
+@pytest.mark.parametrize("name", [*ROWS, "row-line"])
+def test_the_color_mix_value_equals_the_rgba_fallback(name: str) -> None:
+    """The fallback is what the tests measure, so the mixed value must be the same color."""
+    mixed = re.search(rf"--{name}: color-mix\(in srgb, var\(--(\w+)\) (\d+)%, transparent\);", CSS)
+    assert mixed is not None, name
+    source, percent = mixed.group(1), int(mixed.group(2))
+    red, green, blue, alpha = (float(part) for part in re.findall(r"[\d.]+", token(name)))
+    expected = tuple(round(c * 255) for c in hex_color(token(source)))
+    assert (round(red), round(green), round(blue)) == expected, name
+    assert round(alpha * 100) == percent, name
+
+
+@pytest.mark.parametrize("base", BASES)
+def test_a_striped_row_stands_apart_from_a_plain_one(base: str) -> None:
+    plain = hex_color(token(base))
+    assert contrast(over(token("row-alt"), plain), plain) >= STRIPE_MIN, base
+
+
+@pytest.mark.parametrize("base", BASES)
+@pytest.mark.parametrize("row", [None, *ROWS])
+def test_the_line_under_a_row_shows_on_every_row_color(row: str | None, base: str) -> None:
+    plain = hex_color(token(base))
+    background = plain if row is None else over(token(row), plain)
+    line = over(token("row-line"), background)
+    assert contrast(line, background) >= LINE_MIN, (row, base)
+
+
+@pytest.mark.parametrize("base", BASES)
+def test_hover_and_selection_stand_out_over_the_stripe(base: str) -> None:
+    """Hover is the accent's hue over the stripe's gray and lighter than it; the selected row is
+    the lightest of the three and has the accent bar besides."""
+    plain = hex_color(token(base))
+    stripe, hover, picked = (luminance(over(token(row), plain)) for row in ROWS)
+    assert contrast(over(token("row-hover"), plain), over(token("row-alt"), plain)) >= 1.05, base
+    assert stripe < hover < picked, base
+
+
+@pytest.mark.parametrize("base", BASES)
+@pytest.mark.parametrize("row", ROWS)
 def test_text_keeps_its_contrast_on_every_row_color(row: str, base: str) -> None:
     """A table sits on the page (`--bg`) or inside a card (`--surface`)."""
     plain = hex_color(token(base))
@@ -81,4 +133,4 @@ def test_text_keeps_its_contrast_on_every_row_color(row: str, base: str) -> None
     for ink in ("text", "muted", "accent"):
         assert contrast(hex_color(token(ink)), background) >= 4.5, (row, base, ink)
     # The tint is visible against the plain rows around it.
-    assert contrast(background, plain) > 1.05, (row, base)
+    assert contrast(background, plain) >= STRIPE_MIN, (row, base)
