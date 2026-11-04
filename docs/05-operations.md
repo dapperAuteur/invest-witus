@@ -165,6 +165,10 @@ Nothing new runs by hand after a deploy: chapter 11's three migrations are appli
   now keeps those buys (decision 162): to buy a newcomer anyway, buy it by hand at Alpaca and log it, or wait for
   next month's ranking.
 
+- Stronger table stripes and a line under every row (2026-11-04, decision 175): `site.css` only, no migration and
+  nothing to run after the deploy. If a page still shows the faint stripes, the browser cached the old stylesheet:
+  reload once.
+
 ## Alpaca key slots: one paper account per method
 
 Decisions 159 and 160 (2026-11-02). Each method runs in its own Invest account, and each Invest account that
