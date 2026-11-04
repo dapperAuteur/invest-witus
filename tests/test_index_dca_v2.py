@@ -10,10 +10,12 @@ the test."""
 import importlib
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 from django.apps import apps
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import Client
 
 from invest_witus.adherence import index_dca_v2
@@ -443,7 +445,7 @@ def test_the_migration_pins_every_reviewed_month_to_version_1_and_is_safe_twice(
     never = MonthlyReview.objects.create(plan=plan, month="2026-03", opened_on=date(2026, 3, 7))
     newer = closed(plan, "2026-04", 2)
     for _ in range(2):
-        step(apps, None)
+        step(apps, SimpleNamespace(connection=connection))
         pinned = {
             review.month: review.rules_version
             for review in MonthlyReview.objects.filter(

@@ -14,9 +14,17 @@ from django.db.models import Q
 
 
 def pin_reviewed_months_to_version_1(apps: Any, schema_editor: Any) -> None:
+    # The database being migrated, not "default": the migrate workflow runs `migrate --database
+    # direct` with no DATABASE_URL, so "default" there is an empty SQLite file (2026-11-04 failure).
+    alias = schema_editor.connection.alias
     monthly_review = apps.get_model("methods", "MonthlyReview")
     reviewed = Q(closed_at__isnull=False) | Q(events__action="closed")
-    monthly_review.objects.filter(reviewed, rules_version__isnull=True).update(rules_version=1)
+    ids = (
+        monthly_review.objects.using(alias)
+        .filter(reviewed, rules_version__isnull=True)
+        .values_list("pk", flat=True)
+    )
+    monthly_review.objects.using(alias).filter(pk__in=list(ids)).update(rules_version=1)
 
 
 class Migration(migrations.Migration):
