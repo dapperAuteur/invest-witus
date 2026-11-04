@@ -47,6 +47,9 @@ machine against Neon's direct connection: `vercel env run -e production -- uv ru
 Vercel Web Analytics (chapter 06a) renders its two script tags only with `VERCEL=1` and `VERCEL_ANALYTICS=1`;
 the script path comes from `VERCEL_ANALYTICS_SCRIPT_PATH` (the project's own value; `.env.example` labels the
 fallback), and the dashboard steps are in [chapter 06a](docs/chapters/06a-vercel-web-analytics.md).
+PostHog (decision 176) sends one page view per signed-in page, labelled `app = invest`, only from Vercel's
+Production deployment with `POSTHOG_KEY` (the shared project's public `phc_` key) set; public pages carry no
+script. Ids and symbols are replaced in the path before it is sent, and `vercel.json` proxies `/ingest/` to PostHog.
 
 ## Sign in with WitUS
 

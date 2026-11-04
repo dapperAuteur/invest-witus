@@ -15,6 +15,7 @@ from the dashboards named; this file never holds one.
 | `ALPACA_PAPER_KEY_ID__<SLOT>`, `ALPACA_PAPER_SECRET_KEY__<SLOT>`, any number of pairs | same page; each pair made in its own Alpaca paper account (see [Alpaca key slots](#alpaca-key-slots-one-paper-account-per-method)) | the same, for the accounts linked through that slot (decision 159) |
 | `INBOX_INGEST_URL`, `INBOX_SOURCE_SLUG`, `INBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-inbox project | the in-app reporter and the waitlist's copy to WitUS Inbox (chapter 13) |
 | `OUTBOX_TRIGGER_ENABLED`, `OUTBOX_INGEST_URL`, `OUTBOX_SOURCE_SLUG`, `OUTBOX_INGEST_SECRET` | same page; the secret matches this slug's `hmac_secret` in `INGEST_SOURCES` on the witus-outbox project | **Draft a post** and its copies to WitUS Outbox |
+| `POSTHOG_KEY` (optional `POSTHOG_HOST`) | same page, Production only; the value is the shared WitUS project's public `phc_` key, the value the witus repo's `.env.local` holds as `NEXT_PUBLIC_POSTHOG_KEY` | PostHog page views on signed-in pages (decision 176) |
 | the laptop's `.env` | gitignored, `DJANGO_DEBUG=1` and local values only | `uv run --env-file .env ...` |
 
 Every variable on the Vercel project is marked Sensitive, so `vercel env pull` and `vercel env run` cannot
@@ -327,6 +328,44 @@ Nothing to run after a deploy: migration `outbox/0001` is applied by the migrate
   `{"slug":"<OUTBOX_SOURCE_SLUG>","hmac_secret":"<secret>","workspace_name":"<Ocoya workspace name>"}` appended to
   `INGEST_SOURCES` on the witus-outbox Vercel project for that environment (keep the other entries), redeploy
   Outbox, set the same secret here as `OUTBOX_INGEST_SECRET`, redeploy this app, then **Send again**.
+
+## PostHog page views (decision 176)
+
+Nothing to run after a deploy. Signed-in pages send one `$pageview` each to the shared WitUS PostHog project,
+labelled `app = invest`, through `/ingest` on this site, which `vercel.json` rewrites to PostHog's US hosts.
+
+- **On** only when all three hold: `VERCEL=1`, `VERCEL_ENV=production` (both Vercel's own) and `POSTHOG_KEY` set
+  (`NEXT_PUBLIC_POSTHOG_KEY` is read too). Previews and the laptop send nothing. Public pages never load it.
+- **Names:** `POSTHOG_KEY`, the project's public key, starting `phc_`; `POSTHOG_HOST`, optional, default and
+  only accepted value `https://us.i.posthog.com`. Anything else stops the app at start with a message naming the
+  variable (never the value): every page answers 500 until the variable is fixed or deleted and the site
+  redeployed.
+- **Set the key without pasting it** (from the witus repo's `.env.local`, where witus.online keeps the same
+  project's key), then redeploy (a variable only reaches a new deployment):
+
+  ```sh
+  grep '^NEXT_PUBLIC_POSTHOG_KEY=' /Users/bam/Code_NOiCloud/ai-builds/gemini/witus/.env.local \
+    | cut -d= -f2- | tr -d '"' | vercel env add POSTHOG_KEY production
+  ```
+
+  Run it from this repository's root (the folder linked to the invest-witus Vercel project). Leave Preview and
+  Development unset.
+- **Check, in this order** (nothing here prints the key):
+
+  ```sh
+  curl -s -o /dev/null -w '%{http_code}\n' https://invest.witus.online/ingest/static/array.js   # 200: the proxy is live
+  curl -s -o /dev/null -w '%{http_code}\n' -X POST https://invest.witus.online/ingest/e/        # 400 (PostHog refusing an empty batch, as witus.online's does): reaches PostHog; 404 is Django
+  ```
+
+  A 404 from the first means the rewrite did not reach Vercel's edge: the deployment predates the merge, or the
+  project's routing sends `/ingest/` to Django first (then report it; the fallback is a Django proxy view). Then
+  sign in at https://invest.witus.online with ad blockers **off** for the first check, open two or three pages, view the
+  page source of one and find `posthog-config` (absent: the key is missing on Production or the deployment is
+  older than the variable), and in PostHog open **Activity** (not Persons, which stays empty on purpose) filtered
+  by `app = invest`: one `$pageview` per page, its URL with `:id` and `:symbol` in place of numbers and symbols.
+  Then repeat with blockers on: the events still arrive, since nothing goes to a PostHog host from the browser.
+- **To stop it:** delete `POSTHOG_KEY` on the Vercel project and redeploy.
+- **By hand on the laptop:** nothing to run; with `DJANGO_DEBUG=1` or off Vercel the switch stays off.
 
 ## The laptop copy
 

@@ -121,7 +121,9 @@ branch awaiting merge; **proposed** means the chapter is planned and may change.
   chapter's fake provider is its checkpoint and exercise 2 opens the client to a provider of the learner's own.
 - Decided in chapter 06a: Vercel Web Analytics on the public pages now, switched on per environment, with the
   script path from a variable and a labeled fallback (decisions log, row 61). The ecosystem's analytics standard
-  stays PostHog (witus plan 26); it is a later chapter, after sign-in, and is not replaced.
+  stays PostHog (witus plan 26); it is a later chapter, after sign-in, and is not replaced. (2026-11-04: PostHog
+  shipped outside the chapters on signed-in pages, anonymous, with no user id joined; decision 176. A chapter may
+  teach it later from the same files.)
 - Decided in chapter 06: settings read `os.environ` directly with a forty-line `DATABASE_URL` parser; the
   PRD's pydantic-settings was not needed (decisions log, row 53). Migrations run by hand against Neon's direct
   connection, never at build (row 54).

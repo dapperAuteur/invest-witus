@@ -67,7 +67,7 @@ In the order a new owner meets them. Each row links the guide section and the re
 | 9 | Report a problem or ask a question | [Report a problem or ask a question](using-invest-witus.md#report-a-problem-or-ask-a-question-chapter-13) | [Script 9](recording-scripts.md#script-9-report-a-problem-or-ask-a-question) |
 | 10 | Start 12-1 momentum and read the ranking | [A second method: 12-1 momentum](using-invest-witus.md#a-second-method-12-1-momentum-chapter-14) | [Script 10](recording-scripts.md#script-10-start-12-1-momentum-and-read-the-ranking) |
 
-What the app will not do is its own section: [What the app will not do](using-invest-witus.md#what-the-app-will-not-do).
+What the app will not do is its own section: [What the app will not do](using-invest-witus.md#what-the-app-will-not-do); what it counts about visits (PostHog on signed-in pages, Vercel Web Analytics on public ones) is [What the app counts about your visits](using-invest-witus.md#what-the-app-counts-about-your-visits-2026-11-04).
 
 ## Keeping these files true
 

@@ -29,6 +29,7 @@ updated: 2026-11-04
 - The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165, task 33)
 - Stronger table stripes and a visible line under every row, text still at WCAG AA on every row color (decision 175, task 38)
 - Index rules version 2: one buy of each fund a month and the month's total, so a plan split across several funds reads followed; months already closed keep version 1 (decisions 173 and 174, backlog 23, task 37, which also lands tasks 35 and 34)
+- PostHog page views on signed-in pages, labelled `app = invest`, through a same-origin `/ingest` proxy; public pages keep no script (decision 176, backlog 22, task 39)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
@@ -52,4 +53,5 @@ updated: 2026-11-04
 - Preview-database cleanup secrets (task 05)
 - Web Analytics switch (task 06)
 - Feature clip recordings (task 11)
+- PostHog key on the Vercel project, then merge and check Activity for `app = invest` (task 39)
 - Legal review before anyone but the owner uses it

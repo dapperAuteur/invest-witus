@@ -1066,6 +1066,30 @@ never writes a post by itself and never posts anything: Outbox does, after you a
 - **If Outbox did not answer**, the row reads **Failed, will retry** with the reason, and the nightly job or
   **Send again** tries it later. Sending again never makes a second draft in Outbox.
 
+## What the app counts about your visits (2026-11-04)
+
+Two counters, and what each one sees:
+
+- **Public pages** (the landing page, the FAQ, privacy, terms, contact, the waitlist) carry no script of the
+  app's own. Vercel Web Analytics counts their page views when it is switched on (chapter 06a).
+- **Signed-in pages** send one page view each to PostHog, the analytics project the WitUS apps share, labelled
+  `app = invest` (decision 176). Only from the live site (Vercel's Production deployment, with the key set); a
+  preview or your laptop sends nothing.
+
+**Privacy note.** A signed-in page view says only which kind of page it was: the address with every account
+number, symbol, month and entry number replaced by a name, so `/accounts/12/watch/SPY/` is counted as
+`/accounts/:id/watch/:symbol/`. No page title, amount, symbol, account name, query string or anything typed is
+sent, and no WitUS user id, email or name: the visit is anonymous and is not joined to your use of other WitUS
+apps. Nothing is stored in the browser for it, so every page load counts as a new visit (read PostHog's "users"
+as visits). Clicks, typing, screen recordings and errors are not collected. The request goes to this site's own
+`/ingest` address, which passes it to PostHog's US servers, so a blocker that stops `posthog.com` does not stop
+it; PostHog receives the IP address and browser details every web request carries. The privacy page says the
+same in its Analytics section.
+
+**To see Invest in PostHog:** sign in, open two or three pages, then PostHog, **Activity**, filtered by
+`app = invest` (Activity, not Persons: Persons stays empty on purpose). The runbook's PostHog section has the
+checks if nothing arrives.
+
 ## What the app will not do
 
 - **Advise.** It recommends no security and never says which to buy. Every rule it checks (later chapters)
@@ -1096,6 +1120,7 @@ Still to come, each its own chapter: rank changes and the rolling 12-1 line (14a
 |---|---|---|
 | 500 on every page right after a deploy, or `/healthz/` answers 503 | The database is unreachable or the migrations have not run | Check **Storage** on the Vercel project; run the migration against Neon's direct connection; **Redeploy** |
 | 500 on one form, laptop debug page says `no such table` | A migration is missing on this copy | `uv run --env-file .env python manage.py migrate` |
+| 500 on every page right after `POSTHOG_KEY` was set | The value is not the project's public key (it must start `phc_`), or `POSTHOG_HOST` is not `https://us.i.posthog.com`; the function log names which | Fix or delete the variable on Vercel and redeploy (runbook, PostHog page views) |
 | **Sign in** opens a stub page | No `WITUS_OIDC_CLIENT_SECRET` in this copy | Expected on a laptop; on Vercel set it and redeploy |
 | **Sign in did not complete** (`state`) | The session cookie did not survive | Try again in the same browser; on a laptop run with `--env-file .env` |
 | **Sign in did not complete** (`refused`) | The provider refused the token exchange | The two secrets differ, or the provider has not restarted since its secret was set |
