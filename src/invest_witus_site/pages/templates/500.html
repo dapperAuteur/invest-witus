@@ -1,0 +1,13 @@
+{% extends "pages/base.html" %}
+{# Django's server_error view renders "500.html" with no request and no context processors, so the #}
+{# base renders as a signed-out page: the header shows "Sign in" and the footer stays (witus #}
+{# docs/shared-ui-ux-dx.md, "Error pages keep the app shell"). It needs no database. No error #}
+{# text is printed. tests/test_error_pages.py renders it the way Django does. #}
+{% block title %}Something went wrong: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <h1>Something went wrong</h1>
+  <p>This page hit an unexpected error on our side. Try again in a moment.</p>
+  <p><a href="{% url 'home' %}">Back to the home page</a></p>
+</section>
+{% endblock %}

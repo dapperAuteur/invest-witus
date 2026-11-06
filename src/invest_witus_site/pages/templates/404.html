@@ -1,0 +1,12 @@
+{% extends "pages/base.html" %}
+{# Django's page_not_found view renders "404.html" when DEBUG is off. Extending the base keeps the #}
+{# header (with "Sign in") and the footer on the 404 page (witus docs/shared-ui-ux-dx.md, "Error #}
+{# pages keep the app shell"). No request path or exception text is printed. #}
+{% block title %}Page not found: Invest.WitUS{% endblock %}
+{% block content %}
+<section class="container narrow">
+  <h1>Page not found</h1>
+  <p>That page does not exist or has moved.</p>
+  <p><a href="{% url 'home' %}">Back to the home page</a></p>
+</section>
+{% endblock %}
