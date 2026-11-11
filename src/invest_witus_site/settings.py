@@ -115,6 +115,8 @@ INSTALLED_APPS = [
     "invest_witus_site.outbox",
     # Compare methods (chapter 15): the person's accounts side by side. No models.
     "invest_witus_site.compare",
+    # SEC filings (chapter 16): a company's recent filings and key numbers from SEC EDGAR.
+    "invest_witus_site.filings",
 ]
 
 # Order matters: a middleware sees the request top to bottom and the response bottom to top.
@@ -327,6 +329,21 @@ PRICES_CSV_DIR = Path(os.environ.get("PRICES_CSV_DIR") or DATA_DIR / "prices")
 # read October 28, 2026; at least 16 random characters). Empty means the route answers 503 and
 # runs nothing: a deploy that forgot the variable fails closed.
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
+
+# SEC filings (chapter 16). SEC EDGAR needs no key; it asks every caller to declare a User-Agent
+# ("Accessing EDGAR Data", read November 10, 2026). The default is the app's name and address and
+# never a person's email (the ecosystem rule); a learner's copy sets its own. SEC_FILINGS=off
+# stops every request (the nightly step, the button and the command) without a deploy of code.
+DEFAULT_SEC_USER_AGENT = "Invest.WitUS (https://invest.witus.online)"
+
+
+def sec_filings_enabled(raw: str) -> bool:
+    """On unless the variable says `off` (any case, spaces ignored)."""
+    return raw.strip().lower() != "off"
+
+
+SEC_USER_AGENT = (os.environ.get("SEC_USER_AGENT") or DEFAULT_SEC_USER_AGENT).strip()
+SEC_FILINGS_ENABLED = sec_filings_enabled(os.environ.get("SEC_FILINGS", ""))
 
 # Alpaca paper trading (chapter 11). The owner's paper keys, from the paper dashboard's API Keys
 # module; empty means every Alpaca feature says "not set" and nothing is called. The client's host

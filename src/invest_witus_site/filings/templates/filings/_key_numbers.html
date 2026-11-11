@@ -1,0 +1,79 @@
+{# Key numbers (chapter 16): figures from the company's XBRL data in its 10-K and 10-Q filings, chosen by #}
+{# `invest_witus.filings.key_numbers`. Each cell's title names the concept, the form, the filing day and the #}
+{# period. The bars are drawn on the server; the table is their text alternative. No script. #}
+<section class="key-numbers" aria-labelledby="key-numbers-heading">
+  <h3 id="key-numbers-heading">Key numbers</h3>
+  {% if sec_numbers.empty %}
+  <p class="muted">No reported figures stored yet{% if sec_company.facts_fetched_at %}: the company's filings carry none of the figures this table reads{% endif %}.</p>
+  {% else %}
+  {% if sec_chart %}
+  <figure class="rank-chart key-chart" aria-labelledby="key-chart-title">
+    <figcaption>
+      <p class="chart-title" id="key-chart-title">Revenue, net income and free cash flow by fiscal year, from the 10-K</p>
+      <p class="small muted">One scale for every bar, so their lengths compare. {% if sec_chart.any_negative %}Bars left of the line are losses or outflows. {% endif %}Each bar is labelled with the year's last day.</p>
+    </figcaption>
+    {% for group in sec_chart.groups %}
+    <p class="small key-chart-group">{{ group.label }}</p>
+    <ol class="rank-bars">
+      {% for bar in group.bars %}
+      <li class="rank-bar">
+        <span class="rank-label">{{ bar.label }}</span>
+        <svg class="rank-track" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><title>{{ group.label }}, year to {{ bar.label }}: {{ bar.text }}</title>{% if bar.direction != "none" %}<rect class="bar-{{ bar.direction }}" x="{{ bar.x }}" y="1.5" width="{{ bar.width }}" height="7" vector-effect="non-scaling-stroke"/>{% endif %}<line class="zero" x1="{{ sec_chart.zero_x }}" x2="{{ sec_chart.zero_x }}" y1="0" y2="10" vector-effect="non-scaling-stroke"/></svg>
+        <span class="rank-value">{{ bar.text }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    {% endfor %}
+  </figure>
+  {% endif %}
+  <p class="how-to-read"><strong>How to read this.</strong> Each figure is what the company reported to the SEC for that period, in its 10-K (a year) or 10-Q (a quarter); hover or focus a figure to see the exact tag, form, filing day and dates. "Derived" means the app worked it out: free cash flow is operating cash flow less capital expenditure, and a quarter a filing reports only as "year to date" is that total less the one before it (the fourth quarter is the year less nine months). Shares, cash and debt are values on the period's last day. Compare a figure with the same period a year earlier; one number on its own says little. <span class="muted">Lesson coming.</span></p>
+  <div class="table-scroll" role="region" aria-labelledby="key-years-caption" tabindex="0">
+  <table class="holdings key-table">
+    <caption id="key-years-caption">The last {{ sec_numbers.years|length }} fiscal year{{ sec_numbers.years|length|pluralize }}, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Line</th>
+        {% for period in sec_numbers.years %}<th scope="col" class="num">{{ period.label }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in sec_rows %}
+      <tr>
+        <th scope="row" title="Tags used: {{ row.concepts }}">{{ row.label }}</th>
+        {% for cell in row.years %}<td class="num" title="{{ cell.title }}">{% if cell.missing %}<span class="muted small">{{ cell.text }}</span>{% else %}{{ cell.text }} <span class="small muted">{{ cell.note }}</span>{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if sec_numbers.quarters %}
+  <div class="table-scroll" role="region" aria-labelledby="key-quarters-caption" tabindex="0">
+  <table class="holdings key-table">
+    <caption id="key-quarters-caption">The last {{ sec_numbers.quarters|length }} quarter{{ sec_numbers.quarters|length|pluralize }}, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Line</th>
+        {% for period in sec_numbers.quarters %}<th scope="col" class="num">{{ period.label }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in sec_rows %}
+      <tr>
+        <th scope="row" title="Tags used: {{ row.concepts }}">{{ row.label }}</th>
+        {% for cell in row.quarters %}<td class="num" title="{{ cell.title }}">{% if cell.missing %}<span class="muted small">{{ cell.text }}</span>{% else %}{{ cell.text }} <span class="small muted">{{ cell.note }}</span>{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+  <details class="small">
+    <summary>Which tags each line read</summary>
+    <ul>
+      {% for row in sec_rows %}<li>{{ row.label }}: {{ row.concepts }}</li>{% endfor %}
+    </ul>
+    <p>Companies name the same figure differently (revenue may be <code>Revenues</code> or <code>RevenueFromContractWithCustomerExcludingAssessedTax</code>), so each line tries a short list in order and uses the first the company reported for that period.</p>
+  </details>
+  <p class="small muted">Source: SEC EDGAR (XBRL), as of {{ sec_company.facts_fetched_at|date:"Y-m-d" }}. "Not reported under a standard tag" means the company's filings use none of the tags this table reads for that line, not that the figure is zero. Information, not advice.</p>
+  {% endif %}
+</section>

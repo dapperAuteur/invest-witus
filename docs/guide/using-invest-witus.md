@@ -1002,6 +1002,31 @@ keeps working as it was.
   accounts** opens the key slot list, which links each.
 - **Comparing them:** **Compare methods**, below.
 
+## A company's filings and key numbers (chapter 16)
+
+Since 2026-11-10 (decisions 177 to 184). A watched stock's page (**Accounts** → an account → a symbol in its
+**Watch list**) has two sections under **About**:
+
+- **Filings.** The company's last eight annual (10-K), quarterly (10-Q) and current (8-K) reports, newest first,
+  with the day filed and the period each covers. **Read the 10-K on sec.gov** opens the SEC's own copy in a new
+  tab; the app never copies a filing. "Source: SEC EDGAR, fetched DATE" says how fresh the list is.
+- **Key numbers.** Revenue, net income, operating cash flow, capital expenditure, free cash flow, shares
+  outstanding, cash and long-term debt, for the last five fiscal years and the last four quarters, with bars for
+  revenue, net income and free cash flow by year. Under each figure is the form it came from; point at it to see
+  the exact tag, the day it was filed and its dates. **Derived** means the app worked it out: free cash flow is
+  operating cash flow less capital expenditure, and a quarter a 10-Q reports only "year to date" is that total less
+  the one before (the fourth quarter is the year less nine months). "Not reported under a standard tag" means the
+  company's filings use none of the names the table looks for, not that the figure is zero.
+- **How to read a 10-K** opens a short note on the four parts worth reading first (Business, Risk Factors,
+  Management's Discussion and Analysis, Financial Statements) with a link to the SEC's guide.
+- **Refresh filings now** asks the SEC for this symbol now (up to four requests, once every 10 minutes per symbol);
+  the nightly pull does it for every watched symbol anyway.
+- **A fund** (an ETF or a mutual fund) says "No company filings: this is a fund; see the issuer's page": funds
+  report on other forms this app does not read. Marking a holding's kind ETF or Mutual fund in the admin makes the
+  app treat that symbol as a fund without asking the SEC.
+- **"Filings are not available right now"** means the SEC refused a request (it answered 403 or 429) or the last
+  refresh failed; the app leaves the SEC alone for ten minutes and shows the last list it stored. Try again later.
+
 ## Comparing your methods (chapter 15)
 
 Since 2026-11-03 (decisions 167 to 171). **Compare methods** in the header (also on **Accounts** and under an
@@ -1035,6 +1060,14 @@ account's method line) opens `/compare/`: your own accounts side by side. Nobody
   should be close, not equal (Alpaca uses its latest prices, the app its latest stored close); a gap of more than
   a few percent means a trade missing from the journal or a close missing from the app. If Alpaca does not answer
   within 5 seconds, the row says so and the rest of the page is unchanged.
+- **Same money into the yardstick** (since 2026-11-10, decision 185). Under each account a row "Same money into
+  SPY" (or the yardstick you picked): every buy of that account, on its own day and for the same dollars, buys the
+  yardstick instead at that day's stored adjusted close, and a sell takes the same dollars out. It is what doing
+  nothing but buying the index fund with your money would have given. Compare its money put in, value and
+  money-weighted return with the account's row above it. Its line on the chart starts with the account's line, so
+  the two compare over the same days; with more than six lines the rest stay in the table and the page names them.
+  A deposit on a day the yardstick has no stored close is named ("no price stored for SPY on DATE"): press **Get
+  history** for the yardstick to fill it.
 - **How to read it.** A few months prove nothing. 12-1 momentum buys only its top N of your list; index investing
   buys all of it. Same starting cash, same monthly amount and same list make it a fair test of the method. Past
   results do not predict future results.
@@ -1137,6 +1170,8 @@ Still to come, each its own chapter: rank changes and the rolling 12-1 line (14a
 | A post draft reads **Failed, will retry** with a 401 | Outbox does not know this source or secret, or the clock is off | Check the slug in Outbox's `INGEST_SOURCES`, redeploy Outbox, compare the secrets; then **Send again** |
 | A post draft reads **Blocked, not sent** | The text named something from your accounts, or it was not written by the superuser | Write a new draft without it |
 | Cron answers 403 | Wrong bearer | Check the variable's value for stray spaces or quotes |
+| "Filings are not available right now" on a symbol page | The SEC answered 403 or 429 (the app then waits ten minutes), or the last refresh failed with the reason shown | Wait ten minutes and press **Refresh filings now**; if it keeps failing, check `SEC_USER_AGENT` on Vercel (runbook, SEC filings) |
+| "No company filings: this is a fund" on a stock | The SEC's fund map lists the ticker, or a holding of it is marked ETF or Mutual fund | Fix the holding's kind in the admin, delete the symbol's **SEC companies** row, then **Refresh filings now** |
 | `CSRF verification failed` on a form | The origin is not trusted | `DJANGO_CSRF_TRUSTED_ORIGINS` must name `https://invest.witus.online` |
 | `DisallowedHost` | The host is not allowed | `DJANGO_ALLOWED_HOSTS`, or Vercel's system variables are off |
 | "2026-03 is closed. Reopen its review, with a reason, to change it." | The entry's month is closed | Open the month's review and **Reopen** it with a reason |

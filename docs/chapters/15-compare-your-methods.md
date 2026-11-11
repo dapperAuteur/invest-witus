@@ -2215,6 +2215,10 @@ holdings now" with "Value here".
 1. **The same money in the yardstick.** Add a row: the yardstick bought with each account's own deposits on the
    same days, with its value and money-weighted return. Which question does it answer that the rebased line does
    not?
+   *(The reference built this after the tag, on 2026-11-10, decision 185: `same_money` in `compare.py` buys the
+   yardstick with each trade's money on the trade's own day at that day's stored adjusted close and names a day
+   with no stored price instead of guessing; the page adds a "Same money into SPY" row under each account and its
+   line on the chart while there is room for it. Try it yourself before you read `git diff v15 main -- src/invest_witus/compare.py`.)*
 2. **A cash ledger.** Store each account's starting cash and every fill's cost, and show the whole account's value
    (holdings plus cash). Write the decision first: what does "money put in" mean once the cash was there from day
    one?
@@ -2255,4 +2259,5 @@ holdings now" with "Value here".
 
 ## Next
 
-Chapter 16 sends signed events to CentenarianOS and checks the lesson links against Learn.WitUS.
+Chapter 16 reads what a company reports to the SEC: its recent filings and its key numbers from SEC EDGAR. The
+CentenarianOS events are chapter 17 (decision 184).

@@ -260,7 +260,8 @@ After the deploy, signed in as the owner, on an index account with several funds
 
 ## Compare methods (chapter 15)
 
-No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes.
+No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes. Since 2026-11-10 (decision 185) the page also adds a "Same money into <YARDSTICK>" row and line per account
+from the same records; still no migration.
 The one outside call is Alpaca's `GET /v2/account` for each account the site owner linked to Alpaca paper, read
 when `/compare/` opens, all at once, with a 5-second timeout (`compare/records.py`, `ALPACA_TIMEOUT_SECONDS`), using
 that account's key slot through `client_for`. A slow or refused answer is one sentence in the cross-check table;
@@ -276,6 +277,46 @@ After a deploy, signed in as the owner:
    A larger gap: run **Check orders now** on the account's paper page (an unsynced fill), then **Fetch prices now**
    (a missing close). "Keys for slot X are not set on the server." means the slot's keys are missing on Vercel
    (the section above).
+
+## SEC filings (chapter 16)
+
+**Migrations:** `filings/0001_initial` (four new tables: SEC companies, filings, key facts, the SEC pause) and
+`prices/0006_alter_manualrun_kind` (a new choice, no column change). Both are additive; the **Migrate production
+database** workflow applies them on the merge to `main`.
+
+**Variables (none required):** SEC EDGAR needs no key. `SEC_USER_AGENT` (default `Invest.WitUS
+(https://invest.witus.online)`; never a personal email, ecosystem rule) and `SEC_FILINGS` (`off` stops every SEC
+request). Set either only to change the default.
+
+**When it runs:** the nightly cron, after the prices and the profiles (`body["filings"]` in its JSON: refreshed,
+funds, not listed, failed, skipped, stopped): every watched symbol whose data is older than 20 hours, two or three
+requests each (the ticker maps once a day per process), at most four requests a second, 60 seconds at most. A 403
+or 429 writes the **SEC pause** row (ten minutes) and stops the step; the next night continues.
+
+**By hand, from the site:** a stock's page → **Refresh filings now** (owner only, once every 10 minutes per symbol;
+**Prices** → **Manual price runs** lists it as "Refresh filings now").
+
+**By hand, from the laptop** (the fallback when the cron or the button is broken):
+
+```sh
+cd /Users/bam/Code_NOiCloud/ai-builds/claude/invest-witus
+uv run --env-file .env python manage.py refresh_filings AAPL        # one or more symbols
+uv run --env-file .env python manage.py refresh_filings --watched   # what the cron does
+```
+
+Against production, through the project's environment (the database variables must be readable to `vercel env
+run`; if they are Sensitive, use the button instead):
+`vercel env run -e production -- uv run python manage.py refresh_filings AAPL`. Expected output:
+
+```text
+User-Agent: Invest.WitUS (https://invest.witus.online)
+AAPL: company, 8 filing(s), 305 figure(s).
+```
+
+**If the SEC refuses:** "Filings are not available right now: SEC EDGAR answered 403" on the page, or `Failed
+AAPL: SEC EDGAR answered 403 ...` from the command. Wait ten minutes (or delete **SEC pause** in the admin) and
+try once. If 403 persists with the default User-Agent, the SEC may want a contact address: that is BAM's decision
+(an ops mailbox on a witus domain, never a personal email), set as `SEC_USER_AGENT` on Vercel and redeployed.
 
 ## Reports and the waitlist's copies to WitUS Inbox (chapter 13)
 

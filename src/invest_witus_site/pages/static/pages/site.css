@@ -380,3 +380,7 @@ body { padding-bottom: 4.5rem; }
    outline only help the eye, so neither color nor the symbol is ever the only signal. */
 .account-kind { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0 0.4rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.75rem; font-weight: 600; line-height: 1.5; white-space: nowrap; vertical-align: middle; }
 .account-kind-practice { border-style: dashed; }
+
+/* SEC filings (chapter 16): the Key numbers bars reuse chapter 14's ranked-bar track, one group per line. */
+.key-chart-group { margin: 0.75rem 0 0.25rem; font-weight: 600; }
+.key-table td .small { white-space: nowrap; }

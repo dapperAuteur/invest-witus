@@ -39,6 +39,7 @@ from invest_witus.compare import (
     max_drawdown,
     months_running,
     period,
+    same_money,
     time_weighted_line,
     value_series,
     xirr,
@@ -274,23 +275,15 @@ def drawdown_text(drop: Drawdown | None) -> str:
     return f"{percent(drop.fraction * HUNDRED)}, {stretch}"
 
 
-@dataclass
-class AccountResult:
-    """One account on the page: its numbers in words, or why a number is missing."""
+class Figures:
+    """The money put in, the value, the gain, both returns and the worst drop, in words, for
+    anything with a stretch and its numbers: an account (chapter 15) or the same money in the
+    yardstick (exercise 1, decision 185)."""
 
-    account: Account
-    plan: MethodPlan | None
-    method: str
-    series: Series
     stretch: Period | None
-    line: list[tuple[date, Decimal]]
-    months: str
-    followed: str
-    notes: list[str] = field(default_factory=list[str])
-    reason: str = ""
-    twr: Decimal | None = None
-    mwr: Decimal | None = None
-    drawdown: Drawdown | None = None
+    twr: Decimal | None
+    mwr: Decimal | None
+    drawdown: Drawdown | None
 
     @property
     def put_in(self) -> str:
@@ -336,6 +329,78 @@ class AccountResult:
         return drawdown_text(self.drawdown)
 
 
+@dataclass(frozen=True, slots=True)
+class Numbers:
+    """A series cut to the dates picked, and its numbers."""
+
+    stretch: Period | None
+    line: list[tuple[date, Decimal]]
+    twr: Decimal | None = None
+    mwr: Decimal | None = None
+    drawdown: Drawdown | None = None
+
+
+def numbers_of(series: Series, start: date, end: date) -> Numbers:
+    """The stretch, the time-weighted line, both returns and the worst drop of a series. Under a
+    year the money-weighted rate is solved per the stretch's own length, so it is the change over
+    the days; from a year on, per year (`return_text` says which)."""
+    stretch = period(series.days, start, end) if not series.problems else None
+    if stretch is None:
+        return Numbers(None, [])
+    line = time_weighted_line(stretch.days)
+    unit = stretch.length if 0 < stretch.length < YEAR_DAYS else YEAR_DAYS
+    return Numbers(
+        stretch,
+        line,
+        line_return(line),
+        xirr(cash_flows(stretch), days_per_unit=unit),
+        max_drawdown(line),
+    )
+
+
+@dataclass
+class SameMoney(Figures):
+    """The same money into the yardstick for one account: each of its trades' money bought (or a
+    sell took out of) the yardstick on the trade's own day."""
+
+    symbol: str
+    series: Series
+    stretch: Period | None
+    line: list[tuple[date, Decimal]]
+    adjusted: bool
+    reason: str = ""
+    twr: Decimal | None = None
+    mwr: Decimal | None = None
+    drawdown: Drawdown | None = None
+
+    @property
+    def label(self) -> str:
+        return f"Same money into {self.symbol}"
+
+
+@dataclass
+class AccountResult(Figures):
+    """One account on the page: its numbers in words, or why a number is missing."""
+
+    account: Account
+    plan: MethodPlan | None
+    method: str
+    series: Series
+    stretch: Period | None
+    line: list[tuple[date, Decimal]]
+    months: str
+    followed: str
+    notes: list[str] = field(default_factory=list[str])
+    reason: str = ""
+    twr: Decimal | None = None
+    mwr: Decimal | None = None
+    drawdown: Drawdown | None = None
+    # Exercise 1 (decision 185): the trades counted, kept for the same money into the yardstick,
+    # and that line once the page has picked a yardstick.
+    trades: list[Trade] = field(default_factory=list[Trade])
+    same: SameMoney | None = None
+
+
 def symbol_list(trades: Sequence[Trade]) -> list[str]:
     return sorted({trade.symbol for trade in trades})
 
@@ -371,7 +436,8 @@ def account_result(account: Account, start: date, end: date, today: date) -> Acc
             f"{count} trade{'s' if count != 1 else ''} dated after the newest stored close{after}: "
             "counted once the nightly pull stores its day."
         )
-    stretch = period(series.days, start, end) if not series.problems else None
+    numbers = numbers_of(series, start, end)
+    stretch = numbers.stretch
     reason = ""
     if series.problems:
         reason = "Not worked out: " + "; ".join(series.problems) + "."
@@ -379,7 +445,7 @@ def account_result(account: Account, start: date, end: date, today: date) -> Acc
         reason = "No trades in the journal yet, so there is nothing to value."
     elif stretch is None:
         reason = "No trade of this account counts inside the dates picked."
-    line = time_weighted_line(stretch.days) if stretch is not None else []
+    line = numbers.line
     if plan is None:
         months = ""
         how_often = "no plan"
@@ -401,15 +467,40 @@ def account_result(account: Account, start: date, end: date, today: date) -> Acc
         followed=how_often,
         notes=notes,
         reason=reason,
+        twr=numbers.twr,
+        mwr=numbers.mwr,
+        drawdown=numbers.drawdown,
+        trades=found.trades,
     )
-    if stretch is not None:
-        result.twr = line_return(line)
-        # Under a year the rate is solved per the stretch's own length, so it is the change over
-        # the days; from a year on, per year (`return_text` says which).
-        unit = stretch.length if 0 < stretch.length < YEAR_DAYS else YEAR_DAYS
-        result.mwr = xirr(cash_flows(stretch), days_per_unit=unit)
-        result.drawdown = max_drawdown(line)
     return result
+
+
+def same_money_for(result: AccountResult, symbol: str, start: date, end: date) -> SameMoney:
+    """Exercise 1 (decision 185): the account's own trades, the same money on the same days, into
+    `symbol` at its stored adjusted close (else its close, said on the page). No trades, or a day
+    the yardstick has no price for, is a reason, never a guess."""
+    if not result.trades:
+        return SameMoney(symbol, Series(), None, [], False, "No trades, so no money to put in.")
+    since = min(trade.day for trade in result.trades) - timedelta(PRICE_LOOKBACK_DAYS)
+    stored = prices_for([symbol], since, end)[symbol]
+    series = same_money(result.trades, symbol, stored.rows, end)
+    numbers = numbers_of(series, start, end)
+    reason = ""
+    if series.problems:
+        reason = "Not worked out: " + "; ".join(series.problems) + "."
+    elif numbers.stretch is None:
+        reason = "None of this account's money went in inside the dates picked."
+    return SameMoney(
+        symbol=symbol,
+        series=series,
+        stretch=numbers.stretch,
+        line=numbers.line,
+        adjusted=stored.adjusted,
+        reason=reason,
+        twr=numbers.twr,
+        mwr=numbers.mwr,
+        drawdown=numbers.drawdown,
+    )
 
 
 # --- The yardstick --------------------------------------------------------------------------------
