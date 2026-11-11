@@ -359,3 +359,62 @@ def months_running(start: date, end: date) -> int:
     if end < start:
         return 0
     return (end.year - start.year) * 12 + end.month - start.month + 1
+
+
+# --- The same money into the yardstick ------------------------------------------------------------
+
+# Units left after a withdrawal of everything can be a few millionths of a millionth off zero from
+# the divisions; anything smaller than this is zero.
+UNIT_DUST = Decimal("1e-12")
+
+
+def same_money(
+    trades: Sequence[Trade], symbol: str, rows: Sequence[tuple[date, DayPrice]], until: date
+) -> Series:
+    """What the account's own money would have done in the yardstick (chapter 15, exercise 1):
+    every trade's money, on the trade's own day, buys `symbol` (a sell takes the same money out)
+    at that day's stored basis price. Nothing else is bought, nothing is ever sold for a reason of
+    its own. The days are the yardstick's stored days from the first trade through `until`.
+
+    A trade on a day the yardstick has no stored price is not priced from another day: the series
+    is empty and the reason names the day. A trade after the yardstick's newest stored day is
+    `pending`, as in `value_series`. A sell that takes out more than the yardstick holding was
+    worth that day is a reason too: the account's own gains paid for it, and doing nothing in the
+    index would not have had that money."""
+    ordered = sorted(trades, key=lambda trade: trade.day)
+    if not ordered:
+        return Series()
+    price_of = dict(rows)
+    calendar = [day for day, _ in rows if ordered[0].day <= day <= until]
+    pending = [trade for trade in ordered if not calendar or trade.day > calendar[-1]]
+    counted = [trade for trade in ordered if trade not in pending]
+    missing = sorted({trade.day for trade in counted if trade.day not in price_of})
+    if missing:
+        named = ", ".join(f"{day:%Y-%m-%d}" for day in missing)
+        return Series(pending=pending, problems=[f"no price stored for {symbol} on {named}"])
+    moves: dict[date, list[Trade]] = {}
+    for trade in counted:
+        moves.setdefault(trade.day, []).append(trade)
+    held = ZERO
+    put_in = ZERO
+    days: list[Day] = []
+    for day in calendar:
+        price = price_of[day]
+        flow = ZERO
+        for trade in moves.get(day, []):
+            moved = trade.amount / price.basis
+            held += -moved if trade.sell else moved
+            flow += trade.flow
+        if held < -UNIT_DUST:
+            return Series(
+                pending=pending,
+                problems=[
+                    f"the account took out more on {day:%Y-%m-%d} than the same money in "
+                    f"{symbol} was worth that day"
+                ],
+            )
+        if abs(held) < UNIT_DUST:
+            held = ZERO
+        put_in += flow
+        days.append(Day(day, held * price.basis, flow, put_in))
+    return Series(days=days, pending=pending)

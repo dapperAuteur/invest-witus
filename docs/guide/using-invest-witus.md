@@ -1060,6 +1060,14 @@ account's method line) opens `/compare/`: your own accounts side by side. Nobody
   should be close, not equal (Alpaca uses its latest prices, the app its latest stored close); a gap of more than
   a few percent means a trade missing from the journal or a close missing from the app. If Alpaca does not answer
   within 5 seconds, the row says so and the rest of the page is unchanged.
+- **Same money into the yardstick** (since 2026-11-10, decision 185). Under each account a row "Same money into
+  SPY" (or the yardstick you picked): every buy of that account, on its own day and for the same dollars, buys the
+  yardstick instead at that day's stored adjusted close, and a sell takes the same dollars out. It is what doing
+  nothing but buying the index fund with your money would have given. Compare its money put in, value and
+  money-weighted return with the account's row above it. Its line on the chart starts with the account's line, so
+  the two compare over the same days; with more than six lines the rest stay in the table and the page names them.
+  A deposit on a day the yardstick has no stored close is named ("no price stored for SPY on DATE"): press **Get
+  history** for the yardstick to fill it.
 - **How to read it.** A few months prove nothing. 12-1 momentum buys only its top N of your list; index investing
   buys all of it. Same starting cash, same monthly amount and same list make it a fair test of the method. Past
   results do not predict future results.

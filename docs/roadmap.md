@@ -28,6 +28,7 @@ updated: 2026-11-10
 - Migrations run automatically after each merge
 
 ## In progress
+- The same deposits into the yardstick on Compare methods: each account's own money, on its own days, in the index fund, beside the real plan (chapter 15, exercise 1; decision 185; task 40)
 - SEC filings and key numbers on a stock's page (chapter 16, decisions 177 to 184): the last eight 10-K, 10-Q and 8-K linked to sec.gov, five years and four quarters of reported figures with bars; funds say they have no company filings (task 40)
 - PostHog page views on signed-in pages, labelled `app = invest`, through a same-origin `/ingest` proxy; public pages keep no script (decision 176, backlog 22, task 39)
 - Waitlist signups on witus.online

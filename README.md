@@ -234,6 +234,10 @@ drop, months running and how often each plan was followed (its closed month revi
 journal and the stored adjusted closes; the app keeps no cash ledger, so cash beside the holdings is not counted,
 and Alpaca's own equity is shown beside it as a cross-check for a linked account. A stretch under a year is never
 turned into a yearly rate. The walk-through is [chapter 15](docs/chapters/15-compare-your-methods.md).
+Since 2026-11-10 (decision 185, chapter 15's exercise 1) each account also gets a "Same money into SPY" row and
+line: its own deposits, on the same days, bought the yardstick at that day's stored adjusted close and were never
+touched, so the page shows what doing nothing but buying the index fund with the same money would have given. A
+deposit day with no stored close is named, never guessed.
 
 Since 2026-11-03 the index method's rules have a version 2 (decisions 173 and 174): a plan whose total is split
 across several funds is checked for one buy of each fund a month and a month's total equal to the plan's amount
