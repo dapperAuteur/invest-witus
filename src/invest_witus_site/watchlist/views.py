@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from invest_witus.valuation import STALE_AFTER_DAYS, is_stale
+from invest_witus_site.filings.page import filings_context
 from invest_witus_site.holdings.models import Account, Holding
 from invest_witus_site.holdings.views import account_page
 from invest_witus_site.methods.models import MethodPlan
@@ -169,6 +170,8 @@ def history(request: HttpRequest, pk: int, symbol: str) -> HttpResponse:
         "account": account,
         "item": item,
         **profile_context(item.symbol),
+        # Chapter 16: the company's recent SEC filings and key numbers, from the app's tables.
+        **filings_context(item.symbol),
         "plot": plot,
         "line": line,
         "rows": page_of(line.newest_first if line else [], request.GET.get("page")),

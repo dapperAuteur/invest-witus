@@ -3,6 +3,7 @@ this file under `accounts/<int:pk>/watch/`, and the `pk` captured there reaches 
 
 from django.urls import path
 
+from invest_witus_site.filings import views as filings_views
 from invest_witus_site.prices import owner_views
 from invest_witus_site.watchlist import views
 
@@ -18,4 +19,6 @@ urlpatterns = [
     path("<str:symbol>/fetch-history/", owner_views.fetch_history, name="watch-fetch-history"),
     # Get description (2026-10-30, decision 150): the symbol's name, exchange and description.
     path("<str:symbol>/profile/", owner_views.fetch_profile, name="watch-fetch-profile"),
+    # Refresh filings now (chapter 16): the symbol's SEC filings and key figures, now.
+    path("<str:symbol>/filings/", filings_views.refresh_now, name="watch-refresh-filings"),
 ]
