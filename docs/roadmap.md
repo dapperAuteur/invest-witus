@@ -3,7 +3,7 @@ app: invest
 name: Invest.WitUS
 stage: alpha
 url: https://invest.witus.online
-updated: 2026-11-04
+updated: 2026-11-10
 ---
 
 ## Live now
@@ -21,20 +21,20 @@ updated: 2026-11-04
 - A default view saved per person; a plan edited or deleted before anything happens under it
 - Report a problem or ask a question, sent to WitUS Inbox; a Help bubble on every page
 - Owner drafts posts to WitUS Outbox
-- Tutorial chapters 00 to 14a, one git tag per chapter (14a merged 2026-10-31)
+- Tutorial chapters 00 to 15, one git tag per chapter (15 tagged 2026-11-03)
+- Compare methods (chapter 15): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed; a Practice or Real badge beside every account name (decisions 167 to 172)
+- Index rules version 2 and stronger table stripes with a line under every row (decisions 173 to 175)
+- The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165)
 - Migrations run automatically after each merge
 
 ## In progress
-- Compare methods (chapter 15, decisions 167 to 171): two to four accounts on one chart with an index fund yardstick, money put in, value, gain, both returns, worst drop and how often each plan was followed; a Practice or Real badge beside every account name (decision 172; task 35, with task 34)
-- The plan's amount read as the month's total with the missing parts named, a Settings page, striped tables, and the Help bubble keeping its draft (decisions 161 to 165, task 33)
-- Stronger table stripes and a visible line under every row, text still at WCAG AA on every row color (decision 175, task 38)
-- Index rules version 2: one buy of each fund a month and the month's total, so a plan split across several funds reads followed; months already closed keep version 1 (decisions 173 and 174, backlog 23, task 37, which also lands tasks 35 and 34)
+- SEC filings and key numbers on a stock's page (chapter 16, decisions 177 to 184): the last eight 10-K, 10-Q and 8-K linked to sec.gov, five years and four quarters of reported figures with bars; funds say they have no company filings (task 40)
 - PostHog page views on signed-in pages, labelled `app = invest`, through a same-origin `/ingest` proxy; public pages keep no script (decision 176, backlog 22, task 39)
 - Waitlist signups on witus.online
 - Connecting reports and drafts to WitUS Inbox and Outbox (secrets being matched)
 
 ## Next
-- Chapter 16: signed events to CentenarianOS and lesson links checked against Learn.WitUS
+- Chapter 17: signed events to CentenarianOS and lesson links checked against Learn.WitUS
 - Python tutorial course built from the chapters
 
 ## Backlog
@@ -44,7 +44,8 @@ updated: 2026-11-04
 - Placing paper sells for momentum rebalances
 - Learn.WitUS lessons inside the app
 - Foreign markets research
-- Owner usage dashboard (chapter 17)
+- Owner usage dashboard (chapter 18)
+- A reader view of selected 10-K sections (Item 1, 1A, 7), after checking the SEC's terms (plans/future/04, part 4)
 - A small sibling API service in a second Python framework
 
 ## Blocked on
