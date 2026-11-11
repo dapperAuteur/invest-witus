@@ -105,6 +105,23 @@
         <td>{{ result.months|default:"no plan" }}</td>
         <td>{{ result.followed }}</td>
       </tr>
+      {% if result.same %}
+      <tr class="same-money">
+        <th scope="row">{{ result.same.label }} <span class="muted small">({{ result.account.name }}'s money)</span></th>
+        <td>Yardstick: the same money on the same days, never touched</td>
+        {% if result.same.stretch %}
+        <td class="num">{{ result.same.put_in }}</td>
+        <td class="num">{{ result.same.value }}</td>
+        <td class="num">{{ result.same.gain }}</td>
+        <td class="num">{{ result.same.money_weighted|default:"one day only: no return yet" }}</td>
+        <td class="num">{{ result.same.time_weighted|default:"one day only: no return yet" }}</td>
+        <td class="num">{{ result.same.worst_drop|default:"needs two days" }}</td>
+        {% else %}
+        <td colspan="6">{{ result.same.reason }}</td>
+        {% endif %}
+        <td colspan="2">{% if result.same.stretch %}Uses the {% if result.same.adjusted %}adjusted close{% else %}close (a stored day has no adjusted close){% endif %}.{% endif %}</td>
+      </tr>
+      {% endif %}
       {% endfor %}
       {% if yardstick and yardstick.line %}
       <tr>
@@ -120,6 +137,9 @@
     </tbody>
   </table>
   </div>
+  {% if any_same %}
+  <p class="how-to-read"><strong>How to read this.</strong> Each "{% if yardstick %}Same money into {{ yardstick.symbol }}{% endif %}" row is what doing nothing but buying the index fund with the same money would have given: every buy of the account, on its own day and for the same dollars, buys {% if yardstick %}{{ yardstick.symbol }}{% endif %} at that day's stored adjusted close instead (the close when a stored day has no adjusted close, as the row says), and a sell takes the same dollars out. A day with no stored price is named, never guessed. Compare its money put in, value and money-weighted return with the account's row just above: if the account's are lower, the index fund alone did better with your money over these days. {% if same_left_off %}The chart has room for six lines, so the same-money lines of {{ same_left_off|join:", " }} are in the table only.{% endif %}</p>
+  {% endif %}
   <p class="small"><strong>Money-weighted or time-weighted?</strong> The money-weighted return counts when your money went in, so it judges the method and the timing of your deposits together; the time-weighted return leaves the deposits out, so it judges the method alone, and it is what the chart draws. Under a year, both are the change over the days shown; from a year on, both are a yearly rate.</p>
   {% for result in results %}{% if result.notes %}
   <p class="small muted">{{ result.account.name }}: {{ result.notes|join:" " }}</p>

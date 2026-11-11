@@ -260,7 +260,8 @@ After the deploy, signed in as the owner, on an index account with several funds
 
 ## Compare methods (chapter 15)
 
-No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes.
+No migration, no variable, no post-deploy step: the page reads the journal, the paper orders and the stored closes. Since 2026-11-10 (decision 185) the page also adds a "Same money into <YARDSTICK>" row and line per account
+from the same records; still no migration.
 The one outside call is Alpaca's `GET /v2/account` for each account the site owner linked to Alpaca paper, read
 when `/compare/` opens, all at once, with a 5-second timeout (`compare/records.py`, `ALPACA_TIMEOUT_SECONDS`), using
 that account's key slot through `client_for`. A slow or refused answer is one sentence in the cross-check table;

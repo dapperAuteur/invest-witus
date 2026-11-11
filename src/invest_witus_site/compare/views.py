@@ -34,6 +34,7 @@ from invest_witus_site.compare.records import (
     pick_accounts,
     plan_of,
     return_text,
+    same_money_for,
     yardstick_choices,
 )
 from invest_witus_site.holdings.models import Account
@@ -148,12 +149,68 @@ def account_line(result: AccountResult) -> Line | None:
     return Line(result.account.name, VALUE_BASIS, 0, "", "", "", rows, readout=readout)
 
 
-def build_chart(
-    results: list[AccountResult], yardstick: Yardstick | None, title: str
-) -> Plot | None:
+def same_money_line(result: AccountResult) -> Line | None:
+    """Exercise 1 (decision 185): the same money into the yardstick as a chart line, drawn like
+    an account's (its value with the money put in left out, 100 on its first day), so it starts on
+    the same day as the account's own line; the hover text gives its value in dollars."""
+    same = result.same
+    if same is None or same.stretch is None or not same.line:
+        return None
+    values = {day.day: day for day in same.stretch.days}
+    rows: list[DayRow] = []
+    readout: dict[date, str] = {}
+    for day, level in same.line:
+        held = values[day]
+        rows.append(
+            DayRow(
+                day=day,
+                close=held.value,
+                adj_close=None,
+                value=level,
+                change=None,
+                change_pct=None,
+                index=level,
+                source="journal",
+            )
+        )
+        readout[day] = (
+            f"{index_text(level)} (start = 100), value {money(held.value)}, "
+            f"{money(held.put_in)} put in so far"
+        )
+    name = f"{same.label} ({result.account.name})"
+    return Line(name, VALUE_BASIS, 0, "", "", "", rows, readout=readout)
+
+
+@dataclass(frozen=True, slots=True)
+class Lines:
+    """The chart's lines, and the same-money lines left off it for want of a line style."""
+
+    lines: list[Line]
+    left_off: list[str]
+
+
+def chart_lines(results: list[AccountResult], yardstick: Yardstick | None) -> Lines:
+    """The accounts, then the yardstick, then each account's same money in the yardstick while
+    the chart has a line style left (six); the rest stay in the table and are named."""
     lines = [line for line in (account_line(result) for result in results) if line is not None]
     if yardstick is not None and yardstick.line is not None:
         lines.append(yardstick.line)
+    left_off: list[str] = []
+    for result in results:
+        line = same_money_line(result)
+        if line is None:
+            continue
+        if len(lines) < len(LINE_STYLES):
+            lines.append(line)
+        else:
+            left_off.append(result.account.name)
+    return Lines(lines, left_off)
+
+
+def build_chart(
+    results: list[AccountResult], yardstick: Yardstick | None, title: str
+) -> Plot | None:
+    lines = chart_lines(results, yardstick).lines
     for position, line in enumerate(lines):
         line.color, line.dash, line.pattern = LINE_STYLES[position]
     plot = lay_out(lines, title, rebase=True, noun="day value")
@@ -167,6 +224,11 @@ def build_chart(
             words.append(
                 f"The yardstick, {yardstick.symbol}, is its stored {yardstick.line.basis}, "
                 "rebased to 100 on its first day in the range."
+            )
+        if any(line.symbol.startswith("Same money into ") for line in lines):
+            words.append(
+                'Each "Same money" line is that account\'s own deposits put into the yardstick '
+                "on the same days, drawn the same way, so it starts with the account's line."
             )
         words.append(
             f"Values from your journal and the app's stored closes, as of {plot.last:%Y-%m-%d}."
@@ -233,6 +295,10 @@ def compare_methods(request: HttpRequest) -> HttpResponse:
     else:
         symbol = default_yardstick(choices)
     yardstick = yardstick_for(symbol, owned, dates) if symbol else None
+    # Exercise 1 (decision 185): each account's own money, on its own days, into the yardstick.
+    if symbol:
+        for result in results:
+            result.same = same_money_for(result, symbol, dates.start, dates.end)
     names = ", ".join(account.name for account in picked.accounts)
     title = f"{names}: {dates.start:%Y-%m-%d} to {dates.end:%Y-%m-%d}"
     plot = build_chart(results, yardstick, title) if picked.accounts else None
@@ -255,6 +321,8 @@ def compare_methods(request: HttpRequest) -> HttpResponse:
         "yardstick": yardstick,
         "sp500_funds": SP500_FUNDS,
         "plot": plot,
+        "same_left_off": chart_lines(results, yardstick).left_off if plot else [],
+        "any_same": any(result.same is not None for result in results),
         "daily": page_of(daily_rows(plot) if plot else [], page),
         "daily_open": page is not None,
         "base_query": query_without_page(request.GET),
