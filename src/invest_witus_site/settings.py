@@ -334,10 +334,16 @@ CRON_SECRET = os.environ.get("CRON_SECRET", "")
 # ("Accessing EDGAR Data", read November 10, 2026). The default is the app's name and address and
 # never a person's email (the ecosystem rule); a learner's copy sets its own. SEC_FILINGS=off
 # stops every request (the nightly step, the button and the command) without a deploy of code.
-SEC_USER_AGENT = (
-    os.environ.get("SEC_USER_AGENT") or "Invest.WitUS (https://invest.witus.online)"
-).strip()
-SEC_FILINGS_ENABLED = os.environ.get("SEC_FILINGS", "").strip().lower() != "off"
+DEFAULT_SEC_USER_AGENT = "Invest.WitUS (https://invest.witus.online)"
+
+
+def sec_filings_enabled(raw: str) -> bool:
+    """On unless the variable says `off` (any case, spaces ignored)."""
+    return raw.strip().lower() != "off"
+
+
+SEC_USER_AGENT = (os.environ.get("SEC_USER_AGENT") or DEFAULT_SEC_USER_AGENT).strip()
+SEC_FILINGS_ENABLED = sec_filings_enabled(os.environ.get("SEC_FILINGS", ""))
 
 # Alpaca paper trading (chapter 11). The owner's paper keys, from the paper dashboard's API Keys
 # module; empty means every Alpaca feature says "not set" and nothing is called. The client's host
