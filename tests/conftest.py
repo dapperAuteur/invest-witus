@@ -9,6 +9,8 @@ import httpx
 import pytest
 from pytest_django.fixtures import Settings
 
+from invest_witus_site.filings import refresh as filings_refresh
+from invest_witus_site.filings import sec
 from invest_witus_site.outbox import client as outbox_client
 from invest_witus_site.reports import inbox
 
@@ -56,3 +58,24 @@ def no_shell_alpaca_slots(settings: Settings) -> None:
     settings.ALPACA_PAPER_KEY_SLOTS = {}
     settings.ALPACA_PAPER_KEY_SLOT_IGNORED = ()
     settings.ALPACA_PAPER_KEY_SLOT_CONFLICTS = frozenset()
+
+
+@pytest.fixture(autouse=True)
+def no_real_sec(settings: Settings, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Chapter 16: SEC filings are off in every test, so the nightly cron's body stays chapter
+    08's, and a request that slipped through fails here instead of reaching sec.gov. The throttle
+    never sleeps and each test starts with no ticker maps read. tests/test_ch16.py turns filings on
+    with its own fake."""
+    settings.SEC_FILINGS_ENABLED = False
+    settings.SEC_USER_AGENT = "Invest.WitUS (https://invest.witus.online)"
+    monkeypatch.setattr(sec, "transport", httpx.MockTransport(refuse_real_sec))
+    monkeypatch.setattr(sec, "sleep", no_sleep)
+    filings_refresh.forget_maps()
+
+
+def no_sleep(seconds: float) -> None:
+    return None
+
+
+def refuse_real_sec(request: httpx.Request) -> httpx.Response:
+    raise AssertionError(f"a test tried to reach {request.url.host}")

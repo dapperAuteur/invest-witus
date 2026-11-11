@@ -110,6 +110,19 @@ most weekly by the nightly pull or **Get description**), labelled "Description f
 comparison in the admin notes a stored split between the two dates. How to use them:
 [the user guide](docs/guide/using-invest-witus.md).
 
+Since chapter 16 (2026-11-10, decisions 177 to 184) a stock's history page also shows **Filings** and **Key
+numbers** from SEC EDGAR: the last eight 10-K, 10-Q and 8-K filings, each a link that opens the filing on sec.gov
+in a new tab (SEC pages refuse to be framed), and revenue, net income, operating cash flow, capital expenditure,
+free cash flow (derived), shares outstanding, cash and long-term debt for the last five fiscal years and four
+quarters, each figure labelled with its form and period and its XBRL tag in a title, plus bars for three of them
+and a "How to read a 10-K" note linking the SEC's guide. A fund says "No company filings: this is a fund". The
+data comes from the SEC's free JSON (`company_tickers.json`, `company_tickers_mf.json`, the submissions feed and
+companyfacts; no key), stored in the `filings` app and refreshed by the nightly cron for watched symbols, by
+**Refresh filings now** on the page, or by `manage.py refresh_filings SYMBOL`. Every request sends
+`SEC_USER_AGENT` (default `Invest.WitUS (https://invest.witus.online)`, never an email) and gzip, waits in a
+shared four-a-second throttle (the SEC's ceiling is ten), and a 403 or 429 pauses every request for ten minutes;
+`SEC_FILINGS=off` stops them all. The walk-through is [chapter 16](docs/chapters/16-sec-edgar-filings.md).
+
 ## The method engine and the three views
 
 Chapter 10 puts the product's core on the web: a `methods` app whose `MethodPlan` row is chapter 03's `Plan`

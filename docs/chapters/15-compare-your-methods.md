@@ -2255,4 +2255,5 @@ holdings now" with "Value here".
 
 ## Next
 
-Chapter 16 sends signed events to CentenarianOS and checks the lesson links against Learn.WitUS.
+Chapter 16 reads what a company reports to the SEC: its recent filings and its key numbers from SEC EDGAR. The
+CentenarianOS events are chapter 17 (decision 184).

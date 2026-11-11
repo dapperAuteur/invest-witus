@@ -418,7 +418,7 @@ orders placed outside the app, live trading and its checklist; decisions log, ro
 closes, is closed by the owner with three written answers, cannot be closed while a month has a missed buy with no
 skip to explain it, and is reopened only with a reason, every step audited; closing writes the review row, not a
 journal entry (decisions log, row 106); a month whose paper order ended unfilled offers "Place again" with a new
-order id. The event to CentenarianOS is chapter 16 (decision 167; it was 15).*
+order id. The event to CentenarianOS is chapter 17 (decisions 167 and 184; it was 15, then 16).*
 
 ### 7.8 In-app reporter: bug, feature, question
 
@@ -506,6 +506,22 @@ for operations.
   user.
 - **Learn.WitUS:** phase 1 is links only (rule to lesson; chapter to lesson via `docs/CHAPTERS.md`). Phase 2 adds
   an evidence endpoint (a learner's checkpoint or review posted to Learn), designed with the Learn.WitUS repo.
+
+### 7.13 What the company reports: SEC filings and key numbers (chapter 16)
+
+BAM, 2026-11-02: "does the app allow user to read 10k, 10q and other relevant investment info inside the app?"
+Decisions 177 to 184.
+
+- On a watched stock's page: the last eight 10-K, 10-Q and 8-K filings, each a link that opens the SEC's copy in a
+  new tab (SEC pages cannot be framed); Key numbers (revenue, net income, operating cash flow, capital
+  expenditure, free cash flow derived, shares outstanding, cash, long-term debt) for five fiscal years and four
+  quarters, each labelled with its form and period and its XBRL tag; bars for three lines; a "How to read a 10-K"
+  note linking the SEC's guide.
+- A fund says it has no company filings. A refusal from the SEC shows "Filings are not available right now".
+- Data from SEC EDGAR's free JSON, stored in the app, refreshed nightly for watched symbols, by **Refresh filings
+  now**, or by `manage.py refresh_filings`; the app's name and address as the User-Agent, four requests a second.
+
+Acceptance: `tests/test_ch16.py`; a stock's page shows both sections after one refresh on production.
 
 ---
 

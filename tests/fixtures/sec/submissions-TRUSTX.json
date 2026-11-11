@@ -1,0 +1,33 @@
+{
+ "cik": "0007654321",
+ "entityType": "other",
+ "name": "PLACEHOLDER INDEX TRUST",
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0007654321-26-000001",
+    "0007654321-26-000002"
+   ],
+   "filingDate": [
+    "2026-02-01",
+    "2026-01-01"
+   ],
+   "reportDate": [
+    "",
+    ""
+   ],
+   "form": [
+    "497",
+    "N-30D"
+   ],
+   "primaryDocument": [
+    "a.htm",
+    "b.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    ""
+   ]
+  }
+ }
+}

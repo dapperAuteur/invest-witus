@@ -1,0 +1,22 @@
+{
+ "0": {
+  "cik_str": 1234567,
+  "ticker": "CORPX",
+  "title": "PLACEHOLDER CORP"
+ },
+ "1": {
+  "cik_str": 7654321,
+  "ticker": "TRUSTX",
+  "title": "PLACEHOLDER INDEX TRUST"
+ },
+ "2": {
+  "cik_str": 2222222,
+  "ticker": "CLASS-B",
+  "title": "PLACEHOLDER HOLDINGS"
+ },
+ "3": {
+  "cik_str": 9999999,
+  "ticker": "CORPX",
+  "title": "A SECOND ROW FOR THE SAME TICKER"
+ }
+}

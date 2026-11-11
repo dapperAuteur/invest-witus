@@ -1,6 +1,7 @@
 """`GET /api/cron/pull-prices/`: the nightly pull, called by Vercel's cron, since chapter 11 the
 paper order check after it, since chapter 13 the retry of what WitUS Inbox has not taken, and
-since 2026-10-29 the retry of post drafts WitUS Outbox has not taken.
+since 2026-10-29 the retry of post drafts WitUS Outbox has not taken, and since chapter 16 the
+SEC filings of the watched symbols.
 
 Vercel sends the project's `CRON_SECRET` as `Authorization: Bearer <value>` with every cron
 request (its docs, read October 28, 2026). The route compares that header with the setting in
@@ -18,6 +19,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
+from invest_witus_site.filings.refresh import refresh_watched
 from invest_witus_site.outbox.client import configured as outbox_configured
 from invest_witus_site.outbox.delivery import send_unsent as send_unsent_posts
 from invest_witus_site.paper import slots
@@ -58,6 +60,11 @@ def pull_prices_cron(request: HttpRequest) -> JsonResponse:
     if metadata is not None and result.stopped != "rate limit":
         left = REQUESTS_PER_RUN - result.requests
         body["profiles"] = refresh_profiles(metadata, result.symbols, left).as_dict()
+    # Chapter 16: then the SEC filings and key figures of every watched symbol that is due, one
+    # request per feed per symbol inside the SEC's rate cap, unless SEC_FILINGS=off. A refusal
+    # stops the step and is reported in the body; the prices stand.
+    if settings.SEC_FILINGS_ENABLED:
+        body["filings"] = refresh_watched().as_dict()
     # Chapter 11: then the paper orders, once the owner's Alpaca paper keys are set. Without them
     # the body is chapter 08's, unchanged. A failure is reported in the body; the prices stand.
     # Decision 159: once any key slot is complete, each account's orders with its own slot's keys.

@@ -1,0 +1,65 @@
+{# What the company reports to the SEC (chapter 16): the last eight 10-K, 10-Q and 8-K filings, each a link #}
+{# to the document on sec.gov in a new tab, then the Key numbers. Included by watchlist/history.html with #}
+{# `account`, `item` and the `sec_` names from filings/page.py. The owner's page only. #}
+<section class="sec-filings" aria-labelledby="filings-heading">
+  <h2 id="filings-heading">Filings</h2>
+  {% if not sec_enabled %}
+  <p class="muted">Filings are off on this copy of the app (<code>SEC_FILINGS=off</code>).</p>
+  {% elif sec_is_fund %}
+  <p>No company filings: this is a fund; see the issuer's page. A fund reports to the SEC on other forms (a prospectus and shareholder reports), which this app does not read.</p>
+  {% elif sec_not_listed %}
+  <p>SEC EDGAR lists no company under {{ item.symbol }}. Only companies registered with the SEC file a 10-K or 10-Q; a company based outside the United States may file other forms.</p>
+  {% else %}
+  {% if sec_unavailable %}<p role="status"><strong>Filings are not available right now.</strong> {{ sec_unavailable }}{% if sec_filings %} The list below is the last one stored.{% endif %}</p>{% endif %}
+  {% if sec_filings %}
+  <div class="table-scroll" role="region" aria-labelledby="filings-caption" tabindex="0">
+  <table class="holdings">
+    <caption id="filings-caption">{{ sec_company.name|default:item.symbol }}: the last {{ sec_filings|length }} annual, quarterly and current reports, newest first. Each link opens the filing on sec.gov in a new tab.</caption>
+    <thead>
+      <tr>
+        <th scope="col">Filed</th>
+        <th scope="col">Form</th>
+        <th scope="col">What it is</th>
+        <th scope="col">Period</th>
+        <th scope="col">Document</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for filing, words in sec_filings %}
+      <tr>
+        <th scope="row">{{ filing.filing_date|date:"Y-m-d" }}</th>
+        <td>{{ filing.form }}</td>
+        <td>{{ words }}</td>
+        <td>{% if filing.report_date %}{{ filing.report_date|date:"Y-m-d" }}{% else %}<span class="muted">none named</span>{% endif %}</td>
+        <td><a href="{{ filing.document_url }}" target="_blank" rel="noopener">Read the {{ filing.form }} on sec.gov<span class="sr-only"> (opens in a new tab)</span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="small muted">Source: SEC EDGAR, fetched {{ sec_company.filings_fetched_at|date:"Y-m-d" }}. The nightly pull refreshes it; the links go to the SEC's own copy.</p>
+  {% elif not sec_unavailable %}
+  <p class="muted">No filings stored yet.{% if sec_company %} SEC EDGAR lists no 10-K, 10-Q or 8-K for {{ item.symbol }}.{% else %} The nightly pull fetches them; <strong>Refresh filings now</strong> fetches them now.{% endif %}</p>
+  {% endif %}
+  <details class="how-to-read-10k">
+    <summary>How to read a 10-K</summary>
+    <p>A <strong>10-K</strong> is the company's annual report to the SEC, a <strong>10-Q</strong> its report for each of the first three quarters, and an <strong>8-K</strong> a short report of a major event (results, a merger, a new chief executive). The 10-K follows a set order. Four parts answer most questions:</p>
+    <ul>
+      <li><strong>Item 1, Business:</strong> what the company sells, where, and to whom.</li>
+      <li><strong>Item 1A, Risk Factors:</strong> what the company says could hurt it, most important first.</li>
+      <li><strong>Item 7, Management's Discussion and Analysis:</strong> management explains the year's results in its own words.</li>
+      <li><strong>Item 8, Financial Statements:</strong> the audited income statement, balance sheet and cash flows, with notes. The Key numbers below come from these.</li>
+    </ul>
+    <p>Read a 10-Q the same way for a quarter; its statements are not audited. A figure means more beside the same figure a year earlier than on its own.</p>
+    <p class="small">The SEC's guide: <a href="https://www.sec.gov/answers/reada10k.htm" target="_blank" rel="noopener">How to Read a 10-K<span class="sr-only"> (opens in a new tab)</span></a>. Information, not advice.</p>
+  </details>
+  {% include "filings/_key_numbers.html" %}
+  {% endif %}
+  {% if sec_enabled %}
+  <form method="post" action="{% url 'watch-refresh-filings' account.pk item.symbol %}">
+    {% csrf_token %}
+    <button type="submit">Refresh filings now</button>
+    <p class="small muted">Asks SEC EDGAR for {{ item.symbol }}'s filings and reported figures now: up to four requests, at most four a second, once every 10 minutes per symbol.</p>
+  </form>
+  {% endif %}
+</section>

@@ -326,6 +326,8 @@ class ManualRun(models.Model):
         HISTORY = "history", "Get history"
         # Decision 150: the symbol page's Get description, keyed on the symbol.
         PROFILE = "profile", "Get description"
+        # Chapter 16: the symbol page's Refresh filings now, keyed on the symbol.
+        FILINGS = "filings", "Refresh filings now"
 
     kind: models.CharField[str, str] = models.CharField(max_length=20, choices=Kind.choices)
     key: models.CharField[str, str] = models.CharField(
